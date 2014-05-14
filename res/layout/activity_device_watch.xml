@@ -1,0 +1,28 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="io.github.vladast.avrcommunicator.activities.DeviceWatchActivity" >
+
+    <TextView
+       android:id="@+id/textViewDeviceStatus"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:text="@string/device_status_placeholder" />
+    
+    <ScrollView
+        android:id="@+id/scrollViewData"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textViewDeviceStatus" >
+
+        <TextView
+            android:id="@+id/textViewData"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/device_data_placeholder" />
+        
+    </ScrollView>
+
+</RelativeLayout>

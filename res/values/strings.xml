@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">AVR Event Recorder Communicator</string>
+    <string name="title_activity_device_watch">AVR Event Recorder Watchout</string>
+    <string name="device_status_placeholder">-- AVR Device Placeholder --</string>
+    <string name="device_data_placeholder">-- AVR Device Data Placeholder --</string>
+
+</resources>
