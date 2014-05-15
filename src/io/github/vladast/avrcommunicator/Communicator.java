@@ -2,10 +2,212 @@ package io.github.vladast.avrcommunicator;
 
 import java.util.ArrayList;
 
+import android.content.Context;
 import android.hardware.usb.UsbConstants;
+import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbManager;
+import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Message;
 
-public final class Communicator {
+public class Communicator {
+	
+	private static final int MSG_DEVICE_DETECTED		= 0x0001;
+	private static final int MSG_CHECK_DEVICE_STATUS	= 0x0002;
+	private static final int MSG_REINIT_DEVICE			= 0x0003;
+	
+	private UsbManager mUsbManager;
+	private UsbDeviceConnection mUsbDeviceConnection;
+	private OnAvrRecorderEventListener mAvrRecorderEventListener;
+	
+	private boolean mRecordsRead;
+	
+	private AvrRecorderDevice mAvrRecorderDevice;
+	
+	private final Handler mAvrRecorderMonitorHandler;
+	
+	public Communicator(UsbManager usbManager) {
+		mUsbManager = usbManager;
+		mRecordsRead = false;
+		mAvrRecorderDevice = null;
+		mAvrRecorderMonitorHandler = new Handler() {
+	        @Override
+	        public void handleMessage(Message msg) {
+	            switch (msg.what) {
+		            case MSG_CHECK_DEVICE_STATUS:
+		            	if(!mRecordsRead)
+		            	{
+		            		checkDeviceStatus();
+		            		mAvrRecorderMonitorHandler.sendEmptyMessageDelayed(MSG_CHECK_DEVICE_STATUS, 1000);
+		            	}
+		            	break;
+	                case MSG_DEVICE_DETECTED:
+	                	mAvrRecorderEventListener.OnDeviceConnected();
+	                	//getEventRecords((UsbDevice)msg.obj);
+	                	// TODO: Show dialog box asking user to confirm that data reading should start
+	                    break;
+	                case MSG_REINIT_DEVICE:
+	                	reinitDevice((UsbDevice)msg.obj);
+	                	break;
+	                default:
+	                    super.handleMessage(msg);
+	                    break;
+	            }
+	        }
+	    };			
+	}
+	
+	protected void checkDeviceStatus() {
+    	
+    	mAvrRecorderEventListener.OnDeviceSearching();
+        
+    	new AsyncTask<Void, Void, UsbDevice>() {
+
+			@Override
+			protected UsbDevice doInBackground(Void... arg0) {
+				
+				for (final UsbDevice usbDevice : mUsbManager.getDeviceList().values()) {
+					if(usbDevice.getVendorId() == AvrRecorderConstants.AVR_REC_VID &&
+							usbDevice.getProductId() == AvrRecorderConstants.AVR_REC_PID)
+					{
+						return usbDevice;
+					}
+				}
+				
+				return null;
+			}
+    		
+			protected void onPostExecute(UsbDevice usbDevice) {
+				if(usbDevice != null) {
+					Message msg = new Message();
+					msg.what = MSG_DEVICE_DETECTED;
+					msg.obj = usbDevice;
+					mAvrRecorderMonitorHandler.removeMessages(MSG_CHECK_DEVICE_STATUS);
+					mAvrRecorderMonitorHandler.sendMessage(msg);
+				}
+			}
+			
+    	}.execute((Void)null);
+	}
+	
+	protected void readDeviceData(UsbDevice usbDevice) {
+		mAvrRecorderEventListener.OnReadingStarted();
+		
+		ArrayList<Reading> eventReadings = new ArrayList<Reading>();
+		
+		mUsbDeviceConnection = mUsbManager.openDevice(usbDevice);
+
+		String sOutput = "No message received.";
+		
+		for(int i = 0; i < usbDevice.getInterfaceCount(); ++i) {
+			if(mUsbDeviceConnection.claimInterface(usbDevice.getInterface(i), true)) {
+				readDeviceInfo(); // Read status header and status codes
+				readDeviceRecords(); // Read records from device
+				
+				
+				sOutput = Communicator.communicate(mUsbDeviceConnection);		
+			}
+		}
+		
+		mRecordsRead = true;
+		
+		mAvrRecorderEventListener.OnRecordsRead(eventReadings);
+	}
+	
+	protected void readDeviceInfo() {
+        byte[] buffer = new byte[4];
+        
+        int iRxByteCount = mUsbDeviceConnection.controlTransfer(
+                UsbConstants.USB_TYPE_VENDOR | UsbConstants.USB_ENDPOINT_XFER_CONTROL | UsbConstants.USB_DIR_IN, 
+                AvrRecorderConstants.REQ_GET_HEADER, 0, 0, buffer, 4, 5000);
+        if(iRxByteCount < 1)
+        {
+            mAvrRecorderEventListener.OnError(AvrRecorderErrors.ERR_HEADER);
+        }
+        else
+        {
+            mAvrRecorderDevice.setDeviceCode((short) (buffer[0] | (buffer[1] << 8)));
+            mAvrRecorderEventListener.OnDebugMessage(String.format("Detected device with code 0x%04x", mAvrRecorderDevice.getDeviceCode()));
+            
+            switch(mAvrRecorderDevice.getDeviceCode())
+            {
+            case (short)0xA001:
+                break;
+            case (short)0xA002:
+                // Read device's state
+                iRxByteCount = mUsbDeviceConnection.controlTransfer(
+                        UsbConstants.USB_TYPE_VENDOR | UsbConstants.USB_ENDPOINT_XFER_CONTROL | UsbConstants.USB_DIR_IN, 
+                        AvrRecorderConstants.REQ_GET_DATA1, 0, 0, buffer, 4, 5000);
+                
+                if(iRxByteCount < 0)
+                {
+                	mAvrRecorderEventListener.OnError(AvrRecorderErrors.ERR_STATE);
+                }
+                else
+                {
+                    mAvrRecorderDevice.setState(buffer[0]);
+                    mAvrRecorderEventListener.OnDebugMessage(String.format("Device's state is '%s'", mAvrRecorderDevice.getStateName()));
+                }
+                
+                // Read device's session
+                iRxByteCount = mUsbDeviceConnection.controlTransfer(
+                        UsbConstants.USB_TYPE_VENDOR | UsbConstants.USB_ENDPOINT_XFER_CONTROL | UsbConstants.USB_DIR_IN, 
+                        AvrRecorderConstants.REQ_GET_DATA2, 0, 0, buffer, 4, 5000);
+                
+                if(iRxByteCount < 0)
+                {
+                    mAvrRecorderEventListener.OnError(AvrRecorderErrors.ERR_SESSION);
+                }
+                else
+                {
+                    mAvrRecorderDevice.setSession(buffer[0]);
+                    mAvrRecorderEventListener.OnDebugMessage(String.format("Device's session is: %s [0x%02x]", Byte.toString(mAvrRecorderDevice.getSession()), mAvrRecorderDevice.getSession()));
+                }
+                
+                // Read device's error cache
+                iRxByteCount = mUsbDeviceConnection.controlTransfer(
+                        UsbConstants.USB_TYPE_VENDOR | UsbConstants.USB_ENDPOINT_XFER_CONTROL | UsbConstants.USB_DIR_IN, 
+                        AvrRecorderConstants.REQ_GET_DATA3, 0, 0, buffer, 4, 5000);
+                
+                if(iRxByteCount < 0)
+                {
+                	mAvrRecorderEventListener.OnError(AvrRecorderErrors.ERR_ERROR);
+                }
+                else
+                {
+                    mAvrRecorderDevice.setError(buffer[0]);
+                    mAvrRecorderEventListener.OnDebugMessage(String.format("Error-code stored in device: 0x%02x", mAvrRecorderDevice.getError()));
+                }           
+                
+                // Read event count
+                iRxByteCount = mUsbDeviceConnection.controlTransfer(
+                        UsbConstants.USB_TYPE_VENDOR | UsbConstants.USB_ENDPOINT_XFER_CONTROL | UsbConstants.USB_DIR_IN, 
+                        AvrRecorderConstants.REQ_GET_DATA4, 0, 0, buffer, 4, 5000);
+                
+                if(iRxByteCount < 0)
+                {
+                	mAvrRecorderEventListener.OnError(AvrRecorderErrors.ERR_ERROR);
+                }
+                else
+                {
+                    mAvrRecorderDevice.setEntryCount((short) (buffer[0] | (buffer[1] << 8)));
+                    mAvrRecorderEventListener.OnDebugMessage(String.format("Number of events recorded by device is: %d", mAvrRecorderDevice.getEntryCount()));
+                }
+            }
+        }
+	}
+	
+	protected void readDeviceRecords() {
+		// TODO: Read records from device
+	}
+	
+	protected void getEventRecords(UsbDevice usbDevice) {
+
+		
+		
+		mTextViewData.setText(sOutput);
+	}	
 	
     static public String communicate(UsbDeviceConnection usbDeviceConnection)
     {   
