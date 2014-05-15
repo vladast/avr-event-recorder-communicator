@@ -23,5 +23,11 @@ public final class AvrRecorderConstants {
     public static final byte REQ_SET_DATA2  = 0x21;
     public static final byte REQ_SET_DATA3  = 0x22;
     public static final byte REQ_SET_DATA4  = 0x23;
+    
+    public static final byte STATE_INIT		= (byte) 0xB2; // Initialize device
+    public static final byte STATE_RECORD	= (byte) 0xC3; // Record events (touch-switch states)
+    public static final byte STATE_UPLOAD	= (byte) 0xD4; // Upload records to USB host
+    public static final byte STATE_DELETE	= (byte) 0xE5; // Erase external EEPROM
+    public static final byte STATE_RESES	= (byte) 0xF6; // Reinit session counter 
 
 }
