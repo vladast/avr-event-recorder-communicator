@@ -104,9 +104,11 @@ public class Communicator {
 			if(mUsbDeviceConnection.claimInterface(usbDevice.getInterface(i), true)) {
 				readDeviceInfo(); // Read status header and status codes
 				readDeviceRecords(); // Read records from device
+				// At this moment, via UI activity, user will be asked for further actions:
+				// 1. To re-initiate device or not
+				// 2. To share collected data with other application (i.e. Mail client)
 				
-				
-				sOutput = Communicator.communicate(mUsbDeviceConnection);		
+				// sOutput = Communicator.communicate(mUsbDeviceConnection);		
 			}
 		}
 		
@@ -117,8 +119,9 @@ public class Communicator {
 	
 	protected void readDeviceInfo() {
         byte[] buffer = new byte[4];
+        int iRxByteCount = 0;
         
-        int iRxByteCount = mUsbDeviceConnection.controlTransfer(
+        iRxByteCount = mUsbDeviceConnection.controlTransfer(
                 UsbConstants.USB_TYPE_VENDOR | UsbConstants.USB_ENDPOINT_XFER_CONTROL | UsbConstants.USB_DIR_IN, 
                 AvrRecorderConstants.REQ_GET_HEADER, 0, 0, buffer, 4, 5000);
         if(iRxByteCount < 1)
@@ -187,7 +190,7 @@ public class Communicator {
                 
                 if(iRxByteCount < 0)
                 {
-                	mAvrRecorderEventListener.OnError(AvrRecorderErrors.ERR_ERROR);
+                	mAvrRecorderEventListener.OnError(AvrRecorderErrors.ERR_COUNT);
                 }
                 else
                 {
@@ -199,7 +202,61 @@ public class Communicator {
 	}
 	
 	protected void readDeviceRecords() {
-		// TODO: Read records from device
+        short eepromdata = 0;
+        int iRxByteCount = 0;
+        byte[] buffer = new byte[4];
+        boolean fReadNext = false;
+        Reading reading = new Reading();
+
+        for(short i = 0; i < mAvrRecorderDevice.getEntryCount(); ++i)
+        {
+            iRxByteCount = mUsbDeviceConnection.controlTransfer(
+                    UsbConstants.USB_TYPE_VENDOR | UsbConstants.USB_ENDPOINT_XFER_CONTROL | UsbConstants.USB_DIR_IN, 
+                    AvrRecorderConstants.REQ_GET_DATA5, 0, 0, buffer, 4, 5000);
+
+            if(iRxByteCount < 1)
+            {
+                mAvrRecorderEventListener.OnError(AvrRecorderErrors.ERR_RECORD, i);
+            }
+            else
+            {
+
+                if(fReadNext) // overflow detected in previous iteration
+                {
+                    fReadNext = false;
+                    eepromdata |= (buffer[0] << 5);
+                    reading.setEntry((byte) (reading.getEntry() + 1));
+                    reading.setTimestamp(eepromdata);
+                    eepromdata = 0;
+                    mAvrRecorderDevice.addEventReading(reading);
+                    mAvrRecorderEventListener.OnDebugMessage(String.format("Record %d:\t%d, %d, %d", reading.getEntry(), reading.getCodeName(),  reading.getTimestamp()));
+                }
+                else
+                {
+                    eepromdata = (short) (buffer[0] & 0x1F); // read last 5 bits
+                    fReadNext = (buffer[0] & AvrRecorderConstants.OV_BIT) == AvrRecorderConstants.OV_BIT; // check OV bit
+                    if((buffer[0] >> 6) == AvrRecorderConstants.SWID_UNKNOWN)
+                    {
+                    	mAvrRecorderEventListener.OnError(AvrRecorderErrors.ERR_SWITCH);
+                        fReadNext = false;
+                        continue;
+                    }
+
+                    reading.setCode((byte) (buffer[0] >> 6 & 0x03));
+
+                    if(!fReadNext)
+                    {
+                        reading.setEntry((byte) (reading.getEntry() + 1));
+                        reading.setTimestamp(eepromdata);
+                        eepromdata = 0;
+                        mAvrRecorderDevice.addEventReading(reading);
+                        mAvrRecorderEventListener.OnDebugMessage(String.format("Record %d:\t%d, %d, %d", reading.getEntry(), reading.getCodeName(),  reading.getTimestamp()));
+                    }
+                }
+            }
+        }
+        
+        mAvrRecorderEventListener.OnDebugMessage(String.format("Read %d event records from device", mAvrRecorderDevice.getEventReadings().size()));
 	}
 	
 	protected void getEventRecords(UsbDevice usbDevice) {
