@@ -2,7 +2,6 @@ package io.github.vladast.avrcommunicator;
 
 import java.util.ArrayList;
 
-import android.content.Context;
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
@@ -48,7 +47,7 @@ public class Communicator {
 	                	// TODO: Show dialog box asking user to confirm that data reading should start
 	                    break;
 	                case MSG_REINIT_DEVICE:
-	                	reinitDevice((UsbDevice)msg.obj);
+	                	//reinitDevice((UsbDevice)msg.obj);
 	                	break;
 	                default:
 	                    super.handleMessage(msg);
@@ -56,6 +55,10 @@ public class Communicator {
 	            }
 	        }
 	    };			
+	}
+	
+	public void registerListener(OnAvrRecorderEventListener onAvrRecorderEventListener) {
+		mAvrRecorderEventListener = onAvrRecorderEventListener;
 	}
 	
 	protected void checkDeviceStatus() {
@@ -258,13 +261,6 @@ public class Communicator {
         
         mAvrRecorderEventListener.OnDebugMessage(String.format("Read %d event records from device", mAvrRecorderDevice.getEventReadings().size()));
 	}
-	
-	protected void getEventRecords(UsbDevice usbDevice) {
-
-		
-		
-		mTextViewData.setText(sOutput);
-	}	
 	
     static public String communicate(UsbDeviceConnection usbDeviceConnection)
     {   
