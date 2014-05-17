@@ -61,6 +61,14 @@ public class Communicator {
 		mAvrRecorderEventListener = onAvrRecorderEventListener;
 	}
 	
+	public void startDeviceDetection() {
+		mAvrRecorderMonitorHandler.sendEmptyMessage(MSG_CHECK_DEVICE_STATUS);
+	}
+	
+	public void stopDeviceDetection() {
+		mAvrRecorderMonitorHandler.removeMessages(MSG_CHECK_DEVICE_STATUS);
+	}
+	
 	protected void checkDeviceStatus() {
     	
     	mAvrRecorderEventListener.OnDeviceSearching();
