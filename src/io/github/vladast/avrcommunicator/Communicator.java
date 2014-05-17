@@ -11,6 +11,8 @@ import android.os.Handler;
 import android.os.Message;
 
 public class Communicator {
+
+	public static final String TAG = null;
 	
 	private static final int MSG_DEVICE_DETECTED		= 0x0001;
 	private static final int MSG_CHECK_DEVICE_STATUS	= 0x0002;
@@ -35,6 +37,7 @@ public class Communicator {
 	        public void handleMessage(Message msg) {
 	            switch (msg.what) {
 		            case MSG_CHECK_DEVICE_STATUS:
+		            	mAvrRecorderEventListener.OnDebugMessage("Received MSG_CHECK_DEVICE_STATUS message");
 		            	if(!mRecordsRead)
 		            	{
 		            		checkDeviceStatus();
@@ -44,6 +47,7 @@ public class Communicator {
 	                case MSG_DEVICE_DETECTED:
 	                	mAvrRecorderEventListener.OnDeviceConnected();
 	                	//getEventRecords((UsbDevice)msg.obj);
+	                	readDeviceData((UsbDevice)msg.obj);
 	                	// TODO: Show dialog box asking user to confirm that data reading should start
 	                    break;
 	                case MSG_REINIT_DEVICE:
@@ -105,11 +109,9 @@ public class Communicator {
 	protected void readDeviceData(UsbDevice usbDevice) {
 		mAvrRecorderEventListener.OnReadingStarted();
 		
-		ArrayList<Reading> eventReadings = new ArrayList<Reading>();
+		mAvrRecorderDevice = new AvrRecorderDevice();
 		
 		mUsbDeviceConnection = mUsbManager.openDevice(usbDevice);
-
-		String sOutput = "No message received.";
 		
 		for(int i = 0; i < usbDevice.getInterfaceCount(); ++i) {
 			if(mUsbDeviceConnection.claimInterface(usbDevice.getInterface(i), true)) {
@@ -125,7 +127,9 @@ public class Communicator {
 		
 		mRecordsRead = true;
 		
-		mAvrRecorderEventListener.OnRecordsRead(eventReadings);
+		if(mAvrRecorderDevice.getEventReadings().size() > 0) {
+			mAvrRecorderEventListener.OnRecordsRead(mAvrRecorderDevice.getEventReadings());
+		}
 	}
 	
 	protected void readDeviceInfo() {
@@ -217,10 +221,11 @@ public class Communicator {
         int iRxByteCount = 0;
         byte[] buffer = new byte[4];
         boolean fReadNext = false;
-        Reading reading = new Reading();
-
+        
         for(short i = 0; i < mAvrRecorderDevice.getEntryCount(); ++i)
         {
+        	Reading reading = new Reading();
+        	
             iRxByteCount = mUsbDeviceConnection.controlTransfer(
                     UsbConstants.USB_TYPE_VENDOR | UsbConstants.USB_ENDPOINT_XFER_CONTROL | UsbConstants.USB_DIR_IN, 
                     AvrRecorderConstants.REQ_GET_DATA5, 0, 0, buffer, 4, 5000);
@@ -240,7 +245,7 @@ public class Communicator {
                     reading.setTimestamp(eepromdata);
                     eepromdata = 0;
                     mAvrRecorderDevice.addEventReading(reading);
-                    mAvrRecorderEventListener.OnDebugMessage(String.format("Record %d:\t%d, %d, %d", reading.getEntry(), reading.getCodeName(),  reading.getTimestamp()));
+                    mAvrRecorderEventListener.OnDebugMessage(String.format("Record %d:\t%d, %s, %d", i, reading.getEntry(), reading.getCodeName(),  reading.getTimestamp()));
                 }
                 else
                 {
@@ -261,7 +266,7 @@ public class Communicator {
                         reading.setTimestamp(eepromdata);
                         eepromdata = 0;
                         mAvrRecorderDevice.addEventReading(reading);
-                        mAvrRecorderEventListener.OnDebugMessage(String.format("Record %d:\t%d, %d, %d", reading.getEntry(), reading.getCodeName(),  reading.getTimestamp()));
+                        mAvrRecorderEventListener.OnDebugMessage(String.format("Record %d:\t%d, %s, %d", i, reading.getEntry(), reading.getCodeName(),  reading.getTimestamp()));
                     }
                 }
             }
