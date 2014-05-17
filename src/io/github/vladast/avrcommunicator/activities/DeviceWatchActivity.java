@@ -1,147 +1,105 @@
 package io.github.vladast.avrcommunicator.activities;
 
 
-import io.github.vladast.avrcommunicator.AvrRecorderConstants;
-import io.github.vladast.avrcommunicator.Communicator;
-import io.github.vladast.avrcommunicator.R;
+import java.util.ArrayList;
 
+import io.github.vladast.avrcommunicator.AvrRecorderErrors;
+import io.github.vladast.avrcommunicator.Communicator;
+import io.github.vladast.avrcommunicator.OnAvrRecorderEventListener;
+import io.github.vladast.avrcommunicator.R;
+import io.github.vladast.avrcommunicator.Reading;
 import android.app.Activity;
 import android.content.Context;
-import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.widget.TextView;
+import android.widget.Toast;
 
-public class DeviceWatchActivity extends Activity {
+public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventListener {
 
 	private final String TAG = DeviceWatchActivity.class.getSimpleName();
 	
-	private static final int MSG_DEVICE_DETECTED		= 0x0001;
-	private static final int MSG_CHECK_DEVICE_STATUS	= 0x0002;
-	private static final int MSG_REINIT_DEVICE			= 0x0003;
-	
-	private UsbManager mUsbManager;
 	private TextView mTextViewStatus;
 	private TextView mTextViewData;
 	private boolean mRecordsRead;
 	
-	private final Handler mAvrRecorderMonitorHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-	            case MSG_CHECK_DEVICE_STATUS:
-	            	if(!mRecordsRead)
-	            	{
-	            		checkDeviceStatus();
-	            		mAvrRecorderMonitorHandler.sendEmptyMessageDelayed(MSG_CHECK_DEVICE_STATUS, 1000);
-	            	}
-	            	break;
-                case MSG_DEVICE_DETECTED:
-                	getEventRecords((UsbDevice)msg.obj);
-                    break;
-                case MSG_REINIT_DEVICE:
-                	reinitDevice((UsbDevice)msg.obj);
-                	break;
-                default:
-                    super.handleMessage(msg);
-                    break;
-            }
-        }
-    };
+	private Communicator mCommunicator;
 	
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_device_watch);
-		
-		mUsbManager = (UsbManager)getSystemService(Context.USB_SERVICE);
+		mCommunicator = new Communicator((UsbManager)getSystemService(Context.USB_SERVICE));
 		
 		mTextViewStatus = (TextView)findViewById(R.id.textViewDeviceStatus);
 		mTextViewData = (TextView)findViewById(R.id.textViewData);
 		
-		mRecordsRead = false;
-	}
-
-    protected void reinitDevice(UsbDevice usbDevice) {
-		mTextViewStatus.setText("Status: Getting event records...");
-		
-		UsbDeviceConnection usbDeviceConnection = mUsbManager.openDevice(usbDevice);
-		String sOutput = "No message received.";
-		
-		for(int i = 0; i < usbDevice.getInterfaceCount(); ++i) {
-			if(usbDeviceConnection.claimInterface(usbDevice.getInterface(i), true)) {
-				sOutput = Communicator.communicate(usbDeviceConnection);		
-			}
-		}
-		
-		mRecordsRead = true;
-		
-		mTextViewData.setText(sOutput);
-	}
-
-	protected void checkDeviceStatus() {
-    	
-    	mTextViewStatus.setText("Status: searching...");
-        
-    	new AsyncTask<Void, Void, UsbDevice>() {
-
-			@Override
-			protected UsbDevice doInBackground(Void... arg0) {
-				
-				for (final UsbDevice usbDevice : mUsbManager.getDeviceList().values()) {
-					if(usbDevice.getVendorId() == AvrRecorderConstants.AVR_REC_VID &&
-							usbDevice.getProductId() == AvrRecorderConstants.AVR_REC_PID)
-					{
-						return usbDevice;
-					}
-				}
-				
-				return null;
-			}
-    		
-			protected void onPostExecute(UsbDevice usbDevice) {
-				if(usbDevice != null) {
-					Message msg = new Message();
-					msg.what = MSG_DEVICE_DETECTED;
-					msg.obj = usbDevice;
-					mAvrRecorderMonitorHandler.removeMessages(MSG_CHECK_DEVICE_STATUS);
-					mAvrRecorderMonitorHandler.sendMessage(msg);
-				}
-			}
-			
-    	}.execute((Void)null);
-	}
-
-	protected void getEventRecords(UsbDevice usbDevice) {
-		mTextViewStatus.setText("Status: Getting event records...");
-		
-		UsbDeviceConnection usbDeviceConnection = mUsbManager.openDevice(usbDevice);
-		String sOutput = "No message received.";
-		
-		for(int i = 0; i < usbDevice.getInterfaceCount(); ++i) {
-			if(usbDeviceConnection.claimInterface(usbDevice.getInterface(i), true)) {
-				sOutput = Communicator.communicate(usbDeviceConnection);		
-			}
-		}
-		
-		mRecordsRead = true;
-		
-		mTextViewData.setText(sOutput);
+		mCommunicator.registerListener(this);
 	}
 	
     @Override
     protected void onResume() {
         super.onResume();
-        mAvrRecorderMonitorHandler.sendEmptyMessage(MSG_CHECK_DEVICE_STATUS);
+        mCommunicator.startDeviceDetection();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        mAvrRecorderMonitorHandler.removeMessages(MSG_CHECK_DEVICE_STATUS);
-    }    
+        mCommunicator.stopDeviceDetection();
+    }
+
+	@Override
+	public void OnDeviceFound() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnDeviceConnected() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnDeviceSearching() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnDeviceReInitiated() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnRecordsRead(ArrayList<Reading> eventReadings) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnError(AvrRecorderErrors avrRecorderErrors) {
+		// TODO Auto-generated method stub
+		Toast.makeText(this, "onError1", Toast.LENGTH_LONG).show();
+	}
+
+	@Override
+	public void OnError(AvrRecorderErrors avrRecorderErrors, int data) {
+		// TODO Auto-generated method stub
+		Toast.makeText(this, "onError2", Toast.LENGTH_LONG).show();
+	}
+
+	@Override
+	public void OnReadingStarted() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnDebugMessage(String message) {
+		// TODO Auto-generated method stub
+		
+	}    
 }
