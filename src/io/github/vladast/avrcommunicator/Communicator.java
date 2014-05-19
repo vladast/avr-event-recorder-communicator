@@ -12,7 +12,7 @@ import android.os.Message;
 
 public class Communicator {
 
-	public static final String TAG = null;
+	public static final String TAG = Communicator.class.getSimpleName();
 	
 	private static final int MSG_DEVICE_DETECTED		= 0x0001;
 	private static final int MSG_CHECK_DEVICE_STATUS	= 0x0002;
@@ -46,9 +46,7 @@ public class Communicator {
 		            	break;
 	                case MSG_DEVICE_DETECTED:
 	                	mAvrRecorderEventListener.OnDeviceConnected();
-	                	//getEventRecords((UsbDevice)msg.obj);
 	                	readDeviceData((UsbDevice)msg.obj);
-	                	// TODO: Show dialog box asking user to confirm that data reading should start
 	                    break;
 	                case MSG_REINIT_DEVICE:
 	                	//reinitDevice((UsbDevice)msg.obj);

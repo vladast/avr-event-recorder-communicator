@@ -13,6 +13,13 @@ import android.content.Context;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.RelativeLayout;
+import android.widget.TableLayout;
+import android.widget.TableLayout.LayoutParams;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,6 +29,8 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 	
 	private TextView mTextViewStatus;
 	private TextView mTextViewData;
+	private TableLayout mTableLayoutResults;
+	private RelativeLayout mRelativeLayoutContainer;
 	
 	private Communicator mCommunicator;
 	
@@ -30,11 +39,12 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_device_watch);
 		mCommunicator = new Communicator((UsbManager)getSystemService(Context.USB_SERVICE));
+		mCommunicator.registerListener(this);
 		
 		mTextViewStatus = (TextView)findViewById(R.id.textViewDeviceStatus);
 		mTextViewData = (TextView)findViewById(R.id.textViewData);
-		
-		mCommunicator.registerListener(this);
+		mTableLayoutResults = (TableLayout)findViewById(R.id.tableLayoutResults);
+		mRelativeLayoutContainer = (RelativeLayout)findViewById(R.id.container);
 	}
 	
     @Override
@@ -50,71 +60,176 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
     }
 
 	private String parseAvrRecorderErrorCode(AvrRecorderErrors avrRecorderErrors) {
+		String errorMessage;
 		switch (avrRecorderErrors) {
 		case ERR_HEADER:
-			Log.e(Communicator.TAG, "Encountered error while reading header data from device.");
+			errorMessage = "Encountered error while reading header data from device.";
 			break;
 		case ERR_STATE:
-			Log.e(Communicator.TAG, "Encountered error while reading state data from device.");
+			errorMessage = "Encountered error while reading state data from device.";
 			break;
 		case ERR_SESSION:
-			Log.e(Communicator.TAG, "Encountered error while reading session data from device.");
+			errorMessage = "Encountered error while reading session data from device.";
 			break;
 		case ERR_ERROR:
-			Log.e(Communicator.TAG, "Encountered error while reading error data from device.");
+			errorMessage = "Encountered error while reading error data from device.";
 			break;
 		case ERR_COUNT:
-			Log.e(Communicator.TAG, "Encountered error while reading count data from device.");
+			errorMessage = "Encountered error while reading count data from device.";
 			break;
 		case ERR_RECORD:
-			Log.e(Communicator.TAG, "Encountered error while reading record data from device.");
+			errorMessage = "Encountered error while reading record data from device.";
 			break;
 		case ERR_SWITCH:
-			Log.e(Communicator.TAG, "Invalid switch code detected.");
+			errorMessage = "Invalid switch code detected.";
 			break;
 		default:
-			Log.e(Communicator.TAG, "Unknown error code received.");
+			errorMessage = "Unknown error code received.";
 			break;
 		}
-		return null;
+		return errorMessage;
 	}
 
 	@Override
 	public void OnDeviceFound() {
 		mTextViewStatus.setText("Device has been found.");
-		Toast.makeText(this, "OnDeviceFound...", Toast.LENGTH_LONG).show();
+		//Toast.makeText(this, "OnDeviceFound...", Toast.LENGTH_LONG).show();
 	}
 
 	@Override
 	public void OnDeviceConnected() {
 		mTextViewStatus.setText("Device has been connected.");
-		Toast.makeText(this, "OnDeviceConnected...", Toast.LENGTH_LONG).show();
+		//Toast.makeText(this, "OnDeviceConnected...", Toast.LENGTH_LONG).show();
 	}
 
 	@Override
 	public void OnDeviceSearching() {
 		mTextViewStatus.setText("Searching for device...");
-		Toast.makeText(this, "OnDeviceSearching...", Toast.LENGTH_LONG).show();
+		//Toast.makeText(this, "OnDeviceSearching...", Toast.LENGTH_LONG).show();
 	}
 
 	@Override
 	public void OnDeviceReInitiated() {
 		mTextViewStatus.setText("Device has been re-initiated.");
-		Toast.makeText(this, "OnDeviceReInitiated...", Toast.LENGTH_LONG).show();
+		//Toast.makeText(this, "OnDeviceReInitiated...", Toast.LENGTH_LONG).show();
 	}
 
 	@Override
 	public void OnRecordsRead(ArrayList<Reading> eventReadings) {
-		Toast.makeText(this, "OnRecordsRead: " + eventReadings.size(), Toast.LENGTH_LONG).show();
+		//Toast.makeText(this, "OnRecordsRead: " + eventReadings.size(), Toast.LENGTH_LONG).show();
 		mTextViewData.setText("");
 		for(int i = 0; i < eventReadings.size(); ++i) {
-			mTextViewData.append(String.format("%d\t%s\t%d\n", eventReadings.get(i).getEntry(), eventReadings.get(i).getCodeName(), eventReadings.get(i).getTimestamp()));
+			//mTextViewData.append(String.format("%d\t%s\t%d\n", eventReadings.get(i).getEntry(), eventReadings.get(i).getCodeName(), eventReadings.get(i).getTimestamp()));
+			addRecordToTable(eventReadings.get(i), i);
 		}
+		addOptions();
+	}
+
+	private void addOptions() {
+		
+		int buttonWidth = mRelativeLayoutContainer.getWidth() / 3;
+		
+		RelativeLayout.LayoutParams relativeLayoutParamsSave = new RelativeLayout.LayoutParams(
+				RelativeLayout.LayoutParams.WRAP_CONTENT,
+				RelativeLayout.LayoutParams.WRAP_CONTENT);
+		RelativeLayout.LayoutParams relativeLayoutParamsShare = new RelativeLayout.LayoutParams(
+				RelativeLayout.LayoutParams.WRAP_CONTENT,
+				RelativeLayout.LayoutParams.WRAP_CONTENT);
+		RelativeLayout.LayoutParams relativeLayoutParamsReInit = new RelativeLayout.LayoutParams(
+				RelativeLayout.LayoutParams.WRAP_CONTENT,
+				RelativeLayout.LayoutParams.WRAP_CONTENT);
+		
+		Button buttonSave = new Button(this);
+		buttonSave.setText("Save");
+		buttonSave.setId(0x8001);
+		buttonSave.setWidth(buttonWidth);
+		buttonSave.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				Log.d(TAG, "Saving...");
+			}
+		});
+		
+		Button buttonShare = new Button(this);
+		buttonShare.setText("Share");
+		buttonShare.setId(0x8002);
+		buttonShare.setWidth(buttonWidth);
+		buttonShare.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				Log.d(TAG, "Sharing...");
+			}
+		});
+		
+		Button buttonReInit = new Button(this);
+		buttonReInit.setText("Re-Initiate");
+		buttonReInit.setId(0x8003);
+		buttonReInit.setWidth(buttonWidth);
+		buttonReInit.setMinWidth(100);
+		buttonReInit.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				Log.d(TAG, "Re-initiating...");
+			}
+		});
+		
+		relativeLayoutParamsSave.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+		//relativeLayoutParamsSave.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+		relativeLayoutParamsShare.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+		//relativeLayoutParamsShare.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+		relativeLayoutParamsReInit.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+		relativeLayoutParamsReInit.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+		
+		//relativeLayoutParamsSave.addRule(RelativeLayout.BELOW, R.id.scrollViewData);
+		//relativeLayoutParamsSave.addRule(RelativeLayout.LEFT_OF, buttonShare.getId());
+		mRelativeLayoutContainer.addView(buttonSave, relativeLayoutParamsSave);
+		
+		relativeLayoutParamsShare.addRule(RelativeLayout.RIGHT_OF, buttonSave.getId());
+		mRelativeLayoutContainer.addView(buttonShare, relativeLayoutParamsShare);
+		
+		relativeLayoutParamsReInit.addRule(RelativeLayout.RIGHT_OF, buttonShare.getId());
+		mRelativeLayoutContainer.addView(buttonReInit, relativeLayoutParamsReInit);
+		
+		mRelativeLayoutContainer.invalidate();
+	}
+
+	private void addRecordToTable(Reading reading, int i) {
+
+		TableLayout.LayoutParams tableLayoutParams = new TableLayout.LayoutParams(
+				TableLayout.LayoutParams.MATCH_PARENT,
+				TableLayout.LayoutParams.WRAP_CONTENT);
+		TableRow.LayoutParams tableRowParams = new TableRow.LayoutParams(
+				TableRow.LayoutParams.MATCH_PARENT,
+				TableRow.LayoutParams.WRAP_CONTENT);
+		tableRowParams.width = mTableLayoutResults.getWidth() / 4;
+		TableRow tableRow;
+		TextView textViewIndex, textViewEvent, textViewSwitch, textViewTimestamp;
+		
+		tableRow = new TableRow(this);
+		textViewIndex = new TextView(this);
+		textViewEvent = new TextView(this);
+		textViewSwitch = new TextView(this);
+		textViewTimestamp = new TextView(this);
+		
+		textViewIndex.setText(String.valueOf(i));
+		textViewEvent.setText(Byte.toString(reading.getEntry()));
+		textViewSwitch.setText(reading.getCodeName());
+		textViewTimestamp.setText(String.valueOf(reading.getTimestamp()));
+		
+		tableRow.addView(textViewIndex, tableRowParams);
+		tableRow.addView(textViewEvent, tableRowParams);
+		tableRow.addView(textViewSwitch, tableRowParams);
+		tableRow.addView(textViewTimestamp, tableRowParams);
+		
+		mTableLayoutResults.addView(tableRow, tableLayoutParams);
 	}
 
 	@Override
 	public void OnError(AvrRecorderErrors avrRecorderErrors) {
-		Toast.makeText(this, "onError1", Toast.LENGTH_LONG).show();
+		//Toast.makeText(this, "onError1", Toast.LENGTH_LONG).show();
 		Log.e(Communicator.TAG, parseAvrRecorderErrorCode(avrRecorderErrors));
 	}
 
