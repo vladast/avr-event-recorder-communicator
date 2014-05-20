@@ -7,5 +7,6 @@ public enum AvrRecorderErrors {
 	ERR_ERROR,
 	ERR_COUNT, 
 	ERR_RECORD,
-	ERR_SWITCH;
+	ERR_SWITCH, 
+	ERR_REINIT
 }
