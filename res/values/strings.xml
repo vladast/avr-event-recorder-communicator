@@ -6,7 +6,14 @@
     <string name="device_status_placeholder">-- AVR Device Placeholder --</string>
     <string name="device_data_placeholder">-- AVR Device Data Placeholder --</string>
     
-	<!-- Results Ready Dialog -->
+    <!-- Records Table -->
+    <string name="results_table_title">Records</string>
+    <string name="results_table_column_index">Index</string>
+    <string name="results_table_column_entry">Entry</string>
+    <string name="results_table_column_switch_id">Switch ID</string>
+    <string name="results_table_column_timestamp">Timestamp</string>
+    
+	<!-- Records Ready Dialog -->
 	<string name="dialog_ready_title">Event Records Retrieved</string>
 	<string name="dialog_ready_option_share">Share</string>
 	<string name="dialog_ready_option_save">Save</string>
