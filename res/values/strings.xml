@@ -5,5 +5,13 @@
     <string name="title_activity_device_watch">AVR Event Recorder Watchout</string>
     <string name="device_status_placeholder">-- AVR Device Placeholder --</string>
     <string name="device_data_placeholder">-- AVR Device Data Placeholder --</string>
+    
+	<!-- Results Ready Dialog -->
+	<string name="dialog_ready_title">Event Records Retrieved</string>
+	<string name="dialog_ready_option_share">Share</string>
+	<string name="dialog_ready_option_save">Save</string>
+	<string name="dialog_ready_option_reinit">Re-init Device</string>
+	<string name="dialog_ready_button_execute">Execute</string>
+	<string name="dialog_ready_button_dismiss">Dismiss</string>
 
 </resources>
