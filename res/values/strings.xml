@@ -7,11 +7,16 @@
     <string name="device_data_placeholder">-- AVR Device Data Placeholder --</string>
     
     <!-- Records Table -->
-    <string name="results_table_title">Records</string>
-    <string name="results_table_column_index">Index</string>
-    <string name="results_table_column_entry">Entry</string>
-    <string name="results_table_column_switch_id">Switch ID</string>
-    <string name="results_table_column_timestamp">Timestamp</string>
+    <string name="records_table_title">Records</string>
+    <string name="records_table_column_index">Index</string>
+    <string name="records_table_column_entry">Entry</string>
+    <string name="records_table_column_switch_id">Switch ID</string>
+    <string name="records_table_column_timestamp">Timestamp</string>
+    
+    <!-- Records Options -->
+    <string name="records_options_save">Save</string>
+    <string name="records_options_send_to">Send to&&</string>
+    <string name="records_options_re_init">Re-Init</string>
     
 	<!-- Records Ready Dialog -->
 	<string name="dialog_ready_title">Event Records Retrieved</string>
