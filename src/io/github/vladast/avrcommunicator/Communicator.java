@@ -49,7 +49,8 @@ public class Communicator {
 	                	readDeviceData((UsbDevice)msg.obj);
 	                    break;
 	                case MSG_REINIT_DEVICE:
-	                	//reinitDevice((UsbDevice)msg.obj);
+	                	reinitDevice();
+	                	mAvrRecorderEventListener.OnDeviceReInitiated();
 	                	break;
 	                default:
 	                    super.handleMessage(msg);
@@ -57,6 +58,10 @@ public class Communicator {
 	            }
 	        }
 	    };			
+	}
+	
+	public final AvrRecorderDevice getDevice() {
+		return mAvrRecorderDevice;
 	}
 	
 	public void registerListener(OnAvrRecorderEventListener onAvrRecorderEventListener) {
@@ -69,6 +74,10 @@ public class Communicator {
 	
 	public void stopDeviceDetection() {
 		mAvrRecorderMonitorHandler.removeMessages(MSG_CHECK_DEVICE_STATUS);
+	}
+	
+	public void reInitiateDevice() {
+		mAvrRecorderMonitorHandler.sendEmptyMessage(MSG_REINIT_DEVICE);
 	}
 	
 	protected void checkDeviceStatus() {
@@ -102,6 +111,24 @@ public class Communicator {
 			}
 			
     	}.execute((Void)null);
+	}
+	
+	protected void reinitDevice() {
+		byte[] buffer = new byte[4];
+        int iRxByteCount = 0;
+        
+        iRxByteCount = mUsbDeviceConnection.controlTransfer(
+                UsbConstants.USB_TYPE_VENDOR | UsbConstants.USB_ENDPOINT_XFER_CONTROL | UsbConstants.USB_DIR_OUT, 
+                AvrRecorderConstants.REQ_SET_DATA1, AvrRecorderConstants.STATE_INIT, 0, buffer, 0, 5000);
+		if(iRxByteCount < 0)
+        {
+            mAvrRecorderEventListener.OnError(AvrRecorderErrors.ERR_REINIT);
+        }
+        else
+        {
+        	mAvrRecorderEventListener.OnDebugMessage("Re-initiation message successfuly sent to device.");
+        	mAvrRecorderMonitorHandler.removeMessages(MSG_REINIT_DEVICE);
+        }
 	}
 	
 	protected void readDeviceData(UsbDevice usbDevice) {
@@ -219,11 +246,11 @@ public class Communicator {
         int iRxByteCount = 0;
         byte[] buffer = new byte[4];
         boolean fReadNext = false;
+
+    	Reading reading = new Reading();
         
         for(short i = 0; i < mAvrRecorderDevice.getEntryCount(); ++i)
         {
-        	Reading reading = new Reading();
-        	
             iRxByteCount = mUsbDeviceConnection.controlTransfer(
                     UsbConstants.USB_TYPE_VENDOR | UsbConstants.USB_ENDPOINT_XFER_CONTROL | UsbConstants.USB_DIR_IN, 
                     AvrRecorderConstants.REQ_GET_DATA5, 0, 0, buffer, 4, 5000);
@@ -240,9 +267,9 @@ public class Communicator {
                     fReadNext = false;
                     eepromdata |= (buffer[0] << 5);
                     reading.setEntry((byte) (reading.getEntry() + 1));
-                    reading.setTimestamp(eepromdata);
+                    reading.setTimestamp(reading.getTimestamp() + eepromdata);
                     eepromdata = 0;
-                    mAvrRecorderDevice.addEventReading(reading);
+                    mAvrRecorderDevice.addEventReading(new Reading(reading));
                     mAvrRecorderEventListener.OnDebugMessage(String.format("Record %d:\t%d, %s, %d", i, reading.getEntry(), reading.getCodeName(),  reading.getTimestamp()));
                 }
                 else
@@ -261,9 +288,9 @@ public class Communicator {
                     if(!fReadNext)
                     {
                         reading.setEntry((byte) (reading.getEntry() + 1));
-                        reading.setTimestamp(eepromdata);
+                        reading.setTimestamp(reading.getTimestamp() + eepromdata);
                         eepromdata = 0;
-                        mAvrRecorderDevice.addEventReading(reading);
+                        mAvrRecorderDevice.addEventReading(new Reading(reading));
                         mAvrRecorderEventListener.OnDebugMessage(String.format("Record %d:\t%d, %s, %d", i, reading.getEntry(), reading.getCodeName(),  reading.getTimestamp()));
                     }
                 }
