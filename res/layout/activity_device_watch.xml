@@ -6,15 +6,17 @@
     tools:context="io.github.vladast.avrcommunicator.activities.DeviceWatchActivity" >
 
     <TextView
-       android:id="@+id/textViewDeviceStatus"
-       android:layout_width="match_parent"
-       android:layout_height="wrap_content"
-       android:text="@string/device_status_placeholder" />
+		android:id="@+id/textViewDeviceStatus"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:background="#bebebe"
+		android:text="@string/device_status_placeholder" />
     
     <TextView
         android:id="@+id/textViewData"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+		android:background="#bebebe"
         android:layout_below="@id/textViewDeviceStatus"
         android:text="@string/device_data_placeholder" />    
     
@@ -30,15 +32,17 @@
 	        android:layout_height="wrap_content" >
 	
 			<TableRow
-			   android:layout_height="wrap_content"
-			   android:layout_width="fill_parent"
-			   android:gravity="center_horizontal">
-			
+			    android:layout_width="fill_parent"
+			    android:layout_height="wrap_content"
+			    android:background="#bebebe"
+			    android:gravity="center_horizontal" >
 			
 			   <TextView
-			       android:layout_width="match_parent" 
+			       android:layout_width="match_parent"
 			       android:layout_height="wrap_content"
-			       android:text="Records" />
+			       android:padding="7dp"
+			       android:text="@string/results_table_title"
+			       android:textSize="16sp" />
 			
 			</TableRow>
 
