@@ -10,8 +10,10 @@ import io.github.vladast.avrcommunicator.R;
 import io.github.vladast.avrcommunicator.Reading;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -50,6 +52,7 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
     @Override
     protected void onResume() {
         super.onResume();
+        mTextViewData.setText("Waiting for connection...");
         mCommunicator.startDeviceDetection();
     }
 
@@ -82,6 +85,9 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 			break;
 		case ERR_SWITCH:
 			errorMessage = "Invalid switch code detected.";
+			break;
+		case ERR_REINIT:
+			errorMessage = "Encountered error while re-initiating device.";
 			break;
 		default:
 			errorMessage = "Unknown error code received.";
@@ -117,7 +123,8 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 	@Override
 	public void OnRecordsRead(ArrayList<Reading> eventReadings) {
 		//Toast.makeText(this, "OnRecordsRead: " + eventReadings.size(), Toast.LENGTH_LONG).show();
-		mTextViewData.setText("");
+		mTextViewData.setText(String.format("Reading completed (session #%d: %d records)", 
+				mCommunicator.getDevice().getSession(), eventReadings.size()));
 		for(int i = 0; i < eventReadings.size(); ++i) {
 			//mTextViewData.append(String.format("%d\t%s\t%d\n", eventReadings.get(i).getEntry(), eventReadings.get(i).getCodeName(), eventReadings.get(i).getTimestamp()));
 			addRecordToTable(eventReadings.get(i), i);
@@ -138,7 +145,7 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 		RelativeLayout.LayoutParams relativeLayoutParamsReInit = new RelativeLayout.LayoutParams(
 				RelativeLayout.LayoutParams.WRAP_CONTENT,
 				RelativeLayout.LayoutParams.WRAP_CONTENT);
-		
+		/*
 		Button buttonSave = new Button(this);
 		buttonSave.setText("Save");
 		buttonSave.setId(0x8001);
@@ -148,8 +155,28 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 			@Override
 			public void onClick(View arg0) {
 				Log.d(TAG, "Saving...");
+				String filename = String.format("output_%d.csv", mCommunicator.getDevice().getSession());
+				String string = "Hello world!";
+				
+		        String path = arg0.getContext().getFilesDir() + "/Results/";
+		        File file = new File(path);
+		        if(!file.isDirectory()) {
+		        	file.mkdirs();
+		        }
+		        path += filename;
+		        
+				FileOutputStream outputStream;
+
+				try {
+				  outputStream = openFileOutput(file.getAbsolutePath(), Context.MODE_APPEND);
+				  outputStream.write(string.getBytes());
+				  outputStream.close();
+				} catch (Exception e) {
+				  e.printStackTrace();
+				}
 			}
 		});
+		*/
 		
 		Button buttonShare = new Button(this);
 		buttonShare.setText("Share");
@@ -160,6 +187,11 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 			@Override
 			public void onClick(View arg0) {
 				Log.d(TAG, "Sharing...");
+				Intent shareIntent = new Intent();
+				shareIntent.setAction(Intent.ACTION_SEND);
+				shareIntent.putExtra(Intent.EXTRA_TEXT, getRecordsInCsvFormat());
+				shareIntent.setType("text/text");
+				startActivity(Intent.createChooser(shareIntent, /*getResources().getText(R.string.send_to)*/ "Send to..."));
 			}
 		});
 		
@@ -167,12 +199,13 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 		buttonReInit.setText("Re-Initiate");
 		buttonReInit.setId(0x8003);
 		buttonReInit.setWidth(buttonWidth);
-		buttonReInit.setMinWidth(100);
+		//buttonReInit.setMinWidth(100);
 		buttonReInit.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View arg0) {
 				Log.d(TAG, "Re-initiating...");
+				mCommunicator.reInitiateDevice();
 			}
 		});
 		
@@ -185,9 +218,9 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 		
 		//relativeLayoutParamsSave.addRule(RelativeLayout.BELOW, R.id.scrollViewData);
 		//relativeLayoutParamsSave.addRule(RelativeLayout.LEFT_OF, buttonShare.getId());
-		mRelativeLayoutContainer.addView(buttonSave, relativeLayoutParamsSave);
+		//mRelativeLayoutContainer.addView(buttonSave, relativeLayoutParamsSave);
 		
-		relativeLayoutParamsShare.addRule(RelativeLayout.RIGHT_OF, buttonSave.getId());
+		//relativeLayoutParamsShare.addRule(RelativeLayout.RIGHT_OF, buttonSave.getId());
 		mRelativeLayoutContainer.addView(buttonShare, relativeLayoutParamsShare);
 		
 		relativeLayoutParamsReInit.addRule(RelativeLayout.RIGHT_OF, buttonShare.getId());
@@ -196,6 +229,21 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 		mRelativeLayoutContainer.invalidate();
 	}
 
+
+	private String getRecordsInCsvFormat() {
+		String output = "Index,Entry,SwitchId,Timestamp\n";
+		ArrayList<Reading> readings = mCommunicator.getDevice().getEventReadings();
+		for(int i = 0; i < readings.size(); ++i) {
+			output += String.format("%d,%d,%s,%d\n", 
+					i,
+					readings.get(i).getEntry(),
+					readings.get(i).getCodeName(),
+					readings.get(i).getTimestamp()
+					);
+		}
+		return output;
+	}
+	
 	private void addRecordToTable(Reading reading, int i) {
 
 		TableLayout.LayoutParams tableLayoutParams = new TableLayout.LayoutParams(
@@ -241,8 +289,7 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 
 	@Override
 	public void OnReadingStarted() {
-		// TODO Auto-generated method stub
-		Toast.makeText(this, "OnReadingStarted", Toast.LENGTH_LONG).show();
+		//Toast.makeText(this, "OnReadingStarted", Toast.LENGTH_LONG).show();
 	}
 
 	@Override
