@@ -6,7 +6,7 @@ public class Reading {
     
     private byte     m_Entry;        // entry count
     private byte     m_Code;         // event code
-    private short    m_Timestamp;    // timestamp
+    private int    m_Timestamp;    // timestamp
 
     public Reading()
     {
@@ -42,12 +42,12 @@ public class Reading {
         return m_Code; 
     }
 
-    public void setTimestamp(final short timestamp) 
+    public void setTimestamp(final int timestamp) 
     { 
         m_Timestamp = timestamp; 
     }
     
-    public final short getTimestamp() 
+    public final int getTimestamp() 
     { 
         return m_Timestamp; 
     }
