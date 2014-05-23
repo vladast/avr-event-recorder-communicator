@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -50,7 +51,7 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
     @Override
     protected void onResume() {
         super.onResume();
-        mTextViewData.setText("Waiting for connection...");
+        //mTextViewData.setText("Waiting for connection...");
         mCommunicator.startDeviceDetection();
     }
 
@@ -121,8 +122,14 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 	@Override
 	public void OnRecordsRead(ArrayList<Reading> eventReadings) {
 		//Toast.makeText(this, "OnRecordsRead: " + eventReadings.size(), Toast.LENGTH_LONG).show();
-		mTextViewData.setText(String.format("Reading completed (session #%d: %d records)", 
-				mCommunicator.getDevice().getSession(), eventReadings.size()));
+		/*mTextViewData.setText(String.format("Reading completed (session #%d: %d records)", 
+				mCommunicator.getDevice().getSession(), eventReadings.size()));*/
+		mTextViewStatus.setText(getResources().getText(R.string.device_reading_completed));
+		mTextViewData.setText(String.format("\t%s:\t%d\n\t%s:\t%d",
+				getResources().getText(R.string.device_session),
+				mCommunicator.getDevice().getSession(),
+				getResources().getText(R.string.device_records),
+				eventReadings.size()));
 		for(int i = 0; i < eventReadings.size(); ++i) {
 			//mTextViewData.append(String.format("%d\t%s\t%d\n", eventReadings.get(i).getEntry(), eventReadings.get(i).getCodeName(), eventReadings.get(i).getTimestamp()));
 			addRecordToTable(eventReadings.get(i), i);
@@ -177,7 +184,7 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 		*/
 		
 		Button buttonShare = new Button(this);
-		buttonShare.setText("Share");
+		buttonShare.setText(getResources().getText(R.string.records_options_share));
 		buttonShare.setId(0x8002);
 		buttonShare.setWidth(buttonWidth);
 		buttonShare.setOnClickListener(new OnClickListener() {
@@ -189,12 +196,12 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 				shareIntent.setAction(Intent.ACTION_SEND);
 				shareIntent.putExtra(Intent.EXTRA_TEXT, getRecordsInCsvFormat());
 				shareIntent.setType("text/text");
-				startActivity(Intent.createChooser(shareIntent, /*getResources().getText(R.string.send_to)*/ "Send to..."));
+				startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.records_options_share_with)));
 			}
 		});
 		
 		Button buttonReInit = new Button(this);
-		buttonReInit.setText("Re-Initiate");
+		buttonReInit.setText(getResources().getText(R.string.records_options_re_init));
 		buttonReInit.setId(0x8003);
 		buttonReInit.setWidth(buttonWidth);
 		//buttonReInit.setMinWidth(100);
@@ -229,7 +236,12 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 
 
 	private String getRecordsInCsvFormat() {
-		String output = "Index,Entry,SwitchId,Timestamp\n";
+		//String output = "Index,Entry,SwitchId,Timestamp\n";
+		String output = String.format("%s,%s,%s,%s\n",
+				getResources().getText(R.string.records_table_column_index),
+				getResources().getText(R.string.records_table_column_entry),
+				getResources().getText(R.string.records_table_column_switch_id),
+				getResources().getText(R.string.records_table_column_timestamp));
 		ArrayList<Reading> readings = mCommunicator.getDevice().getEventReadings();
 		for(int i = 0; i < readings.size(); ++i) {
 			output += String.format("%d,%d,%s,%d\n", 
@@ -243,7 +255,8 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 	}
 	
 	private void addRecordToTable(Reading reading, int i) {
-
+		
+		/* Create one row per result */
 		TableLayout.LayoutParams tableLayoutParams = new TableLayout.LayoutParams(
 				TableLayout.LayoutParams.MATCH_PARENT,
 				TableLayout.LayoutParams.WRAP_CONTENT);
@@ -251,10 +264,12 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 				TableRow.LayoutParams.MATCH_PARENT,
 				TableRow.LayoutParams.WRAP_CONTENT);
 		tableRowParams.width = mTableLayoutResults.getWidth() / 4;
+		
 		TableRow tableRow;
 		TextView textViewIndex, textViewEvent, textViewSwitch, textViewTimestamp;
 		
 		tableRow = new TableRow(this);
+		tableRow.setGravity(LinearLayout.HORIZONTAL);
 		textViewIndex = new TextView(this);
 		textViewEvent = new TextView(this);
 		textViewSwitch = new TextView(this);
