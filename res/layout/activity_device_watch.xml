@@ -34,17 +34,55 @@
 			<TableRow
 			    android:layout_width="fill_parent"
 			    android:layout_height="wrap_content"
+			    android:layout_weight="4"
 			    android:background="#bebebe"
 			    android:gravity="center_horizontal" >
 			
 			   <TextView
 			       android:layout_width="match_parent"
 			       android:layout_height="wrap_content"
+			       android:layout_gravity="center_horizontal"
 			       android:padding="7dp"
-			       android:text="@string/results_table_title"
-			       android:textSize="16sp" />
+			       android:text="@string/records_table_title"
+			       android:textSize="18sp" />
 			
 			</TableRow>
+			
+			<TableRow
+			    android:layout_width="match_parent"
+			    android:layout_height="wrap_content"
+			    android:background="#eaeaea">
+			    
+			    <TextView
+			       android:id="@+id/tableLayoutResults_columnIndex"
+			       android:layout_width="match_parent"
+			       android:layout_height="wrap_content"
+			       android:layout_gravity="center_horizontal"
+			       android:text="@string/records_table_column_index" />
+			    
+			    <TextView
+			       android:id="@+id/tableLayoutResults_columnEntry"
+			       android:layout_width="match_parent"
+			       android:layout_height="wrap_content"
+			       android:layout_gravity="center_horizontal"
+			       android:text="@string/records_table_column_entry" />
+			    
+			    <TextView
+			       android:id="@+id/tableLayoutResults_columnSwitchId"
+			       android:layout_width="match_parent"
+			       android:layout_height="wrap_content"
+			       android:layout_gravity="center_horizontal"
+			       android:text="@string/records_table_column_switch_id" />
+			    
+			    <TextView
+			       android:id="@+id/tableLayoutResults_columnTimestamp"
+			       android:layout_width="match_parent"
+			       android:layout_height="wrap_content"
+			       android:layout_gravity="center_horizontal"
+			       android:text="@string/records_table_column_timestamp" />
+			    
+			</TableRow>
+				
 
 	    </TableLayout>        
         
