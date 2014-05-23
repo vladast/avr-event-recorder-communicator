@@ -6,6 +6,11 @@
     <string name="device_status_placeholder">-- AVR Device Placeholder --</string>
     <string name="device_data_placeholder">-- AVR Device Data Placeholder --</string>
     
+    <!-- Records Status -->
+    <string name="device_reading_completed">Reading completed.</string>
+    <string name="device_session">session</string>
+    <string name="device_records">records</string>
+    
     <!-- Records Table -->
     <string name="records_table_title">Records</string>
     <string name="records_table_column_index">Index</string>
@@ -15,15 +20,8 @@
     
     <!-- Records Options -->
     <string name="records_options_save">Save</string>
-    <string name="records_options_send_to">Send to&&</string>
+    <string name="records_options_share">Share</string>
+    <string name="records_options_share_with">Share with#8230;</string>
     <string name="records_options_re_init">Re-Init</string>
-    
-	<!-- Records Ready Dialog -->
-	<string name="dialog_ready_title">Event Records Retrieved</string>
-	<string name="dialog_ready_option_share">Share</string>
-	<string name="dialog_ready_option_save">Save</string>
-	<string name="dialog_ready_option_reinit">Re-init Device</string>
-	<string name="dialog_ready_button_execute">Execute</string>
-	<string name="dialog_ready_button_dismiss">Dismiss</string>
 
 </resources>
