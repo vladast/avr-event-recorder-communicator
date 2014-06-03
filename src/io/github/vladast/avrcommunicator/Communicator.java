@@ -266,7 +266,7 @@ public class Communicator {
                 {
                     fReadNext = false;
                     eepromdata |= (buffer[0] << 5);
-                    reading.setEntry((byte) (reading.getEntry() + 1));
+                    reading.setEntry((short) (reading.getEntry() + 1));
                     reading.setTimestamp(reading.getTimestamp() + eepromdata);
                     eepromdata = 0;
                     mAvrRecorderDevice.addEventReading(new Reading(reading));
@@ -287,7 +287,7 @@ public class Communicator {
 
                     if(!fReadNext)
                     {
-                        reading.setEntry((byte) (reading.getEntry() + 1));
+                        reading.setEntry((short) (reading.getEntry() + 1));
                         reading.setTimestamp(reading.getTimestamp() + eepromdata);
                         eepromdata = 0;
                         mAvrRecorderDevice.addEventReading(new Reading(reading));
@@ -442,7 +442,7 @@ public class Communicator {
                         {
                             fReadNext = false;
                             eepromdata |= (buffer[0] << 5);
-                            reading.setEntry((byte) (reading.getEntry() + 1));
+                            reading.setEntry((short) (reading.getEntry() + 1));
                             reading.setTimestamp(eepromdata);
                             eepromdata = 0;
                             readings.add(new Reading(reading));
@@ -464,7 +464,7 @@ public class Communicator {
 
                             if(!fReadNext)
                             {
-                                reading.setEntry((byte) (reading.getEntry() + 1));
+                                reading.setEntry((short) (reading.getEntry() + 1));
                                 reading.setTimestamp(eepromdata);
                                 eepromdata = 0;
                                 readings.add(reading);
