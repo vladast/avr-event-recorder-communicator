@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     
-    <!-- AVR-based event recorder (Vendor ID = 0x16c0, Device ID = 0x3e8)  -->
-    <usb-device vendor-id="5824" product-id="1000" class="255" subclass="0" protocol="0" />
+    <usb-device vendor-id="VID_dec" product-id="PID_dec" />
     
 </resources>
