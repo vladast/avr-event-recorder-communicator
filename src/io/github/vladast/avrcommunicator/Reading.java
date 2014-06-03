@@ -4,9 +4,9 @@ import io.github.vladast.avrcommunicator.Reading;
 
 public class Reading {
     
-    private byte     m_Entry;        // entry count
-    private byte     m_Code;         // event code
-    private int    m_Timestamp;    // timestamp
+    private short	m_Entry;        // entry count
+    private byte	m_Code;         // event code
+    private int		m_Timestamp;    // timestamp
 
     public Reading()
     {
@@ -22,12 +22,12 @@ public class Reading {
         m_Timestamp = reading.getTimestamp();
     }
 
-    public void setEntry(final byte entryCount) 
+    public void setEntry(final short entryCount) 
     { 
         m_Entry = entryCount; 
     }
     
-    public final byte getEntry() 
+    public final short getEntry() 
     { 
         return m_Entry; 
     }

@@ -276,7 +276,7 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 		textViewTimestamp = new TextView(this);
 		
 		textViewIndex.setText(String.valueOf(i));
-		textViewEvent.setText(Byte.toString(reading.getEntry()));
+		textViewEvent.setText(Short.toString(reading.getEntry()));
 		textViewSwitch.setText(reading.getCodeName());
 		textViewTimestamp.setText(String.valueOf(reading.getTimestamp()));
 		
