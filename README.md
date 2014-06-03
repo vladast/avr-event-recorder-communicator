@@ -1,4 +1,4 @@
-# AVR Event Recorder's Android-based Front-end
+# AVR Event Recorder Communicator
 
 Android-based front-end for AVR-based event recorder device
 
