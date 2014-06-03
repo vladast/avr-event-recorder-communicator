@@ -7,7 +7,7 @@ Android-based front-end for AVR-based event recorder device
 ## Description
 
 This Android project is PoC project for communication with AVR-based USB device.
-In particular, resulting Andorid application is able to communicate with AVR-based event recorder. More on AVR-based event recorder device can be found on: https://github.com/vladast/avr-based-event-recorder-with-usb-support
+In particular, resulting Android application is able to communicate with AVR-based event recorder. More on AVR-based event recorder device can be found on: https://github.com/vladast/avr-based-event-recorder-with-usb-support
 
 ## Features
 
