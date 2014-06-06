@@ -1,0 +1,3 @@
+/bin/**/*
+/gen/**/*
+/res/xml/device_filter.xml
