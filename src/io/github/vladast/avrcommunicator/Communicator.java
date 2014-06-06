@@ -10,24 +10,41 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 
+/**
+ * 
+ * @author vladimir.stankovic
+ * @version 0.0.1
+ * 
+ * Main module used to establish connection with AVR device.
+ */
 public class Communicator {
 
 	public static final String TAG = Communicator.class.getSimpleName();
 	
+	/** Static member used for "device detected" message */
 	private static final int MSG_DEVICE_DETECTED		= 0x0001;
+	/** Static member used for "check device status" message */
 	private static final int MSG_CHECK_DEVICE_STATUS	= 0x0002;
+	/** Static member used for "re-initialize device" message */
 	private static final int MSG_REINIT_DEVICE			= 0x0003;
 	
+	/** Instance of <code>UsbManager</code> class, being an Android's USB connection manager */
 	private UsbManager mUsbManager;
+	/** Instance of <code>UsbDeviceConnection</code> class, representing the actual connection between Android and AVR devices */
 	private UsbDeviceConnection mUsbDeviceConnection;
+	/** Instance of <code>OnAvrRecorderEventListener</code> for utilization of events */
 	private OnAvrRecorderEventListener mAvrRecorderEventListener;
-	
+	/** Indicates whether recorded events were read from device or not */
 	private boolean mRecordsRead;
-	
+	/** Represents data read from AVR event-recorder device */
 	private AvrRecorderDevice mAvrRecorderDevice;
-	
+	/** Instance of <code>Handler</code> class used for asynchronous even processing */ 
 	private final Handler mAvrRecorderMonitorHandler;
 	
+	/**
+	 * <code>Communicator</code> class constructor
+	 * @param usbManager <code>UsbManager</code> class instance received from upper layer when connection with AVR device is established.
+	 */
 	public Communicator(UsbManager usbManager) {
 		mUsbManager = usbManager;
 		mRecordsRead = false;
@@ -60,26 +77,36 @@ public class Communicator {
 	    };			
 	}
 	
+	/** Getter for <code>mAvrRecorderDevice</code> field.*/
 	public final AvrRecorderDevice getDevice() {
 		return mAvrRecorderDevice;
 	}
 	
+	/** 
+	 * Method used to register event listener provided by upper layer.
+	 * All communication between <code>Communicator</code> class instance and upper layer is done via instantiated handler.
+	 * @param onAvrRecorderEventListener Object reference from upper layer's implementation of <code>OnAvrRecorderEventListener</code> interface.
+	 */
 	public void registerListener(OnAvrRecorderEventListener onAvrRecorderEventListener) {
 		mAvrRecorderEventListener = onAvrRecorderEventListener;
 	}
-	
+
+	/** Sends "check device status" message to the handler, notifying it that AVR's status (connected/disconnected) should be checked. */
 	public void startDeviceDetection() {
 		mAvrRecorderMonitorHandler.sendEmptyMessage(MSG_CHECK_DEVICE_STATUS);
 	}
 	
+	/** Removes "check device status" message from handler's queue, indicating that AVR's status should not be checked from now on. */
 	public void stopDeviceDetection() {
 		mAvrRecorderMonitorHandler.removeMessages(MSG_CHECK_DEVICE_STATUS);
 	}
 	
+	/** Sends "re-initialize device" message to the handler, signaling that device re-initialization is being requested. */
 	public void reInitiateDevice() {
 		mAvrRecorderMonitorHandler.sendEmptyMessage(MSG_REINIT_DEVICE);
 	}
 	
+	/** Checks whether AVR device has been attached or not. */
 	protected void checkDeviceStatus() {
     	
     	mAvrRecorderEventListener.OnDeviceSearching();
@@ -113,6 +140,10 @@ public class Communicator {
     	}.execute((Void)null);
 	}
 	
+	/** 
+	 * Sends USB control message for re-initialization of the device.
+	 * If completed successfully, AVR device will move to INIT state, awaiting for new events.
+	 */
 	protected void reinitDevice() {
 		byte[] buffer = new byte[4];
         int iRxByteCount = 0;
@@ -131,6 +162,10 @@ public class Communicator {
         }
 	}
 	
+	/**
+	 * This method reads status header&codes and records from the device, respectively
+	 * @param usbDevice Instance of <code>UsbDevice</code> representing connected USB-enabled device
+	 */
 	protected void readDeviceData(UsbDevice usbDevice) {
 		mAvrRecorderEventListener.OnReadingStarted();
 		
@@ -141,12 +176,7 @@ public class Communicator {
 		for(int i = 0; i < usbDevice.getInterfaceCount(); ++i) {
 			if(mUsbDeviceConnection.claimInterface(usbDevice.getInterface(i), true)) {
 				readDeviceInfo(); // Read status header and status codes
-				readDeviceRecords(); // Read records from device
-				// At this moment, via UI activity, user will be asked for further actions:
-				// 1. To re-initiate device or not
-				// 2. To share collected data with other application (i.e. Mail client)
-				
-				// sOutput = Communicator.communicate(mUsbDeviceConnection);		
+				readDeviceRecords(); // Read records from device	
 			}
 		}
 		
@@ -157,6 +187,10 @@ public class Communicator {
 		}
 	}
 	
+	/**
+	 * Reads device's status, state, session, and number of records.
+	 * With each value read from the device, <code>mAvrRecorderDevice</code> is being updated so that it reflect read data.
+	 */
 	protected void readDeviceInfo() {
         byte[] buffer = new byte[4];
         int iRxByteCount = 0;
@@ -241,6 +275,10 @@ public class Communicator {
         }
 	}
 	
+	/**
+	 * Reads event records from device.
+	 * For each read event record, <code>mAvrRecorderDevice</code> field is being updated.
+	 */
 	protected void readDeviceRecords() {
         short eepromdata = 0;
         int iRxByteCount = 0;
@@ -300,6 +338,12 @@ public class Communicator {
         mAvrRecorderEventListener.OnDebugMessage(String.format("Read %d event records from device", mAvrRecorderDevice.getEventReadings().size()));
 	}
 	
+	/**
+	 * Proof of Concept method, used to communicate with USB-enabled device and retrieve all data.
+	 * Basically, it does same actions as host application from <a>https://github.com/vladast/avr-based-event-recorder-with-usb-support</a>
+	 * @param usbDeviceConnection Instance of <code>UsbDeviceConnection</code>, representing established USB connection.
+	 * @return String representation of console output with all read data (status, error-code, event records).
+	 */
     static public String communicate(UsbDeviceConnection usbDeviceConnection)
     {   
         String sReturn = "communicate()\n";
