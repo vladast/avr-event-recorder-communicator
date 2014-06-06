@@ -3,6 +3,7 @@ package io.github.vladast.avrcommunicator.activities;
 
 import java.util.ArrayList;
 
+import io.github.vladast.avrcommunicator.AvrRecorderConstants;
 import io.github.vladast.avrcommunicator.AvrRecorderErrors;
 import io.github.vladast.avrcommunicator.Communicator;
 import io.github.vladast.avrcommunicator.OnAvrRecorderEventListener;
@@ -11,8 +12,11 @@ import io.github.vladast.avrcommunicator.Reading;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -111,6 +115,21 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 	public void OnDeviceSearching() {
 		mTextViewStatus.setText("Searching for device...");
 		//Toast.makeText(this, "OnDeviceSearching...", Toast.LENGTH_LONG).show();
+		new AsyncTask<Void, Void, UsbDevice>() {
+
+			@Override
+			protected UsbDevice doInBackground(Void... arg0) {
+				
+				return (UsbDevice) getIntent().getParcelableExtra(UsbManager.EXTRA_DEVICE);
+			}
+    		
+			protected void onPostExecute(UsbDevice usbDevice) {
+				if(usbDevice != null) {
+					mCommunicator.useThisUsbDevice(usbDevice);
+				}
+			}
+			
+    	}.execute((Void)null);
 	}
 
 	@Override
