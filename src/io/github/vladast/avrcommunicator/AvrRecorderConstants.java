@@ -9,8 +9,10 @@ package io.github.vladast.avrcommunicator;
  */
 public final class AvrRecorderConstants {
 	
-	public static final int	AVR_REC_VID		= 0x16c0;
-	public static final int AVR_REC_PID		= 0x03e8;
+	@Deprecated
+	public static final int	AVR_REC_VID		= 0x0000;
+	@Deprecated
+	public static final int AVR_REC_PID		= 0x0000;
 	
     public static final byte SWID_UNKNOWN	= 0x00;
     public static final byte SWID_WITH    	= 0x01;
