@@ -1,5 +1,12 @@
 package io.github.vladast.avrcommunicator;
 
+/**
+ * 
+ * @author vladimir.stankovic
+ * @version 0.0.1
+ * 
+ * Defines constants used by AVR device.
+ */
 public final class AvrRecorderConstants {
 	
 	public static final int	AVR_REC_VID		= 0x16c0;
