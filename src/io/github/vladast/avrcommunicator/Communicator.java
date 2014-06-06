@@ -57,7 +57,7 @@ public class Communicator {
 		            	mAvrRecorderEventListener.OnDebugMessage("Received MSG_CHECK_DEVICE_STATUS message");
 		            	if(!mRecordsRead)
 		            	{
-		            		checkDeviceStatus();
+		            		mAvrRecorderEventListener.OnDeviceSearching();
 		            		mAvrRecorderMonitorHandler.sendEmptyMessageDelayed(MSG_CHECK_DEVICE_STATUS, 1000);
 		            	}
 		            	break;
@@ -106,11 +106,26 @@ public class Communicator {
 		mAvrRecorderMonitorHandler.sendEmptyMessage(MSG_REINIT_DEVICE);
 	}
 	
-	/** Checks whether AVR device has been attached or not. */
+	/**
+	 * Used by main activity to notify communicator that device was attached.
+	 * @param usbDevice Instance of <code>UsbDevice</code> class instance received from main activity, upon device detection.
+	 */
+	public void useThisUsbDevice(UsbDevice usbDevice)
+	{
+		Message msg = new Message();
+		msg.what = MSG_DEVICE_DETECTED;
+		msg.obj = usbDevice;
+		mAvrRecorderMonitorHandler.removeMessages(MSG_CHECK_DEVICE_STATUS);
+		mAvrRecorderMonitorHandler.sendMessage(msg);
+	}
+	
+	/** 
+	 * Checks whether AVR device has been attached or not.
+	 * <b>NOTE:</b> Deprecated from v0.0.1 - attached USB device is being detected from main activity.
+	 */
+	@Deprecated
 	protected void checkDeviceStatus() {
     	
-    	mAvrRecorderEventListener.OnDeviceSearching();
-        
     	new AsyncTask<Void, Void, UsbDevice>() {
 
 			@Override
