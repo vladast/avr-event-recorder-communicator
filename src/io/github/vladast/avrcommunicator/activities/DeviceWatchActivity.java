@@ -138,6 +138,10 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 		//Toast.makeText(this, "OnDeviceReInitiated...", Toast.LENGTH_LONG).show();
 	}
 
+	/**
+	 * After receiving event from <code>Communicator</code> instance, event records received are being displayed within results table.
+	 * @param eventReadings List of event records read directly from device.
+	 */
 	@Override
 	public void OnRecordsRead(ArrayList<Reading> eventReadings) {
 		//Toast.makeText(this, "OnRecordsRead: " + eventReadings.size(), Toast.LENGTH_LONG).show();
