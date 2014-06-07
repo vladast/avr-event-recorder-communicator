@@ -21,7 +21,7 @@
     <!-- Records Options -->
     <string name="records_options_save">Save</string>
     <string name="records_options_share">Share</string>
-    <string name="records_options_share_with">Share with#8230;</string>
+    <string name="records_options_share_with">Share with . . .</string>
     <string name="records_options_re_init">Re-Init</string>
 
 </resources>
