@@ -1,6 +1,9 @@
 package io.github.vladast.avrcommunicator.activities;
 
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import io.github.vladast.avrcommunicator.AvrRecorderConstants;
@@ -16,6 +19,7 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
@@ -173,7 +177,7 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 		RelativeLayout.LayoutParams relativeLayoutParamsReInit = new RelativeLayout.LayoutParams(
 				RelativeLayout.LayoutParams.WRAP_CONTENT,
 				RelativeLayout.LayoutParams.WRAP_CONTENT);
-		/*
+		
 		Button buttonSave = new Button(this);
 		buttonSave.setText("Save");
 		buttonSave.setId(0x8001);
@@ -183,28 +187,41 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 			@Override
 			public void onClick(View arg0) {
 				Log.d(TAG, "Saving...");
-				String filename = String.format("output_%d.csv", mCommunicator.getDevice().getSession());
+				String fileName = String.format("output_%d.csv", mCommunicator.getDevice().getSession());
 				String string = "Hello world!";
 				
-		        String path = arg0.getContext().getFilesDir() + "/Results/";
-		        File file = new File(path);
-		        if(!file.isDirectory()) {
-		        	file.mkdirs();
-		        }
-		        path += filename;
-		        
-				FileOutputStream outputStream;
+				//File directoryDocuments = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+				//File directoryDocuments = Environment.getDataDirectory();
+				//File fileResults = new File(directoryDocuments, fileName);
+				
+				//File fileResults = new File(arg0.getContext().getCacheDir(), fileName);
+				
 
 				try {
-				  outputStream = openFileOutput(file.getAbsolutePath(), Context.MODE_APPEND);
-				  outputStream.write(string.getBytes());
-				  outputStream.close();
+					File fileResults = File.createTempFile(fileName, null, arg0.getContext().getCacheDir());
+			        //String path = arg0.getContext().getFilesDir() + "/Results/";
+			        //File file = new File(path);
+			        //if(!fileResults.isDirectory()) {
+			        /*if(fileResults.mkdirs()) {
+			        	Log.d(TAG, "Directory created.");
+			        }*/
+			        	
+			        //}
+			        
+			        Log.d(TAG, "Openning '" + fileResults.getAbsolutePath() + "' file...");
+					FileOutputStream outputStream = new FileOutputStream(fileResults.getAbsolutePath());
+					//outputStream = openFileOutput(fileResults.getAbsolutePath(), Context.MODE_APPEND);
+					outputStream.write(string.getBytes());
+					outputStream.close();
+					
+				} catch (IOException e) {
+					Toast.makeText(arg0.getContext(), "Error while processing file...", Toast.LENGTH_LONG).show();
 				} catch (Exception e) {
-				  e.printStackTrace();
+					Toast.makeText(arg0.getContext(), "Error while processing file...", Toast.LENGTH_LONG).show();
+					e.printStackTrace();
 				}
 			}
 		});
-		*/
 		
 		Button buttonShare = new Button(this);
 		buttonShare.setText(getResources().getText(R.string.records_options_share));
@@ -238,7 +255,7 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 		});
 		
 		relativeLayoutParamsSave.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-		//relativeLayoutParamsSave.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+		relativeLayoutParamsSave.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
 		relativeLayoutParamsShare.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
 		//relativeLayoutParamsShare.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
 		relativeLayoutParamsReInit.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
@@ -246,9 +263,9 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 		
 		//relativeLayoutParamsSave.addRule(RelativeLayout.BELOW, R.id.scrollViewData);
 		//relativeLayoutParamsSave.addRule(RelativeLayout.LEFT_OF, buttonShare.getId());
-		//mRelativeLayoutContainer.addView(buttonSave, relativeLayoutParamsSave);
+		mRelativeLayoutContainer.addView(buttonSave, relativeLayoutParamsSave);
 		
-		//relativeLayoutParamsShare.addRule(RelativeLayout.RIGHT_OF, buttonSave.getId());
+		relativeLayoutParamsShare.addRule(RelativeLayout.RIGHT_OF, buttonSave.getId());
 		mRelativeLayoutContainer.addView(buttonShare, relativeLayoutParamsShare);
 		
 		relativeLayoutParamsReInit.addRule(RelativeLayout.RIGHT_OF, buttonShare.getId());
