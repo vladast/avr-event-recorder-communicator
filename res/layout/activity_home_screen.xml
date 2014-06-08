@@ -11,23 +11,33 @@
          TextureView, etc.
     -->
 
-    <TextView
+    <!-- <TextView
         android:id="@+id/fullscreen_content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="match_parent
         android:gravity="center"
         android:keepScreenOn="true"
         android:text="@string/dummy_content"
         android:textColor="#33b5e5"
         android:textSize="50sp"
-        android:textStyle="bold" />
+        android:textStyle="bold" /> -->
+	<RelativeLayout
+        android:id="@+id/fullscreen_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:keepScreenOn="true" >
+           
+
+            
+	</RelativeLayout>
 
     <!--
          This FrameLayout insets its children based on system windows using
          android:fitsSystemWindows.
     -->
 
-    <FrameLayout
+  	<FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true" >
@@ -39,17 +49,37 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_horizontal"
             android:background="@color/black_overlay"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             tools:ignore="UselessParent" >
 
-            <Button
-                android:id="@+id/dummy_button"
+            
+	        <Button
+	            android:id="@+id/button_new_session"
                 style="?metaButtonBarButtonStyle"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/dummy_button" />
+	            android:text="@string/home_new_session" />
+	
+	        <Button
+	            android:id="@+id/button_upload_data"
+                style="?metaButtonBarButtonStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+	            android:text="@string/home_upload_data" />
+	
+	        <Button
+	            android:id="@+id/button_view_sessions"
+                style="?metaButtonBarButtonStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+	            android:text="@string/home_view_sessions" />
         </LinearLayout>
+
+
+
     </FrameLayout>
 
 </FrameLayout>

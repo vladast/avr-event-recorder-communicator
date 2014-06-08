@@ -116,7 +116,9 @@ public class HomeScreenActivity extends Activity {
 		// Upon interacting with UI controls, delay any scheduled hide()
 		// operations to prevent the jarring behavior of controls going away
 		// while interacting with the UI.
-		findViewById(R.id.dummy_button).setOnTouchListener(
+		findViewById(R.id.button_new_session
+				
+				).setOnTouchListener(
 				mDelayHideTouchListener);
 	}
 
