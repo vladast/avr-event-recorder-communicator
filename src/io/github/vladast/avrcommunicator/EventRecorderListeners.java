@@ -29,7 +29,9 @@ public class EventRecorderListeners implements OnAvrRecorderEventListener {
 	 * @param onAvrRecorderEventListener Listener that is to be added to the list.
 	 */
 	public void registerEventRecorderListener(OnAvrRecorderEventListener onAvrRecorderEventListener) {
-		mOnAvrRecorderEventListeners.add(onAvrRecorderEventListener);
+		if(!mOnAvrRecorderEventListeners.contains(onAvrRecorderEventListener)) {
+			mOnAvrRecorderEventListeners.add(onAvrRecorderEventListener);	
+		}
 	}
 	
 	/**
