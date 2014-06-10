@@ -32,8 +32,8 @@ public class Communicator {
 	private UsbManager mUsbManager;
 	/** Instance of <code>UsbDeviceConnection</code> class, representing the actual connection between Android and AVR devices */
 	private UsbDeviceConnection mUsbDeviceConnection;
-	/** Instance of <code>OnAvrRecorderEventListener</code> for utilization of events */
-	private OnAvrRecorderEventListener mAvrRecorderEventListener;
+	/** Instance of <code>EventRecorderListeners</code> for utilization of events received from device. */
+	private EventRecorderListeners mEventRecorderListeners;
 	/** Indicates whether recorded events were read from device or not */
 	private boolean mRecordsRead;
 	/** Represents data read from AVR event-recorder device */
@@ -49,25 +49,26 @@ public class Communicator {
 		mUsbManager = usbManager;
 		mRecordsRead = false;
 		mAvrRecorderDevice = null;
+		mEventRecorderListeners = new EventRecorderListeners();
 		mAvrRecorderMonitorHandler = new Handler() {
 	        @Override
 	        public void handleMessage(Message msg) {
 	            switch (msg.what) {
 		            case MSG_CHECK_DEVICE_STATUS:
-		            	mAvrRecorderEventListener.OnDebugMessage("Received MSG_CHECK_DEVICE_STATUS message");
+		            	mEventRecorderListeners.OnDebugMessage("Received MSG_CHECK_DEVICE_STATUS message");
 		            	if(!mRecordsRead)
 		            	{
-		            		mAvrRecorderEventListener.OnDeviceSearching();
+		            		mEventRecorderListeners.OnDeviceSearching();
 		            		mAvrRecorderMonitorHandler.sendEmptyMessageDelayed(MSG_CHECK_DEVICE_STATUS, 1000);
 		            	}
 		            	break;
 	                case MSG_DEVICE_DETECTED:
-	                	mAvrRecorderEventListener.OnDeviceConnected();
+	                	mEventRecorderListeners.OnDeviceConnected();
 	                	readDeviceData((UsbDevice)msg.obj);
 	                    break;
 	                case MSG_REINIT_DEVICE:
 	                	reinitDevice();
-	                	mAvrRecorderEventListener.OnDeviceReInitiated();
+	                	mEventRecorderListeners.OnDeviceReInitiated();
 	                	break;
 	                default:
 	                    super.handleMessage(msg);
@@ -88,7 +89,7 @@ public class Communicator {
 	 * @param onAvrRecorderEventListener Object reference from upper layer's implementation of <code>OnAvrRecorderEventListener</code> interface.
 	 */
 	public void registerListener(OnAvrRecorderEventListener onAvrRecorderEventListener) {
-		mAvrRecorderEventListener = onAvrRecorderEventListener;
+		mEventRecorderListeners.registerEventRecorderListener(onAvrRecorderEventListener);
 	}
 
 	/** Sends "check device status" message to the handler, notifying it that AVR's status (connected/disconnected) should be checked. */
@@ -168,11 +169,11 @@ public class Communicator {
                 AvrRecorderConstants.REQ_SET_DATA1, AvrRecorderConstants.STATE_INIT, 0, buffer, 0, 5000);
 		if(iRxByteCount < 0)
         {
-            mAvrRecorderEventListener.OnError(AvrRecorderErrors.ERR_REINIT);
+			mEventRecorderListeners.OnError(AvrRecorderErrors.ERR_REINIT);
         }
         else
         {
-        	mAvrRecorderEventListener.OnDebugMessage("Re-initiation message successfuly sent to device.");
+        	mEventRecorderListeners.OnDebugMessage("Re-initiation message successfuly sent to device.");
         	mAvrRecorderMonitorHandler.removeMessages(MSG_REINIT_DEVICE);
         }
 	}
@@ -182,7 +183,7 @@ public class Communicator {
 	 * @param usbDevice Instance of <code>UsbDevice</code> representing connected USB-enabled device
 	 */
 	protected void readDeviceData(UsbDevice usbDevice) {
-		mAvrRecorderEventListener.OnReadingStarted();
+		mEventRecorderListeners.OnReadingStarted();
 		
 		mAvrRecorderDevice = new AvrRecorderDevice();
 		
@@ -198,7 +199,7 @@ public class Communicator {
 		mRecordsRead = true;
 		
 		if(mAvrRecorderDevice.getEventReadings().size() > 0) {
-			mAvrRecorderEventListener.OnRecordsRead(mAvrRecorderDevice.getEventReadings());
+			mEventRecorderListeners.OnRecordsRead(mAvrRecorderDevice.getEventReadings());
 		}
 	}
 	
@@ -215,12 +216,12 @@ public class Communicator {
                 AvrRecorderConstants.REQ_GET_HEADER, 0, 0, buffer, 4, 5000);
         if(iRxByteCount < 1)
         {
-            mAvrRecorderEventListener.OnError(AvrRecorderErrors.ERR_HEADER);
+        	mEventRecorderListeners.OnError(AvrRecorderErrors.ERR_HEADER);
         }
         else
         {
             mAvrRecorderDevice.setDeviceCode((short) (buffer[0] | (buffer[1] << 8)));
-            mAvrRecorderEventListener.OnDebugMessage(String.format("Detected device with code 0x%04x", mAvrRecorderDevice.getDeviceCode()));
+            mEventRecorderListeners.OnDebugMessage(String.format("Detected device with code 0x%04x", mAvrRecorderDevice.getDeviceCode()));
             
             switch(mAvrRecorderDevice.getDeviceCode())
             {
@@ -234,12 +235,12 @@ public class Communicator {
                 
                 if(iRxByteCount < 0)
                 {
-                	mAvrRecorderEventListener.OnError(AvrRecorderErrors.ERR_STATE);
+                	mEventRecorderListeners.OnError(AvrRecorderErrors.ERR_STATE);
                 }
                 else
                 {
                     mAvrRecorderDevice.setState(buffer[0]);
-                    mAvrRecorderEventListener.OnDebugMessage(String.format("Device's state is '%s'", mAvrRecorderDevice.getStateName()));
+                    mEventRecorderListeners.OnDebugMessage(String.format("Device's state is '%s'", mAvrRecorderDevice.getStateName()));
                 }
                 
                 // Read device's session
@@ -249,12 +250,12 @@ public class Communicator {
                 
                 if(iRxByteCount < 0)
                 {
-                    mAvrRecorderEventListener.OnError(AvrRecorderErrors.ERR_SESSION);
+                	mEventRecorderListeners.OnError(AvrRecorderErrors.ERR_SESSION);
                 }
                 else
                 {
                     mAvrRecorderDevice.setSession(buffer[0]);
-                    mAvrRecorderEventListener.OnDebugMessage(String.format("Device's session is: %s [0x%02x]", Byte.toString(mAvrRecorderDevice.getSession()), mAvrRecorderDevice.getSession()));
+                    mEventRecorderListeners.OnDebugMessage(String.format("Device's session is: %s [0x%02x]", Byte.toString(mAvrRecorderDevice.getSession()), mAvrRecorderDevice.getSession()));
                 }
                 
                 // Read device's error cache
@@ -264,12 +265,12 @@ public class Communicator {
                 
                 if(iRxByteCount < 0)
                 {
-                	mAvrRecorderEventListener.OnError(AvrRecorderErrors.ERR_ERROR);
+                	mEventRecorderListeners.OnError(AvrRecorderErrors.ERR_ERROR);
                 }
                 else
                 {
                     mAvrRecorderDevice.setError(buffer[0]);
-                    mAvrRecorderEventListener.OnDebugMessage(String.format("Error-code stored in device: 0x%02x", mAvrRecorderDevice.getError()));
+                    mEventRecorderListeners.OnDebugMessage(String.format("Error-code stored in device: 0x%02x", mAvrRecorderDevice.getError()));
                 }           
                 
                 // Read event count
@@ -279,12 +280,12 @@ public class Communicator {
                 
                 if(iRxByteCount < 0)
                 {
-                	mAvrRecorderEventListener.OnError(AvrRecorderErrors.ERR_COUNT);
+                	mEventRecorderListeners.OnError(AvrRecorderErrors.ERR_COUNT);
                 }
                 else
                 {
                     mAvrRecorderDevice.setEntryCount((short) (buffer[0] | (buffer[1] << 8)));
-                    mAvrRecorderEventListener.OnDebugMessage(String.format("Number of events recorded by device is: %d", mAvrRecorderDevice.getEntryCount()));
+                    mEventRecorderListeners.OnDebugMessage(String.format("Number of events recorded by device is: %d", mAvrRecorderDevice.getEntryCount()));
                 }
             }
         }
@@ -310,7 +311,7 @@ public class Communicator {
 
             if(iRxByteCount < 1)
             {
-                mAvrRecorderEventListener.OnError(AvrRecorderErrors.ERR_RECORD, i);
+            	mEventRecorderListeners.OnError(AvrRecorderErrors.ERR_RECORD, i);
             }
             else
             {
@@ -323,7 +324,7 @@ public class Communicator {
                     reading.setTimestamp(reading.getTimestamp() + eepromdata);
                     eepromdata = 0;
                     mAvrRecorderDevice.addEventReading(new Reading(reading));
-                    mAvrRecorderEventListener.OnDebugMessage(String.format("Record %d:\t%d, %s, %d", i, reading.getEntry(), reading.getCodeName(),  reading.getTimestamp()));
+                    mEventRecorderListeners.OnDebugMessage(String.format("Record %d:\t%d, %s, %d", i, reading.getEntry(), reading.getCodeName(),  reading.getTimestamp()));
                 }
                 else
                 {
@@ -331,7 +332,7 @@ public class Communicator {
                     fReadNext = (buffer[0] & AvrRecorderConstants.OV_BIT) == AvrRecorderConstants.OV_BIT; // check OV bit
                     if((buffer[0] >> 6) == AvrRecorderConstants.SWID_UNKNOWN)
                     {
-                    	mAvrRecorderEventListener.OnError(AvrRecorderErrors.ERR_SWITCH);
+                    	mEventRecorderListeners.OnError(AvrRecorderErrors.ERR_SWITCH);
                         fReadNext = false;
                         continue;
                     }
@@ -344,13 +345,13 @@ public class Communicator {
                         reading.setTimestamp(reading.getTimestamp() + eepromdata);
                         eepromdata = 0;
                         mAvrRecorderDevice.addEventReading(new Reading(reading));
-                        mAvrRecorderEventListener.OnDebugMessage(String.format("Record %d:\t%d, %s, %d", i, reading.getEntry(), reading.getCodeName(),  reading.getTimestamp()));
+                        mEventRecorderListeners.OnDebugMessage(String.format("Record %d:\t%d, %s, %d", i, reading.getEntry(), reading.getCodeName(),  reading.getTimestamp()));
                     }
                 }
             }
         }
         
-        mAvrRecorderEventListener.OnDebugMessage(String.format("Read %d event records from device", mAvrRecorderDevice.getEventReadings().size()));
+        mEventRecorderListeners.OnDebugMessage(String.format("Read %d event records from device", mAvrRecorderDevice.getEventReadings().size()));
 	}
 	
 	/**
