@@ -47,9 +47,18 @@ public class EventRecorderApplication extends Application {
 
 	/**
 	 * Called from Android activity when needed to capture events coming out from attached USB device.
+	 * <b>NOTE:</b> Same as calling <code>registerListener</code> method from <code>Communicator</code> instance.
 	 * @param onAvrRecorderEventListener Implemented interface from attached object/activity.
 	 */
 	public void registerCommunicatorListener(OnAvrRecorderEventListener onAvrRecorderEventListener) {
 		mCommunicator.registerListener(onAvrRecorderEventListener);
+	}
+	
+	/**
+	 * Gets <code>Communicator</code> instance.
+	 * @return Instance of <code>Communicator</code> class.
+	 */
+	public Communicator getCommunicator() {
+		return mCommunicator;
 	}
 }
