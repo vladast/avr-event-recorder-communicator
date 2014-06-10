@@ -3,6 +3,7 @@ package io.github.vladast.avrcommunicator.activities;
 import java.util.ArrayList;
 
 import io.github.vladast.avrcommunicator.AvrRecorderErrors;
+import io.github.vladast.avrcommunicator.EventRecorderApplication;
 import io.github.vladast.avrcommunicator.OnAvrRecorderEventListener;
 import io.github.vladast.avrcommunicator.R;
 import io.github.vladast.avrcommunicator.Reading;
@@ -123,6 +124,12 @@ public class HomeScreenActivity extends Activity implements OnAvrRecorderEventLi
 				
 				).setOnTouchListener(
 				mDelayHideTouchListener);
+		
+		/**
+		 * Communicator section
+		 */
+		((EventRecorderApplication)getApplicationContext()).getCommunicator().registerListener(this);
+		
 	}
 
 	@Override
