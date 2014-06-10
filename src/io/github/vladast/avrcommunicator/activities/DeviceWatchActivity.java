@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import io.github.vladast.avrcommunicator.AvrRecorderConstants;
 import io.github.vladast.avrcommunicator.AvrRecorderErrors;
 import io.github.vladast.avrcommunicator.Communicator;
+import io.github.vladast.avrcommunicator.EventRecorderApplication;
 import io.github.vladast.avrcommunicator.OnAvrRecorderEventListener;
 import io.github.vladast.avrcommunicator.R;
 import io.github.vladast.avrcommunicator.Reading;
@@ -47,7 +48,8 @@ public class DeviceWatchActivity extends Activity implements OnAvrRecorderEventL
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_device_watch);
-		mCommunicator = new Communicator((UsbManager)getSystemService(Context.USB_SERVICE));
+		mCommunicator = ((EventRecorderApplication)getApplicationContext()).getCommunicator();
+		//mCommunicator = new Communicator((UsbManager)getSystemService(Context.USB_SERVICE));
 		mCommunicator.registerListener(this);
 		
 		mTextViewStatus = (TextView)findViewById(R.id.textViewDeviceStatus);
