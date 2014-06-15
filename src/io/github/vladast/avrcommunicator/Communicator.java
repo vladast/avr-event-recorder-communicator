@@ -1,6 +1,7 @@
 package io.github.vladast.avrcommunicator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
@@ -41,11 +42,23 @@ public class Communicator {
 	/** Instance of <code>Handler</code> class used for asynchronous even processing */ 
 	private final Handler mAvrRecorderMonitorHandler;
 	
+	/** Device monitoring interval */
+	private int mMonitoringInterval;
+
+	/**
+	 * Setter for monitoring interval.
+	 * @param monitoringInterval New monitoring interval value;
+	 */
+	public void setMonitoringInterval(int monitoringInterval) {
+		mMonitoringInterval = monitoringInterval;
+	}
+	
 	/**
 	 * <code>Communicator</code> class constructor
 	 * @param usbManager <code>UsbManager</code> class instance received from upper layer when connection with AVR device is established.
 	 */
 	public Communicator(UsbManager usbManager) {
+		System.out.println("Communicator c-tor...");
 		mUsbManager = usbManager;
 		mRecordsRead = false;
 		mAvrRecorderDevice = null;
@@ -59,7 +72,8 @@ public class Communicator {
 		            	if(!mRecordsRead)
 		            	{
 		            		mEventRecorderListeners.OnDeviceSearching();
-		            		mAvrRecorderMonitorHandler.sendEmptyMessageDelayed(MSG_CHECK_DEVICE_STATUS, 1000);
+		            		checkDeviceStatus(); // [20140614] Returned usage of depricated method
+		            		mAvrRecorderMonitorHandler.sendEmptyMessageDelayed(MSG_CHECK_DEVICE_STATUS, 1000 * mMonitoringInterval);
 		            	}
 		            	break;
 	                case MSG_DEVICE_DETECTED:
@@ -89,6 +103,7 @@ public class Communicator {
 	 * @param onAvrRecorderEventListener Object reference from upper layer's implementation of <code>OnAvrRecorderEventListener</code> interface.
 	 */
 	public void registerListener(OnAvrRecorderEventListener onAvrRecorderEventListener) {
+		System.out.println("Registering listener...");
 		mEventRecorderListeners.registerEventRecorderListener(onAvrRecorderEventListener);
 	}
 
@@ -131,7 +146,7 @@ public class Communicator {
 
 			@Override
 			protected UsbDevice doInBackground(Void... arg0) {
-				
+				mEventRecorderListeners.OnDebugMessage("Number of detected USB devices: " + mUsbManager.getDeviceList().size());
 				for (final UsbDevice usbDevice : mUsbManager.getDeviceList().values()) {
 					if(usbDevice.getVendorId() == AvrRecorderConstants.AVR_REC_VID &&
 							usbDevice.getProductId() == AvrRecorderConstants.AVR_REC_PID)
