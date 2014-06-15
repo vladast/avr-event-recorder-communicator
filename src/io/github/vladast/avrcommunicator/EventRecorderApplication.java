@@ -145,12 +145,9 @@ public class EventRecorderApplication extends Application implements OnSharedPre
 		Log.d(TAG, "Method onCreate called.");
 		eventRecorderApplication = this;
 		
-		Log.d(TAG, "Creating Communicator instance...");
-		mCommunicator = new Communicator((UsbManager)getSystemService(Context.USB_SERVICE));
+		initCommunicator();
 		
 		PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);;
-		
-		mCommunicator.startDeviceDetection();
 	}
 	
 	@Override
@@ -159,6 +156,21 @@ public class EventRecorderApplication extends Application implements OnSharedPre
 		Log.w(TAG, "System memory is low!");
 		Log.d(TAG, "Stopping device monitoring...");
 		mCommunicator.stopDeviceDetection();
+	}
+	
+	private void initCommunicator() {
+		Log.d(TAG, "Creating Communicator instance...");
+		mCommunicator = new Communicator((UsbManager)getSystemService(Context.USB_SERVICE));
+		
+		
+		if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(EventRecorderSettingsActivity.KEY_PREF_MONITOR_DEVICES, true) == true) {
+			mCommunicator.startDeviceDetection();
+		} else {
+			mCommunicator.stopDeviceDetection();
+		}
+		
+		// TODO: Should be thread-safe
+		mCommunicator.setMonitoringInterval(PreferenceManager.getDefaultSharedPreferences(this).getInt(EventRecorderSettingsActivity.KEY_PREF_MONITOR_INTERVAL, 1));
 	}
 	
 	/**
