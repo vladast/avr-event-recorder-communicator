@@ -37,6 +37,11 @@ public final class AvrRecorderConstants {
     public static final byte STATE_RECORD	= (byte) 0xC3; // Record events (touch-switch states)
     public static final byte STATE_UPLOAD	= (byte) 0xD4; // Upload records to USB host
     public static final byte STATE_DELETE	= (byte) 0xE5; // Erase external EEPROM
-    public static final byte STATE_RESES	= (byte) 0xF6; // Reinit session counter 
+    public static final byte STATE_RESES	= (byte) 0xF6; // Re-initiate session counter 
 
+    public static final int		DEFAULT_PREF_EVENT_NUMBER			= 3;
+    public static final boolean	DEFAULT_PREF_MONITOR_DEVICE			= true;
+    public static final int		DEFAULT_PREF_MONITORING_INTERVAL	= 1;
+    public static final boolean	DEFAULT_PREF_PREVENT_SLEEP			= false;
+    public static final String	DEFAULT_PREF_TOUCHABLE_NAME_PREFIX	= "SW";
 }
