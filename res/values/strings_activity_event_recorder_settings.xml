@@ -1,0 +1,42 @@
+<resources>
+
+    <string name="title_activity_event_recorder_settings">Event Recorder Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- General settings -->
+    <string name="pref_header_general">General</string>
+    <string name="pref_title_event_number">Number of recordable events</string>
+    <string name="pref_description_event_number">How many different events to record</string>
+    <string-array name="pref_list_event_number_values">
+        <item>1 event</item>
+        <item>2 events</item>
+        <item>3 events</item>
+        <item>4 events</item>
+        <item>5 events</item>
+        <item>6 events</item>
+        <item>7 events</item>
+        <item>8 events</item>
+    </string-array>
+    <string name="pref_title_block_sleep">Prevent sleep</string>
+    <string name="pref_description_block_sleep">Whether to prevent phone going into sleep</string>
+    <string name="pref_title_monitor_devices">Monitor attached devices</string>
+    <string name="pref_description_monitor_devices">Monitoring for compatible USB devices. Should be enabled if compatible device is available.</string>
+    <string name="pref_title_monitor_interval">Monitoring interval</string>
+    <string name="pref_description_monitor_interval">How many seconds before next availability check for compatible devices</string>
+    <string-array name="pref_list_monitor_interval_values">
+        <item>1 second</item>
+        <item>3 seconds</item>
+        <item>5 seconds</item>
+    </string-array>
+    
+    <!-- Touchables settings -->
+    <string name="pref_header_touchables">Touchables</string>
+    <string name="pref_title_touchable_name">Change Names</string>
+    <string name="pref_description_touchable_name">By default, generic name is being set for each of touchable element. With this option, default names can be modified to suite the purpose.</string>
+    <string name="pref_option_touchable_pattern">By Pattern</string>
+    <string name="pref_description_touchable_pattern">This option alters name auto-generation for touchable elements</string>
+    <string name="pref_option_touchable_switch">Per Touchable</string>
+    <string name="pref_description_touchable_switch">Alters names for each touchable elemnt individually</string>
+
+</resources>

@@ -1,0 +1,61 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory 
+        android:title="@string/pref_header_general" 
+        android:key="preference_general">
+            
+	    <ListPreference 
+	        android:defaultValue="3"
+	        android:entries="@array/pref_list_event_number_values"
+	        android:entryValues="@array/pref_list_event_number_values"
+	        android:key="event_number"
+	        android:negativeButtonText="@null"
+	        android:positiveButtonText="@null"
+	        android:title="@string/pref_title_event_number" />
+	    
+		<CheckBoxPreference 
+			android:defaultValue="true"
+			android:key="monitor_devices"
+			android:summary="@string/pref_description_monitor_devices"
+			android:title="@string/pref_title_monitor_devices" />
+		
+	    <ListPreference 
+	        android:defaultValue="1"
+	        android:entries="@array/pref_list_monitor_interval_values"
+	        android:entryValues="@array/pref_list_monitor_interval_values"
+	        android:key="monitor_interval"
+	        android:negativeButtonText="@null"
+	        android:positiveButtonText="@null"
+	        android:title="@string/pref_title_monitor_interval" />	
+		 
+		<CheckBoxPreference 
+			android:defaultValue="false"
+			android:key="prevent_sleep"
+			android:summary="@string/pref_description_block_sleep"
+			android:title="@string/pref_title_block_sleep" />    
+
+	</PreferenceCategory>
+	
+    <PreferenceCategory 
+        android:title="@string/pref_header_touchables" 
+        android:key="preference_touchables">
+         
+        <PreferenceScreen 
+            android:title="@string/pref_title_touchable_name"
+            android:summary="@string/pref_description_touchable_name"
+            android:key="preference_touchables_name">
+            <PreferenceScreen 
+	            android:title="@string/pref_option_touchable_pattern"
+            	android:summary="@string/pref_description_touchable_pattern"
+	            android:key="preference_touchables_option_pattern">     
+	        </PreferenceScreen>
+            <PreferenceScreen 
+	            android:title="@string/pref_option_touchable_switch"
+            	android:summary="@string/pref_description_touchable_switch"
+	            android:key="preference_touchables_option_switch">     
+	        </PreferenceScreen>     
+        </PreferenceScreen>
+         
+    </PreferenceCategory>
+
+</PreferenceScreen>
