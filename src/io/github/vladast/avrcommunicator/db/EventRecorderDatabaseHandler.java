@@ -167,7 +167,7 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 	 * @param id Database object's identifier.
 	 * @return Database object.
 	 */
-	public EventRecorderDAO getDatabaseObjectById(Class<EventRecorderDAO> clazz, int id) {
+	public EventRecorderDAO getDatabaseObjectById(Class clazz, int id) {
 		// TODO: Implement 'select' statements that will extract particular records from database.
 		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
 			
@@ -187,7 +187,7 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 	 * @param clazz Database object's class.
 	 * @return Database objects of the given type.
 	 */
-	public ArrayList<EventRecorderDAO> getDatabaseObjects(Class<EventRecorderDAO> clazz) {
+	public ArrayList<EventRecorderDAO> getDatabaseObjects(Class clazz) {
 		// TODO: Implement 'select' statements that will extract particular records from database.
 		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
 			
@@ -207,7 +207,7 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 	 * @param clazz Database object's class.
 	 * @return Number of rows within class' table.
 	 */
-	public int getDatabaseObjectCount(Class<EventRecorderDAO> clazz) {
+	public int getDatabaseObjectCount(Class clazz) {
 		// TODO Count table entries based on the given class
 		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
 			
@@ -228,7 +228,7 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 	 * <b>NOTE:</b> It is expected that column is of type INTEGER
 	 * @return Sum of all values within give column.
 	 */
-	public int getDatabaseObjectValueCount(Class<EventRecorderDAO> clazz, String columnName) {
+	public int getDatabaseObjectValueCount(Class clazz, String columnName) {
 		// TODO Perform addition of all values within same column of the same table
 		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
 			
