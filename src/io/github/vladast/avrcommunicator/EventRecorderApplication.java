@@ -49,7 +49,7 @@ public class EventRecorderApplication extends Application implements OnSharedPre
 	 */
 	private static EventRecorderApplication eventRecorderApplication;
 	
-	private EventRecorderDatabaseHandler eventRecorderDatabaseHandler;
+	private EventRecorderDatabaseHandler mEventRecorderDatabaseHandler;
 	
 	/**
 	 * Instance of <code>Communicator</code> class that will be focal point for communication with USB device
@@ -154,7 +154,7 @@ public class EventRecorderApplication extends Application implements OnSharedPre
 		
 		PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
 		
-		eventRecorderDatabaseHandler = new EventRecorderDatabaseHandler(this);
+		mEventRecorderDatabaseHandler = new EventRecorderDatabaseHandler(this);
 	}
 	
 	@Override
@@ -197,6 +197,14 @@ public class EventRecorderApplication extends Application implements OnSharedPre
 		return mCommunicator;
 	}
 
+	/**
+	 * Getter for <code>EventRecorderDatabaseHandler</code> instance.
+	 * @return Database handler.
+	 */
+	public EventRecorderDatabaseHandler getDatabaseHandler() {
+		return mEventRecorderDatabaseHandler;
+	}
+	
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		if (key.equals(EventRecorderSettingsActivity.KEY_PREF_MONITOR_DEVICES)) {
