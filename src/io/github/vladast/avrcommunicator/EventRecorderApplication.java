@@ -31,6 +31,8 @@ import android.content.res.XmlResourceParser;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
+import android.preference.ListPreference;
+import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.Xml;
@@ -173,9 +175,9 @@ public class EventRecorderApplication extends Application implements OnSharedPre
 		} else {
 			mCommunicator.stopDeviceDetection();
 		}
-		
+
 		// TODO: Should be thread-safe
-		mCommunicator.setMonitoringInterval(PreferenceManager.getDefaultSharedPreferences(this).getInt(EventRecorderSettingsActivity.KEY_PREF_MONITOR_INTERVAL, 1));
+		mCommunicator.setMonitoringInterval(Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(this).getString(EventRecorderSettingsActivity.KEY_PREF_MONITOR_INTERVAL, "1").split(" ")[0]));
 	}
 	
 	/**
