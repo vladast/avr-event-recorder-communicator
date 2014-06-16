@@ -13,8 +13,12 @@ import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -50,6 +54,18 @@ public class HomeScreenActivity extends Activity implements OnAvrRecorderEventLi
 	 * The instance of the {@link SystemUiHider} for this activity.
 	 */
 	private SystemUiHider mSystemUiHider;
+	
+	TextView textViewHomeSessionCountValue;
+	TextView textViewHomeSessionCountText;
+	
+	TextView textViewHomeEventTimeValue;
+	TextView textViewHomeEventTimeSecondsText;
+	TextView textViewHomeEventTimeText;
+	
+	TextView textViewHomeSessionLastText;
+	
+	ImageView imageViewHomeDeviceImage;
+	TextView textViewHomeDeviceStatus;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -120,10 +136,29 @@ public class HomeScreenActivity extends Activity implements OnAvrRecorderEventLi
 		// Upon interacting with UI controls, delay any scheduled hide()
 		// operations to prevent the jarring behavior of controls going away
 		// while interacting with the UI.
-		findViewById(R.id.button_new_session
-				
-				).setOnTouchListener(
-				mDelayHideTouchListener);
+		findViewById(R.id.buttonNewSession).setOnTouchListener(mDelayHideTouchListener);
+		findViewById(R.id.buttonUploadData).setOnTouchListener(mDelayHideTouchListener);
+		findViewById(R.id.buttonViewSessions).setOnTouchListener(mDelayHideTouchListener);
+		
+		// Handle OnClick events.
+		findViewById(R.id.buttonNewSession).setOnClickListener(mOnClickListener);
+		findViewById(R.id.buttonUploadData).setOnClickListener(mOnClickListener);
+		findViewById(R.id.buttonViewSessions).setOnClickListener(mOnClickListener);
+		
+		/**
+		 * Bind UI to session properties
+		 */
+		textViewHomeSessionCountValue = (TextView)findViewById(R.id.textViewHomeSessionCountValue);
+		textViewHomeSessionCountText = (TextView)findViewById(R.id.textViewHomeSessionCountText);
+		
+		textViewHomeEventTimeValue = (TextView)findViewById(R.id.textViewHomeEventTimeValue);
+		textViewHomeEventTimeSecondsText = (TextView)findViewById(R.id.textViewHomeEventTimeSecondsText);
+		textViewHomeEventTimeText = (TextView)findViewById(R.id.textViewHomeEventTimeText);
+		
+		textViewHomeSessionLastText = (TextView)findViewById(R.id.textViewHomeSessionLastText);
+		
+		imageViewHomeDeviceImage = (ImageView)findViewById(R.id.imageViewHomeDeviceImage);
+		textViewHomeDeviceStatus = (TextView)findViewById(R.id.textViewHomeDeviceStatus);
 		
 		/**
 		 * Communicator section
@@ -154,6 +189,25 @@ public class HomeScreenActivity extends Activity implements OnAvrRecorderEventLi
 				delayedHide(AUTO_HIDE_DELAY_MILLIS);
 			}
 			return false;
+		}
+	};
+	
+	View.OnClickListener mOnClickListener = new View.OnClickListener() {
+		
+		@Override
+		public void onClick(View view) {
+			switch (view.getId()) {
+			case R.id.buttonNewSession:
+				Log.d("vladast", "buttonNewSession pressed!");
+				break;
+			case R.id.buttonUploadData:
+				Log.d("vladast", "buttonUploadData pressed!");
+				break;
+			case R.id.buttonViewSessions:
+				Log.d("vladast", "buttonViewSessions pressed!");
+			default:
+				break;
+			}
 		}
 	};
 
