@@ -202,6 +202,11 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 		return null;		
 	}
 	
+	/**
+	 * Counts number of row within given table
+	 * @param clazz Database object's class.
+	 * @return Number of rows within class' table.
+	 */
 	public int getDatabaseObjectCount(Class<EventRecorderDAO> clazz) {
 		// TODO Count table entries based on the given class
 		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
@@ -216,6 +221,13 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 		return 0;
 	}
 	
+	/**
+	 * Counts values within the specified column of give table
+	 * @param clazz Database object's class.
+	 * @param columnName Name of the column containing numbers.
+	 * <b>NOTE:</b> It is expected that column is of type INTEGER
+	 * @return Sum of all values within give column.
+	 */
 	public int getDatabaseObjectValueCount(Class<EventRecorderDAO> clazz, String columnName) {
 		// TODO Perform addition of all values within same column of the same table
 		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
@@ -228,5 +240,25 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 			
 		}
 		return 0;
+	}
+	
+	/**
+	 * Retrieves last record added into particular table.
+	 * @param clazz Database object's class.
+	 * @return Last recorded added.
+	 */
+	public EventRecorderDAO getLastDatabaseObject(Class<EventRecorderDAO> clazz) {
+		// TODO Run an SQL select query so that last record added is returned (one with the highest ID value)
+		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
+			
+		} else if (clazz.getSimpleName().equals(EventDAO.class.getSimpleName())) {
+			
+		} else if (clazz.getSimpleName().equals(DeviceDAO.class.getSimpleName())) {
+			
+		} else if (clazz.getSimpleName().equals(TouchableDAO.class.getSimpleName())) {
+			
+		}
+		
+		return null;		
 	}
 }
