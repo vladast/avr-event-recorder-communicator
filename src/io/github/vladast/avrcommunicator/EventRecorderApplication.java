@@ -5,6 +5,7 @@ package io.github.vladast.avrcommunicator;
 
 import io.github.vladast.avrcommunicator.activities.EventRecorderSettingsActivity;
 import io.github.vladast.avrcommunicator.activities.HomeScreenActivity;
+import io.github.vladast.avrcommunicator.db.EventRecorderDatabaseHandler;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -45,6 +46,8 @@ public class EventRecorderApplication extends Application implements OnSharedPre
 	 * Single instance of <code>EventRecorderApplication</code> object.
 	 */
 	private static EventRecorderApplication eventRecorderApplication;
+	
+	private EventRecorderDatabaseHandler eventRecorderDatabaseHandler;
 	
 	/**
 	 * Instance of <code>Communicator</code> class that will be focal point for communication with USB device
@@ -147,7 +150,9 @@ public class EventRecorderApplication extends Application implements OnSharedPre
 		
 		initCommunicator();
 		
-		PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);;
+		PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
+		
+		eventRecorderDatabaseHandler = new EventRecorderDatabaseHandler(this);
 	}
 	
 	@Override
