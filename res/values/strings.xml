@@ -14,6 +14,15 @@
     <string name="home_new_session">Start New Session</string>
     <string name="home_upload_data">Upload Records from Device</string>
     <string name="home_view_sessions">View Sessions</string>
+    <string name="home_recorded_session">Recorded Session</string>
+    <string name="home_recorded_sessions">Recorded Sessions</string>
+    <string name="home_recorded_hours">Hours</string>
+    <string name="home_recorded_minutes">Minutes</string>
+    <string name="home_recorded_seconds">Seconds</string>
+    <string name="home_recorded_events"> of Recorded Events</string>
+    <string name="home_recorded_last">Last Recorded Session is</string>
+    <string name="home_device_attached">Compatible device is attached.</string>
+    <string name="home_device_detached">No compatible devices attached.</string>
 
     <!-- Records Status -->
     <string name="device_reading_completed">Reading completed.</string>
