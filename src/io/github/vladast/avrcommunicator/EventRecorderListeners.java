@@ -30,6 +30,7 @@ public class EventRecorderListeners implements OnAvrRecorderEventListener {
 	 */
 	public void registerEventRecorderListener(OnAvrRecorderEventListener onAvrRecorderEventListener) {
 		if(!mOnAvrRecorderEventListeners.contains(onAvrRecorderEventListener)) {
+			System.out.println("Adding new event listener...");
 			mOnAvrRecorderEventListeners.add(onAvrRecorderEventListener);	
 		}
 	}
@@ -67,6 +68,7 @@ public class EventRecorderListeners implements OnAvrRecorderEventListener {
 	 */
 	@Override
 	public void OnDeviceSearching() {
+		System.out.println("OnDeviceSearching...");
 		for (OnAvrRecorderEventListener onAvrRecorderEventListener : mOnAvrRecorderEventListeners) {
 			onAvrRecorderEventListener.OnDeviceSearching();
 		}

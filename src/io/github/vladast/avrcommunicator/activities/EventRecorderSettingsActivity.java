@@ -74,8 +74,8 @@ public class EventRecorderSettingsActivity extends PreferenceActivity {
 
 		addPreferencesFromResource(R.xml.preferences);
 
-		bindPreferenceSummaryToValue(findPreference(EventRecorderSettingsActivity.KEY_PREF_EVENT_NUMBER));
-		bindPreferenceSummaryToValue(findPreference(EventRecorderSettingsActivity.KEY_PREF_MONITOR_INTERVAL));
+		bindPreferenceSummaryToValue(findPreference(KEY_PREF_EVENT_NUMBER));
+		bindPreferenceSummaryToValue(findPreference(KEY_PREF_MONITOR_INTERVAL));
 	}
 
 	/** {@inheritDoc} */
