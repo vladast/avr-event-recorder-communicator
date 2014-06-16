@@ -28,8 +28,105 @@
         android:gravity="center"
         android:keepScreenOn="true" >
            
+		<LinearLayout 
+		    android:id="@+id/linearLayoutHomeSessionCount"
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:gravity="top|center"
+		    android:orientation="horizontal">
 
+			<TextView
+			    android:id="@+id/textViewHomeSessionCountValue"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:paddingRight="5dp"
+			    android:text="0" />
+
+			<TextView
+			    android:id="@+id/textViewHomeSessionCountText"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:text="@string/home_recorded_sessions" />
+		    
+		</LinearLayout>
+		
+		<LinearLayout 
+		    android:id="@+id/linearLayoutHomeEventTime"
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:gravity="top|center"
+		    android:orientation="horizontal"
+		    android:layout_below="@id/linearLayoutHomeSessionCount">
+
+			<TextView
+			    android:id="@+id/textViewHomeEventTimeValue"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:paddingRight="5dp"
+			    android:text="0" />
+
+			<TextView
+			    android:id="@+id/textViewHomeEventTimeSecondsText"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:paddingRight="5dp"
+			    android:text="@string/home_recorded_seconds" />
+			
+			<TextView
+			    android:id="@+id/textViewHomeEventTimeText"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:text="@string/home_recorded_events" />
+		    
+		</LinearLayout>
             
+		<LinearLayout 
+		    android:id="@+id/linearLayoutHomeSessionLast"
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:gravity="top|center"
+		    android:orientation="vertical"
+		    android:layout_below="@id/linearLayoutHomeEventTime">
+
+			<TextView
+			    android:id="@+id/textViewHomeSessionLastIntro"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:text="@string/home_recorded_last" />
+
+			<TextView
+			    android:id="@+id/textViewHomeSessionLastText"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:text="Unknown" 
+			    android:textStyle="italic"/>
+		    
+		</LinearLayout>
+		
+		<LinearLayout 
+		    android:id="@+id/linearLayoutHomeDevice"
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:gravity="top|center"
+		    android:orientation="horizontal"
+		    android:layout_below="@id/linearLayoutHomeSessionLast">
+
+			<ImageView 
+			    android:id="@+id/imageViewHomeDeviceImage"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:src="@drawable/ic_launcher"
+			    android:contentDescription="USB device"/>
+
+			<TextView
+			    android:id="@+id/textViewHomeDeviceStatus"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:gravity="center"
+			    android:text="@string/home_device_detached" />
+		    
+		</LinearLayout>
+		
 	</RelativeLayout>
 
     <!--
