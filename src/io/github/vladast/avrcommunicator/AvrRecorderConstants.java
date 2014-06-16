@@ -39,6 +39,8 @@ public final class AvrRecorderConstants {
     public static final byte STATE_DELETE	= (byte) 0xE5; // Erase external EEPROM
     public static final byte STATE_RESES	= (byte) 0xF6; // Re-initiate session counter 
 
+    public static final int		MAX_EVENT_NUMBER					= 8;
+    
     public static final int		DEFAULT_PREF_EVENT_NUMBER			= 3;
     public static final boolean	DEFAULT_PREF_MONITOR_DEVICE			= true;
     public static final int		DEFAULT_PREF_MONITORING_INTERVAL	= 1;
