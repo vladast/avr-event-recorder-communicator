@@ -54,6 +54,10 @@ public class EventRecorderSettingsActivity extends PreferenceActivity {
 	 * Preferences key for touchable names
 	 */
 	public static final String KEY_PREF_TOUCHABLE_NAME = "preference_touchables_name";
+	/**
+	 * Prefernces key for starting screen
+	 */
+	public static final String KEY_PREF_STARTING_SCREEN = "starting_screen";
 	
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {
@@ -76,6 +80,7 @@ public class EventRecorderSettingsActivity extends PreferenceActivity {
 
 		bindPreferenceSummaryToValue(findPreference(KEY_PREF_EVENT_NUMBER));
 		bindPreferenceSummaryToValue(findPreference(KEY_PREF_MONITOR_INTERVAL));
+		bindPreferenceSummaryToValue(findPreference(KEY_PREF_STARTING_SCREEN));
 	}
 
 	/** {@inheritDoc} */
@@ -178,6 +183,7 @@ public class EventRecorderSettingsActivity extends PreferenceActivity {
 			// guidelines.
 			bindPreferenceSummaryToValue(findPreference(EventRecorderSettingsActivity.KEY_PREF_EVENT_NUMBER));
 			bindPreferenceSummaryToValue(findPreference(EventRecorderSettingsActivity.KEY_PREF_MONITOR_INTERVAL));
+			bindPreferenceSummaryToValue(findPreference(EventRecorderSettingsActivity.KEY_PREF_STARTING_SCREEN));
 		}
 	}
 

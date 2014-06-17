@@ -20,7 +20,7 @@
 			android:title="@string/pref_title_monitor_devices" />
 		
 	    <ListPreference 
-	        android:defaultValue="1"
+	        android:defaultValue="Overview"
 	        android:entries="@array/pref_list_monitor_interval_values"
 	        android:entryValues="@array/pref_list_monitor_interval_values"
 	        android:key="monitor_interval"
