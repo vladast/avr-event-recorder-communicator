@@ -74,8 +74,6 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 			TOUCHABLE_TABLE_NAME, TOUCHABLE_COL_ID, TOUCHABLE_COL_NAME);
 	private static final String CREATE_TABLE_EVENT = "create table event (id integer primary key, idSession integer, idTouchable integer, indexDeviceEvent integer, foreign key (idSession) references session(id), foreign key (idTouchable) references touchable(id));";
 	
-	private static final String INSERT_DEFAULT_TABLE_TOUCHABLE = "insert into touchable(name) values ('%s');";
-	
 	public EventRecorderDatabaseHandler(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
@@ -92,7 +90,7 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 		debugSqlStatement(CREATE_TABLE_EVENT);
 		db.execSQL(CREATE_TABLE_EVENT);
 		
-		insertDefaultValues(db);
+		insertDefaultValues(db, TouchableDAO.class);
 	}
 	
 	@Override
@@ -109,13 +107,22 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 	 * Called during database creation to insert default values in created tables.
 	 * @param db <code>SQLiteDatabase</code> object to be updated.
 	 */
-	private void insertDefaultValues(SQLiteDatabase db) {
-		String insertStatement = "insert into " + TOUCHABLE_TABLE_NAME + "(" + TOUCHABLE_COL_NAME + ") values ";
-		for(int i = 0; i < AvrRecorderConstants.MAX_EVENT_NUMBER; ++i) {
-			insertStatement += "('" + AvrRecorderConstants.DEFAULT_PREF_TOUCHABLE_NAME_PREFIX + String.valueOf(i + 1) + ")" + ((i == (AvrRecorderConstants.MAX_EVENT_NUMBER - 1)) ? ";" : ",");
+	private void insertDefaultValues(SQLiteDatabase db, Class<?> clazz) {
+		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
+			
+		} else if (clazz.getSimpleName().equals(EventDAO.class.getSimpleName())) {
+			
+		} else if (clazz.getSimpleName().equals(DeviceDAO.class.getSimpleName())) {
+			
+		} else if (clazz.getSimpleName().equals(TouchableDAO.class.getSimpleName())) {
+			String insertStatement = "insert into " + TOUCHABLE_TABLE_NAME + "(" + TOUCHABLE_COL_NAME + ") values ";
+			for(int i = 0; i < AvrRecorderConstants.MAX_EVENT_NUMBER; ++i) {
+				insertStatement += "('" + AvrRecorderConstants.DEFAULT_PREF_TOUCHABLE_NAME_PREFIX + String.valueOf(i + 1) + ")" + ((i == (AvrRecorderConstants.MAX_EVENT_NUMBER - 1)) ? ";" : ",");
+			}
+			debugSqlStatement(insertStatement);
+			db.execSQL(insertStatement);	
 		}
-		debugSqlStatement(insertStatement);
-		db.execSQL(insertStatement);
+		
 	}
 
 	@Override
@@ -167,7 +174,7 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 	 * @param id Database object's identifier.
 	 * @return Database object.
 	 */
-	public EventRecorderDAO getDatabaseObjectById(Class clazz, int id) {
+	public EventRecorderDAO getDatabaseObjectById(Class<?> clazz, int id) {
 		// TODO: Implement 'select' statements that will extract particular records from database.
 		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
 			
@@ -187,7 +194,7 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 	 * @param clazz Database object's class.
 	 * @return Database objects of the given type.
 	 */
-	public ArrayList<EventRecorderDAO> getDatabaseObjects(Class clazz) {
+	public ArrayList<EventRecorderDAO> getDatabaseObjects(Class<?> clazz) {
 		// TODO: Implement 'select' statements that will extract particular records from database.
 		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
 			
@@ -207,7 +214,7 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 	 * @param clazz Database object's class.
 	 * @return Number of rows within class' table.
 	 */
-	public int getDatabaseObjectCount(Class clazz) {
+	public int getDatabaseObjectCount(Class<?> clazz) {
 		// TODO Count table entries based on the given class
 		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
 			
@@ -228,7 +235,7 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 	 * <b>NOTE:</b> It is expected that column is of type INTEGER
 	 * @return Sum of all values within give column.
 	 */
-	public int getDatabaseObjectValueCount(Class clazz, String columnName) {
+	public int getDatabaseObjectValueCount(Class<?> clazz, String columnName) {
 		// TODO Perform addition of all values within same column of the same table
 		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
 			
@@ -247,10 +254,10 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 	 * @param clazz Database object's class.
 	 * @return Last recorded added.
 	 */
-	public EventRecorderDAO getLastDatabaseObject(Class<EventRecorderDAO> clazz) {
+	public EventRecorderDAO getLastDatabaseObject(Class<?> clazz) {
 		// TODO Run an SQL select query so that last record added is returned (one with the highest ID value)
 		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
-			
+			return new SessionDAO(this);
 		} else if (clazz.getSimpleName().equals(EventDAO.class.getSimpleName())) {
 			
 		} else if (clazz.getSimpleName().equals(DeviceDAO.class.getSimpleName())) {
