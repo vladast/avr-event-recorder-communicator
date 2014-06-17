@@ -117,7 +117,7 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 		} else if (clazz.getSimpleName().equals(TouchableDAO.class.getSimpleName())) {
 			String insertStatement = "insert into " + TOUCHABLE_TABLE_NAME + "(" + TOUCHABLE_COL_NAME + ") values ";
 			for(int i = 0; i < AvrRecorderConstants.MAX_EVENT_NUMBER; ++i) {
-				insertStatement += "('" + AvrRecorderConstants.DEFAULT_PREF_TOUCHABLE_NAME_PREFIX + String.valueOf(i + 1) + ")" + ((i == (AvrRecorderConstants.MAX_EVENT_NUMBER - 1)) ? ";" : ",");
+				insertStatement += "('" + AvrRecorderConstants.DEFAULT_PREF_TOUCHABLE_NAME_PREFIX + String.valueOf(i + 1) + "')" + ((i == (AvrRecorderConstants.MAX_EVENT_NUMBER - 1)) ? ";" : ",");
 			}
 			debugSqlStatement(insertStatement);
 			db.execSQL(insertStatement);	
