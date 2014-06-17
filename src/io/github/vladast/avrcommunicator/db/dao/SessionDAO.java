@@ -3,6 +3,8 @@
  */
 package io.github.vladast.avrcommunicator.db.dao;
 
+import java.sql.Date;
+
 /**
  * @author vladimir.stankovic
  *
@@ -90,5 +92,25 @@ public class SessionDAO extends EventRecorderDAO {
 	
 	public void setIndexDeviceSession(int indexDeviceSession) {
 		mIndexDeviceSession = indexDeviceSession;
+	}
+	
+	private Date mTimestampUploaded;
+	
+	public Date getTimestampUploaded() {
+		return mTimestampUploaded;
+	}
+	
+	public void setTimestampUploaded(Date timestampUploaded) {
+		mTimestampUploaded = timestampUploaded;
+	}
+	
+	private Date mTimestampRecorded;
+	
+	public Date getTimestampRecorded() {
+		return mTimestampRecorded;
+	}
+	
+	public void setTimestampRecorded(Date timestampRecorded) {
+		mTimestampRecorded = timestampRecorded;
 	}
 }
