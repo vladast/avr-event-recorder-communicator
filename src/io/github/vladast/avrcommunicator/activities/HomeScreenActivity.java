@@ -7,9 +7,13 @@ import io.github.vladast.avrcommunicator.EventRecorderApplication;
 import io.github.vladast.avrcommunicator.OnAvrRecorderEventListener;
 import io.github.vladast.avrcommunicator.R;
 import io.github.vladast.avrcommunicator.Reading;
+import io.github.vladast.avrcommunicator.db.EventRecorderDatabaseHandler;
+import io.github.vladast.avrcommunicator.db.dao.EventDAO;
+import io.github.vladast.avrcommunicator.db.dao.SessionDAO;
 import io.github.vladast.avrcommunicator.util.SystemUiHider;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -153,7 +157,7 @@ public class HomeScreenActivity extends Activity implements OnAvrRecorderEventLi
 		
 		textViewHomeEventTimeValue = (TextView)findViewById(R.id.textViewHomeEventTimeValue);
 		textViewHomeEventTimeSecondsText = (TextView)findViewById(R.id.textViewHomeEventTimeSecondsText);
-		textViewHomeEventTimeText = (TextView)findViewById(R.id.textViewHomeEventTimeText);
+		//textViewHomeEventTimeText = (TextView)findViewById(R.id.textViewHomeEventTimeText);
 		
 		textViewHomeSessionLastText = (TextView)findViewById(R.id.textViewHomeSessionLastText);
 		
@@ -165,6 +169,33 @@ public class HomeScreenActivity extends Activity implements OnAvrRecorderEventLi
 		 */
 		((EventRecorderApplication)getApplicationContext()).getCommunicator().registerListener(this);
 		
+		int numOfRecordedSessions = ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjectCount(SessionDAO.class);
+		int sumOfEventsInSecs = ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjectValueCount(EventDAO.class, "timestamp");
+		String lastSessionDescription = ((SessionDAO)((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getLastDatabaseObject(SessionDAO.class)).getDescription();
+		
+		textViewHomeSessionCountValue.setText(String.valueOf(numOfRecordedSessions));
+		if(numOfRecordedSessions != 1) {
+			textViewHomeSessionCountText.setText(getResources().getString(R.string.home_recorded_sessions));
+		} else {
+			textViewHomeSessionCountText.setText(getResources().getString(R.string.home_recorded_session));
+		}
+
+		// TODO Granular display for hours/minutes/seconds
+		/*
+		if(sumOfEventsInSecs >= 3600) { 		// hours
+			
+		} else if(sumOfEventsInSecs >= 60) {	// minutes
+			
+		} else {								// seconds
+			
+		}
+		*/
+		textViewHomeEventTimeValue.setText(String.valueOf(sumOfEventsInSecs));
+		textViewHomeEventTimeSecondsText.setText(getResources().getString(R.string.home_recorded_seconds));
+		
+		textViewHomeSessionLastText.setText(lastSessionDescription);
+		
+		// TODO Hide device state if disabled via Preferences
 	}
 
 	@Override
@@ -199,12 +230,15 @@ public class HomeScreenActivity extends Activity implements OnAvrRecorderEventLi
 			switch (view.getId()) {
 			case R.id.buttonNewSession:
 				Log.d("vladast", "buttonNewSession pressed!");
+				startActivity(new Intent(HomeScreenActivity.this, null));
 				break;
 			case R.id.buttonUploadData:
 				Log.d("vladast", "buttonUploadData pressed!");
+				startActivity(new Intent(HomeScreenActivity.this, DeviceWatchActivity.class));
 				break;
 			case R.id.buttonViewSessions:
 				Log.d("vladast", "buttonViewSessions pressed!");
+				startActivity(new Intent(HomeScreenActivity.this, null));
 			default:
 				break;
 			}
