@@ -8,6 +8,16 @@
     <string name="pref_header_general">General</string>
     <string name="pref_title_event_number">Number of recordable events</string>
     <string name="pref_description_event_number">How many different events to record</string>
+    <string-array name="pref_list_event_number_entries">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+    </string-array>
     <string-array name="pref_list_event_number_values">
         <item>1 event</item>
         <item>2 events</item>
@@ -28,6 +38,20 @@
         <item>1 second</item>
         <item>3 seconds</item>
         <item>5 seconds</item>
+    </string-array>
+    <string name="pref_title_starting_screen">Starting screen</string>
+    <string name="pref_description_starting_screen">Screen displayed when application starts</string>
+    <string-array name="pref_list_starting_screen_entries">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+    <string-array name="pref_list_starting_screen_values">
+        <item>Overview</item>
+        <item>Device Data</item>
+        <item>New Session</item>
+        <item>Sessions View</item>
     </string-array>
     
     <!-- Touchables settings -->
