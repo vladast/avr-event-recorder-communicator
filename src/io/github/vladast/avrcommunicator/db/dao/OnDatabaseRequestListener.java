@@ -11,8 +11,9 @@ public interface OnDatabaseRequestListener {
 	/**
 	 * Fired when database object is to be added.
 	 * @param obj Instance to be added.
+	 * @return 
 	 */
-	public void OnAdd(Object obj);
+	public long OnAdd(Object obj);
 	/**
 	 * Fired when database object is to be updated.
 	 * @param obj Instance to be updated.
