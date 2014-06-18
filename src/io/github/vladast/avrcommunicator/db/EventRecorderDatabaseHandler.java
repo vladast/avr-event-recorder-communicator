@@ -9,6 +9,7 @@ import io.github.vladast.avrcommunicator.db.dao.EventRecorderDAO;
 import io.github.vladast.avrcommunicator.db.dao.OnDatabaseRequestListener;
 import io.github.vladast.avrcommunicator.db.dao.SessionDAO;
 import io.github.vladast.avrcommunicator.db.dao.TouchableDAO;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -55,19 +56,43 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 	private static final String EVENT_COL_INDEX_DEV_EVENT		= "indexDeviceEvent";
 	private static final String EVENT_COL_TIMESTAMP				= "timestamp";
 	
-	/*
-	 	CREATE TABLE artist(
-		  artistid    INTEGER PRIMARY KEY, 
-		  artistname  TEXT
+	/* v1.0
+	create table device (
+		    id integer primary key autoincrement not null, 
+		    type integer not null, 
+		    code integer, 
+		    description text, 
+		    vid integer, 
+		    pid integer
 		);
-		
-		CREATE TABLE track(
-		  trackid     INTEGER, 
-		  trackname   TEXT, 
-		  trackartist INTEGER,
-		  FOREIGN KEY(trackartist) REFERENCES artist(artistid)
+
+		create table session (
+		    id integer primary key autoincrement not null, 
+		    idDevice integer not null, 
+		    name text not null, 
+		    description text, 
+		    numOfEvents integer not null, 
+		    numOfEventTypes integer not null, 
+		    indexDeviceSession integer, 
+		    timestampUploaded datetime not null, 
+		    timestampRecorded datetime not null,
+		    foreign key (idDevice) references device(id)
 		);
-	 */
+
+		create table touchable (
+		    id integer primary key autoincrement not null, 
+		    name text not null
+		);
+
+		create table event (
+		    id integer primary key autoincrement not null, 
+		    idSession integer not null, 
+		    idTouchable integer not null, 
+		    indexDeviceEvent integer, 
+		    foreign key (idSession) references session(id), 
+		    foreign key (idTouchable) references touchable(id)
+		);
+	*/
 	// TODO: String.format called for each SQL statement.
 	private static final String CREATE_TABLE_DEVICE	= String.format("create table %s (%s integer primary key, %s integer, %s integer, %s text, %s integer, %s integer);",
 			DEVICE_TABLE_NAME, DEVICE_COL_ID, DEVICE_COL_TYPE, DEVICE_COL_CODE, DEVICE_COL_DESCRIPTION, DEVICE_COL_VID, DEVICE_COL_PID);
@@ -129,46 +154,119 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 	}
 
 	@Override
-	public void OnAdd(Object obj) {
-		// TODO Auto-generated method stub
-		// TODO Be sure to update record ID of received object!
+	public long OnAdd(Object obj) {
+		SQLiteDatabase db = getWritableDatabase();
+		ContentValues values = new ContentValues();
+		String queryTableName = SESSION_TABLE_NAME;
+		
 		if(obj.getClass().getSimpleName().equals(SessionDAO.class.getSimpleName())) {
-			
+			// NOTE: Not setting ID
+			queryTableName = SESSION_TABLE_NAME;
+			values.put(SESSION_COL_ID_DEVICE			,((SessionDAO)obj).getIdDevice());
+			values.put(SESSION_COL_NAME					,((SessionDAO)obj).getName());
+			values.put(SESSION_COL_DESCRIPTION			,((SessionDAO)obj).getDescription());
+			values.put(SESSION_COL_EVENTS				,((SessionDAO)obj).getNumberOfEvents());
+			values.put(SESSION_COL_EVENT_TYPES			,((SessionDAO)obj).getNumberOfEventTypes());
+			values.put(SESSION_COL_INDEX_DEV_SESSION	,((SessionDAO)obj).getIndexDeviceSession());
+			values.put(SESSION_COL_TIMESTAMP_UPLOADED	,((SessionDAO)obj).getTimestampUploaded().getTime());
+			values.put(SESSION_COL_TIMESTAMP_RECORDED	,((SessionDAO)obj).getTimestampRecorded().getTime());
 		} else if (obj.getClass().getSimpleName().equals(EventDAO.class.getSimpleName())) {
-			
+			// NOTE: Not setting ID
+			queryTableName = EVENT_TABLE_NAME;
+			values.put(EVENT_COL_ID_SESSION				,((EventDAO)obj).getIdSession());
+			values.put(EVENT_COL_ID_TOUCHABLE			,((EventDAO)obj).getIdTouchable());
+			values.put(EVENT_COL_INDEX_DEV_EVENT		,((EventDAO)obj).getIndexDeviceEvent());
+			values.put(EVENT_COL_TIMESTAMP				,((EventDAO)obj).getTimestamp());
 		} else if (obj.getClass().getSimpleName().equals(DeviceDAO.class.getSimpleName())) {
-			
+			// NOTE: Not setting ID
+			queryTableName = DEVICE_TABLE_NAME;
+			values.put(DEVICE_COL_TYPE					,((DeviceDAO)obj).getType());
+			values.put(DEVICE_COL_CODE					,((DeviceDAO)obj).getCode());
+			values.put(DEVICE_COL_DESCRIPTION			,((DeviceDAO)obj).getDescription());
+			values.put(DEVICE_COL_VID					,((DeviceDAO)obj).getVendorId());
+			values.put(DEVICE_COL_PID					,((DeviceDAO)obj).getProductId());
 		} else if (obj.getClass().getSimpleName().equals(TouchableDAO.class.getSimpleName())) {
-			
+			// NOTE: Not setting ID
+			queryTableName = TOUCHABLE_TABLE_NAME;
+			values.put(TOUCHABLE_COL_NAME				,((TouchableDAO)obj).getName());
 		}		
+		
+		long result = db.insert(queryTableName, null, values);
+		
+		db.close();
+		((EventRecorderDAO)obj).setId(result);
+		return result;
 	}
 
 	@Override
 	public void OnUpdate(Object obj) {
-		// TODO Auto-generated method stub
+		SQLiteDatabase db = getWritableDatabase();
+		ContentValues values = new ContentValues();
+		String queryTableName = SESSION_TABLE_NAME;
+		long queryId = -1;
+		
 		if(obj.getClass().getSimpleName().equals(SessionDAO.class.getSimpleName())) {
-			
+			queryTableName = SESSION_TABLE_NAME;
+			queryId = ((SessionDAO)obj).getId();
+			values.put(SESSION_COL_ID_DEVICE			,((SessionDAO)obj).getIdDevice());
+			values.put(SESSION_COL_NAME					,((SessionDAO)obj).getName());
+			values.put(SESSION_COL_DESCRIPTION			,((SessionDAO)obj).getDescription());
+			values.put(SESSION_COL_EVENTS				,((SessionDAO)obj).getNumberOfEvents());
+			values.put(SESSION_COL_EVENT_TYPES			,((SessionDAO)obj).getNumberOfEventTypes());
+			values.put(SESSION_COL_INDEX_DEV_SESSION	,((SessionDAO)obj).getIndexDeviceSession());
+			values.put(SESSION_COL_TIMESTAMP_UPLOADED	,((SessionDAO)obj).getTimestampUploaded().getTime());
+			values.put(SESSION_COL_TIMESTAMP_RECORDED	,((SessionDAO)obj).getTimestampRecorded().getTime());
 		} else if (obj.getClass().getSimpleName().equals(EventDAO.class.getSimpleName())) {
-			
+			queryTableName = EVENT_TABLE_NAME;
+			queryId = ((EventDAO)obj).getId();
+			values.put(EVENT_COL_ID_SESSION				,((EventDAO)obj).getIdSession());
+			values.put(EVENT_COL_ID_TOUCHABLE			,((EventDAO)obj).getIdTouchable());
+			values.put(EVENT_COL_INDEX_DEV_EVENT		,((EventDAO)obj).getIndexDeviceEvent());
+			values.put(EVENT_COL_TIMESTAMP				,((EventDAO)obj).getTimestamp());
 		} else if (obj.getClass().getSimpleName().equals(DeviceDAO.class.getSimpleName())) {
-			
+			queryTableName = DEVICE_TABLE_NAME;
+			queryId = ((DeviceDAO)obj).getId();
+			values.put(DEVICE_COL_TYPE					,((DeviceDAO)obj).getType());
+			values.put(DEVICE_COL_CODE					,((DeviceDAO)obj).getCode());
+			values.put(DEVICE_COL_DESCRIPTION			,((DeviceDAO)obj).getDescription());
+			values.put(DEVICE_COL_VID					,((DeviceDAO)obj).getVendorId());
+			values.put(DEVICE_COL_PID					,((DeviceDAO)obj).getProductId());
 		} else if (obj.getClass().getSimpleName().equals(TouchableDAO.class.getSimpleName())) {
-			
+			queryTableName = TOUCHABLE_TABLE_NAME;
+			queryId = ((TouchableDAO)obj).getId();
+			values.put(TOUCHABLE_COL_NAME				,((TouchableDAO)obj).getName());
 		}
+		
+        int updateResult = db.update(queryTableName, values, "id=?", new String[] { String.valueOf(queryId) });
+        Log.d(TAG, String.format("Table '%s' update finished with result %d", queryTableName, updateResult));
+		
+		db.close();
 	}
 
 	@Override
-	public void OnDelete(Object obj) {
-		// TODO Auto-generated method stub
+	public void OnDelete(Object obj) {		
+		SQLiteDatabase db = getWritableDatabase();
+		String queryTableName = SESSION_TABLE_NAME;
+		long queryId = -1;        
+        
 		if(obj.getClass().getSimpleName().equals(SessionDAO.class.getSimpleName())) {
-			
+			queryTableName = SESSION_TABLE_NAME;
+			queryId = ((SessionDAO)obj).getId();
 		} else if (obj.getClass().getSimpleName().equals(EventDAO.class.getSimpleName())) {
-			
+			queryTableName = EVENT_TABLE_NAME;
+			queryId = ((EventDAO)obj).getId();
 		} else if (obj.getClass().getSimpleName().equals(DeviceDAO.class.getSimpleName())) {
-			
+			queryTableName = DEVICE_TABLE_NAME;
+			queryId = ((DeviceDAO)obj).getId();
 		} else if (obj.getClass().getSimpleName().equals(TouchableDAO.class.getSimpleName())) {
-			
+			queryTableName = TOUCHABLE_TABLE_NAME;
+			queryId = ((TouchableDAO)obj).getId();
 		}
+		
+		int deleteResult = db.delete(queryTableName, "id=?", new String[] { String.valueOf(queryId) });
+        Log.d(TAG, String.format("Table '%s' update finished with result %d", queryTableName, deleteResult));
+		
+		db.close();
 	}
 	
 	/**
@@ -178,18 +276,45 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 	 * @return Database object.
 	 */
 	public EventRecorderDAO getDatabaseObjectById(Class<?> clazz, int id) {
-		// TODO: Implement 'select' statements that will extract particular records from database.
-		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
-			
-		} else if (clazz.getSimpleName().equals(EventDAO.class.getSimpleName())) {
-			
-		} else if (clazz.getSimpleName().equals(DeviceDAO.class.getSimpleName())) {
-			
-		} else if (clazz.getSimpleName().equals(TouchableDAO.class.getSimpleName())) {
-			
-		}
+		SQLiteDatabase db = getReadableDatabase();
+		EventRecorderDAO resultDAO = null;
+		String sqlQuery = String.format("select * from %s where id=%d", getTableNameFromClassDao(clazz), id);
 		
-		return null;
+		Cursor cursor = db.rawQuery(sqlQuery, null);
+		
+		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
+			resultDAO = new SessionDAO(this);
+			((SessionDAO)resultDAO).setId(cursor.getInt(0));
+			((SessionDAO)resultDAO).setIdDevice(cursor.getInt(1));
+			((SessionDAO)resultDAO).setName(cursor.getString(2));
+			((SessionDAO)resultDAO).setDescription(cursor.getString(3));
+			((SessionDAO)resultDAO).setNumberOfEvents(cursor.getInt(4));
+			((SessionDAO)resultDAO).setNumberOfEventTypes(cursor.getInt(5));
+			((SessionDAO)resultDAO).setIndexDeviceSession(cursor.getInt(6));
+			// TODO Initiate timestamps as well!
+		} else if (clazz.getSimpleName().equals(EventDAO.class.getSimpleName())) {
+			resultDAO = new EventDAO(this);
+			((EventDAO)resultDAO).setId(cursor.getInt(0));
+			((EventDAO)resultDAO).setIdSession(cursor.getInt(1));
+			((EventDAO)resultDAO).setIdTouchable(cursor.getInt(2));
+			((EventDAO)resultDAO).setIndexDeviceEvent(cursor.getInt(3));
+			((EventDAO)resultDAO).setTimestamp(cursor.getInt(4));
+		} else if (clazz.getSimpleName().equals(DeviceDAO.class.getSimpleName())) {
+			resultDAO = new DeviceDAO(this);
+			((DeviceDAO)resultDAO).setId(cursor.getInt(0));
+			((DeviceDAO)resultDAO).setType(cursor.getInt(1));
+			((DeviceDAO)resultDAO).setCode(cursor.getInt(2));
+			((DeviceDAO)resultDAO).setDescription(cursor.getString(3));
+			((DeviceDAO)resultDAO).setVendorId(cursor.getInt(4));
+			((DeviceDAO)resultDAO).setProductId(cursor.getInt(5));
+		} else if (clazz.getSimpleName().equals(TouchableDAO.class.getSimpleName())) {
+			resultDAO = new TouchableDAO(this);
+			((TouchableDAO)resultDAO).setId(cursor.getInt(0));
+			((TouchableDAO)resultDAO).setName(cursor.getString(1));
+		}	
+		
+		db.close();
+		return resultDAO;	
 	}
 	
 	/**
@@ -198,18 +323,51 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 	 * @return Database objects of the given type.
 	 */
 	public ArrayList<EventRecorderDAO> getDatabaseObjects(Class<?> clazz) {
-		// TODO: Implement 'select' statements that will extract particular records from database.
-		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
-			
-		} else if (clazz.getSimpleName().equals(EventDAO.class.getSimpleName())) {
-			
-		} else if (clazz.getSimpleName().equals(DeviceDAO.class.getSimpleName())) {
-			
-		} else if (clazz.getSimpleName().equals(TouchableDAO.class.getSimpleName())) {
-			
+		
+		ArrayList<EventRecorderDAO> resultDAO = new ArrayList<EventRecorderDAO>();
+		
+		String sqlQuery = "select * from " + getTableNameFromClassDao(clazz);
+		SQLiteDatabase db = getReadableDatabase();
+		Cursor cursor = db.rawQuery(sqlQuery, null);
+		
+		if(cursor.moveToFirst()) {
+			do {
+				if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
+					SessionDAO sessionDAO = new SessionDAO(this);
+					sessionDAO.setId(cursor.getInt(0));
+					sessionDAO.setIdDevice(cursor.getInt(1));
+					sessionDAO.setName(cursor.getString(2));
+					sessionDAO.setDescription(cursor.getString(3));
+					sessionDAO.setNumberOfEvents(cursor.getInt(4));
+					sessionDAO.setNumberOfEventTypes(cursor.getInt(5));
+					sessionDAO.setIndexDeviceSession(cursor.getInt(6));
+					// TODO Initiate timestamps as well!					
+					resultDAO.add(sessionDAO);
+				} else if (clazz.getSimpleName().equals(EventDAO.class.getSimpleName())) {
+					EventDAO eventDAO = new EventDAO(this);
+					eventDAO.setId(cursor.getInt(0));
+					eventDAO.setIdSession(cursor.getInt(1));
+					eventDAO.setIdTouchable(cursor.getInt(2));
+					eventDAO.setIndexDeviceEvent(cursor.getInt(3));
+					eventDAO.setTimestamp(cursor.getInt(4));
+				} else if (clazz.getSimpleName().equals(DeviceDAO.class.getSimpleName())) {
+					DeviceDAO deviceDAO = new DeviceDAO(this);
+					deviceDAO.setId(cursor.getInt(0));
+					deviceDAO.setType(cursor.getInt(1));
+					deviceDAO.setCode(cursor.getInt(2));
+					deviceDAO.setDescription(cursor.getString(3));
+					deviceDAO.setVendorId(cursor.getInt(4));
+					deviceDAO.setProductId(cursor.getInt(5));
+				} else if (clazz.getSimpleName().equals(TouchableDAO.class.getSimpleName())) {
+					TouchableDAO touchableDAO = new TouchableDAO(this);
+					touchableDAO.setId(cursor.getInt(0));
+					touchableDAO.setName(cursor.getString(1));
+				}				
+			} while(cursor.moveToNext());
 		}
 		
-		return null;		
+		db.close();
+		return resultDAO;		
 	}
 	
 	/**
@@ -236,18 +394,18 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 	 * <b>NOTE:</b> It is expected that column is of type INTEGER
 	 * @return Sum of all values within give column.
 	 */
-	public int getDatabaseObjectValueCount(Class<?> clazz, String columnName) {
+	public long getDatabaseObjectValueCount(Class<?> clazz, String columnName) {
 		// TODO Perform addition of all values within same column of the same table + check column type by calling getType on the cursor
-		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
-			
-		} else if (clazz.getSimpleName().equals(EventDAO.class.getSimpleName())) {
-			
-		} else if (clazz.getSimpleName().equals(DeviceDAO.class.getSimpleName())) {
-			
-		} else if (clazz.getSimpleName().equals(TouchableDAO.class.getSimpleName())) {
-			
-		}
-		return 0;
+		
+		SQLiteDatabase db = getReadableDatabase();
+		long result = 0;
+		
+		SQLiteStatement sqliteStatement = db.compileStatement(String.format("select sum(%s) from %s", columnName, getTableNameFromClassDao(clazz)));
+		result = sqliteStatement.simpleQueryForLong();
+		
+		db.close();
+		
+		return result;
 	}
 	
 	/**
