@@ -12,13 +12,13 @@ import io.github.vladast.avrcommunicator.db.EventRecorderDatabaseHandler;
 public class EventRecorderDAO implements OnDatabaseRequestListener {
 
 	/** Database record identifier */
-	protected int mId;
+	protected long mId;
 	
 	/**
 	 * Getter for database record identifier.
 	 * @return Database record identifier.
 	 */
-	public int getId() {
+	public long getId() {
 		return mId;
 	}
 	
@@ -40,7 +40,7 @@ public class EventRecorderDAO implements OnDatabaseRequestListener {
 	 * Setter for database record identifier.
 	 * @param id Database record identifier.
 	 */
-	public void setId(int id) {
+	public void setId(long id) {
 		mId = id;
 	}
 	
@@ -56,8 +56,8 @@ public class EventRecorderDAO implements OnDatabaseRequestListener {
 	 * @see io.github.vladast.avrcommunicator.db.dao.OnDatabaseRequestListener#OnAdd(java.lang.Object)
 	 */
 	@Override
-	public void OnAdd(Object obj) {
-		mOnDatabaseRequestListener.OnAdd(obj);
+	public long OnAdd(Object obj) {
+		return mOnDatabaseRequestListener.OnAdd(obj);
 	}
 
 	/* (non-Javadoc)
