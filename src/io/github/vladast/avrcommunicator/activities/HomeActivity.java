@@ -1,7 +1,9 @@
-package io.github.vladast.avrcommunicator;
+package io.github.vladast.avrcommunicator.activities;
 
+import io.github.vladast.avrcommunicator.R;
+import io.github.vladast.avrcommunicator.R.id;
+import io.github.vladast.avrcommunicator.R.layout;
 import io.github.vladast.avrcommunicator.util.SystemUiHider;
-
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.os.Build;
