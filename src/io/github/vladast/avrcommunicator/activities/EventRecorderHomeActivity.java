@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -18,7 +20,7 @@ import android.view.View;
  * 
  * @see SystemUiHider
  */
-public class HomeActivity extends Activity {
+public class EventRecorderHomeActivity extends Activity {
 	/**
 	 * Whether or not the system UI should be auto-hidden after
 	 * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -51,6 +53,10 @@ public class HomeActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+        // Removing title
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);		
+		
 		setContentView(R.layout.activity_home);
 
 		final View controlsView = findViewById(R.id.fullscreen_content_controls);
@@ -129,7 +135,21 @@ public class HomeActivity extends Activity {
 		// are available.
 		delayedHide(100);
 	}
-
+	
+	@Override
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+	public void onWindowFocusChanged(boolean hasFocus) {
+	        super.onWindowFocusChanged(hasFocus);
+	    if (hasFocus) {
+	    	findViewById(R.id.fullscreen_content).setSystemUiVisibility(
+	                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+	                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+	                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+	                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+	                | View.SYSTEM_UI_FLAG_FULLSCREEN
+	                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);}
+	}	
+	
 	/**
 	 * Touch listener to use for in-layout UI controls to delay hiding the
 	 * system UI. This is to prevent the jarring behavior of controls going away
