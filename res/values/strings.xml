@@ -16,11 +16,14 @@
     <string name="home_view_sessions">View Sessions</string>
     <string name="home_recorded_session">Recorded Session</string>
     <string name="home_recorded_sessions">Recorded Sessions</string>
+    <string name="home_recorded_hour">Hour</string>
     <string name="home_recorded_hours">Hours</string>
+    <string name="home_recorded_minute">Minutes</string>
     <string name="home_recorded_minutes">Minutes</string>
     <string name="home_recorded_seconds">Seconds</string>
+    <string name="home_recorded_events_only">Recorded Events</string>
     <string name="home_recorded_events"> of Recorded Events</string>
-    <string name="home_recorded_last">Last Recorded Session is</string>
+    <string name="home_recorded_last">LAST SESSION</string>
     <string name="home_device_attached">Compatible device is attached.</string>
     <string name="home_device_detached">No compatible devices attached.</string>
 
@@ -47,5 +50,6 @@
     <string name="title_activity_test">TestActivity</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="title_activity_home">HomeActivity</string>
 
 </resources>
