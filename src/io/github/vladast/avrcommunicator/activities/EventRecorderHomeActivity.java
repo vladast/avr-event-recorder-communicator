@@ -23,6 +23,8 @@ public class EventRecorderHomeActivity extends Activity {
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);		
 		
 		setContentView(R.layout.activity_home);
+		
+		updateHomeScreenData();
 	}
 
 	@Override
@@ -30,10 +32,15 @@ public class EventRecorderHomeActivity extends Activity {
 		super.onPostCreate(savedInstanceState);
 	}
 	
+	@Override
+	protected void onResume() {
+		updateHomeScreenData();
+	}
+	
 	/**
 	 * Should be called whenever displayed data invalidation is pending
 	 */
-	protected void updateHomeScreedData() {
+	protected void updateHomeScreenData() {
 		// TODO Read data from database
 		int numberOfRecordedSessions = 0;
 		long durationOfRecordedEvents = 0;
