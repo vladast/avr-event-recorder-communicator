@@ -1,55 +1,154 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#0099cc"
-    tools:context="io.github.vladast.avrcommunicator.HomeActivity" >
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" 
+    android:padding="@dimen/activity_home_global_padding" >
 
-    <!--
-         The primary full-screen view. This can be replaced with whatever view
-         is needed to present your content, e.g. VideoView, SurfaceView,
-         TextureView, etc.
-    -->
-
-    <TextView
-        android:id="@+id/fullscreen_content"
+    <LinearLayout
+        android:id="@+id/linearLayoutHomeNumOfRecordedSessions"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:keepScreenOn="true"
-        android:text="@string/dummy_content"
-        android:textColor="#33b5e5"
-        android:textSize="50sp"
-        android:textStyle="bold" />
+        android:layout_height="wrap_content" 
+        android:background="#aeaeae" 
+        android:gravity="center_vertical" >
 
-    <!--
-         This FrameLayout insets its children based on system windows using
-         android:fitsSystemWindows.
-    -->
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fitsSystemWindows="true" >
-
-        <LinearLayout
-            android:id="@+id/fullscreen_content_controls"
-            style="?metaButtonBarStyle"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/textViewNumOfRecordedSessions"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
-            android:background="@color/black_overlay"
-            android:orientation="horizontal"
-            tools:ignore="UselessParent" >
+            android:text="0"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:background="#bababa"
+            android:layout_margin="@dimen/activity_home_text_margin" />
 
-            <Button
-                android:id="@+id/dummy_button"
-                style="?metaButtonBarButtonStyle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/dummy_button" />
-        </LinearLayout>
-    </FrameLayout>
+        <TextView
+            android:id="@+id/textViewSessionsRecorded"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/home_recorded_sessions"
+            android:background="#bababa"
+            android:layout_margin="@dimen/activity_home_text_margin" />
+        
+    </LinearLayout>
+    
+    <LinearLayout
+        android:id="@+id/linearLayoutHomeNumOfRecordedEvents"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/linearLayoutHomeNumOfRecordedSessions" 
+        android:background="#aeaeae" 
+        android:gravity="center_vertical"
+        android:layout_marginTop="@dimen/activity_home_text_margin" >
 
-</FrameLayout>
+        <TextView
+            android:id="@+id/textViewDurationOfRecordedEvents"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:background="#bababa"
+            android:layout_margin="@dimen/activity_home_text_margin" />
+
+        <TextView
+            android:id="@+id/textViewEventsRecorded"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/home_recorded_events"
+            android:background="#bababa"
+            android:layout_margin="@dimen/activity_home_text_margin" />
+        
+    </LinearLayout>
+
+   <LinearLayout
+        android:id="@+id/linearLayoutLastSession"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" 
+        android:layout_below="@id/linearLayoutHomeNumOfRecordedEvents"
+        android:background="#aeaeae" 
+        android:layout_marginTop="@dimen/activity_home_text_margin"
+        android:orientation="vertical" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:gravity="left|top"
+            android:padding="2dp"
+            android:text="LAST SESSION"
+            android:background="#bababa" />
+
+        <TextView
+            android:id="@+id/textViewLastSessionName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fishing at Sava river"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textViewLastSessionDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Contest celebrating 100th birthday of Sava fishing club from Belgrade." />
+        
+        <RelativeLayout
+            android:id="@+id/relativeLayoutLastSessionStats"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content" 
+	        android:background="#aeaeae"  >
+
+			<LinearLayout
+			    android:id="@+id/linearLayoutLastSessionStats" 
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+		        android:background="#aeaeae" 
+		        android:orientation="vertical" >
+			    
+			    <TextView
+		            android:id="@+id/textViewLastSessionNumberOfEvents"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:text="34 events recorded" />
+				            
+				<TextView
+		            android:id="@+id/textViewLastSessionDurationOfEvents"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:text="93 seconds of recordings" />
+			    
+		    </LinearLayout>
+
+            <ImageButton
+			    android:id="@+id/imageButtonNewSession"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:gravity="right|bottom"
+			    android:layout_alignParentRight="true"
+			    android:contentDescription="TODO"
+			    android:src="@drawable/ic_launcher" />
+            
+	   	</RelativeLayout>
+        
+    </LinearLayout>    
+    
+    <RelativeLayout
+        android:id="@+id/relativeLayoutDeviceStatus"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" 
+        android:background="#aeaeae"
+        android:layout_alignParentBottom="true" >
+
+       <ImageView
+           android:id="@+id/imageViewDeviceStatus"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:src="@drawable/ic_launcher" />
+
+       <TextView
+           android:id="@+id/textViewDeviceStatus"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_toRightOf="@id/imageViewDeviceStatus"
+           android:text="No compatible device detected." />
+           
+   	</RelativeLayout>
+   
+</RelativeLayout>
