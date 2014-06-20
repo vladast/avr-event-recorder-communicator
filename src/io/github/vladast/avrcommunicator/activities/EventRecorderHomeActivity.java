@@ -1,53 +1,18 @@
 package io.github.vladast.avrcommunicator.activities;
 
 import io.github.vladast.avrcommunicator.R;
-import io.github.vladast.avrcommunicator.R.id;
-import io.github.vladast.avrcommunicator.R.layout;
-import io.github.vladast.avrcommunicator.util.SystemUiHider;
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.view.MotionEvent;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.TextView;
+import android.widget.ImageView;
 
 /**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- * 
- * @see SystemUiHider
+ * Event Recorder's Home activity
  */
 public class EventRecorderHomeActivity extends Activity {
-	/**
-	 * Whether or not the system UI should be auto-hidden after
-	 * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
-	 */
-	private static final boolean AUTO_HIDE = true;
 
-	/**
-	 * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
-	 * user interaction before hiding the system UI.
-	 */
-	private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
-
-	/**
-	 * If set, will toggle the system UI visibility upon interaction. Otherwise,
-	 * will show the system UI visibility upon interaction.
-	 */
-	private static final boolean TOGGLE_ON_CLICK = true;
-
-	/**
-	 * The flags to pass to {@link SystemUiHider#getInstance}.
-	 */
-	private static final int HIDER_FLAGS = SystemUiHider.FLAG_HIDE_NAVIGATION;
-
-	/**
-	 * The instance of the {@link SystemUiHider} for this activity.
-	 */
-	private SystemUiHider mSystemUiHider;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -58,127 +23,111 @@ public class EventRecorderHomeActivity extends Activity {
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);		
 		
 		setContentView(R.layout.activity_home);
-
-		final View controlsView = findViewById(R.id.fullscreen_content_controls);
-		final View contentView = findViewById(R.id.fullscreen_content);
-
-		// Set up an instance of SystemUiHider to control the system UI for
-		// this activity.
-		mSystemUiHider = SystemUiHider.getInstance(this, contentView,
-				HIDER_FLAGS);
-		mSystemUiHider.setup();
-		mSystemUiHider
-				.setOnVisibilityChangeListener(new SystemUiHider.OnVisibilityChangeListener() {
-					// Cached values.
-					int mControlsHeight;
-					int mShortAnimTime;
-
-					@Override
-					@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-					public void onVisibilityChange(boolean visible) {
-						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-							// If the ViewPropertyAnimator API is available
-							// (Honeycomb MR2 and later), use it to animate the
-							// in-layout UI controls at the bottom of the
-							// screen.
-							if (mControlsHeight == 0) {
-								mControlsHeight = controlsView.getHeight();
-							}
-							if (mShortAnimTime == 0) {
-								mShortAnimTime = getResources().getInteger(
-										android.R.integer.config_shortAnimTime);
-							}
-							controlsView
-									.animate()
-									.translationY(visible ? 0 : mControlsHeight)
-									.setDuration(mShortAnimTime);
-						} else {
-							// If the ViewPropertyAnimator APIs aren't
-							// available, simply show or hide the in-layout UI
-							// controls.
-							controlsView.setVisibility(visible ? View.VISIBLE
-									: View.GONE);
-						}
-
-						if (visible && AUTO_HIDE) {
-							// Schedule a hide().
-							delayedHide(AUTO_HIDE_DELAY_MILLIS);
-						}
-					}
-				});
-
-		// Set up the user interaction to manually show or hide the system UI.
-		contentView.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				if (TOGGLE_ON_CLICK) {
-					mSystemUiHider.toggle();
-				} else {
-					mSystemUiHider.show();
-				}
-			}
-		});
-
-		// Upon interacting with UI controls, delay any scheduled hide()
-		// operations to prevent the jarring behavior of controls going away
-		// while interacting with the UI.
-		findViewById(R.id.dummy_button).setOnTouchListener(
-				mDelayHideTouchListener);
 	}
 
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {
 		super.onPostCreate(savedInstanceState);
-
-		// Trigger the initial hide() shortly after the activity has been
-		// created, to briefly hint to the user that UI controls
-		// are available.
-		delayedHide(100);
 	}
 	
-	@Override
-	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-	public void onWindowFocusChanged(boolean hasFocus) {
-	        super.onWindowFocusChanged(hasFocus);
-	    if (hasFocus) {
-	    	findViewById(R.id.fullscreen_content).setSystemUiVisibility(
-	                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-	                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-	                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-	                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-	                | View.SYSTEM_UI_FLAG_FULLSCREEN
-	                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);}
-	}	
+	/**
+	 * Should be called whenever displayed data invalidation is pending
+	 */
+	protected void updateHomeScreedData() {
+		// TODO Read data from database
+		int numberOfRecordedSessions = 0;
+		long durationOfRecordedEvents = 0;
+		String lastSessionName = "";
+		String lastSessionDescription = "";
+		int lastSessionCount = 0;
+		long lastSessionDuration = 0;
+		boolean devicePresent = false;
+		// TODO Displayed read data
+		setNumberOfRecordedSessions(numberOfRecordedSessions);
+		setCummulativeDurationOfRecordings(durationOfRecordedEvents);
+		setLastSessionProps(lastSessionName, lastSessionDescription, lastSessionCount, lastSessionDuration);
+		setDeviceStatus(devicePresent);
+	}
 	
 	/**
-	 * Touch listener to use for in-layout UI controls to delay hiding the
-	 * system UI. This is to prevent the jarring behavior of controls going away
-	 * while interacting with activity UI.
+	 * Used to update number of recorded sessions Home screen content 
+	 * @param numberOfRecordedSessions Number of recorded sessions to be displayed on Home screen
 	 */
-	View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
-		@Override
-		public boolean onTouch(View view, MotionEvent motionEvent) {
-			if (AUTO_HIDE) {
-				delayedHide(AUTO_HIDE_DELAY_MILLIS);
-			}
-			return false;
-		}
-	};
-
-	Handler mHideHandler = new Handler();
-	Runnable mHideRunnable = new Runnable() {
-		@Override
-		public void run() {
-			mSystemUiHider.hide();
-		}
-	};
-
+	protected void setNumberOfRecordedSessions(int numberOfRecordedSessions) {
+		((TextView)findViewById(R.id.textViewNumOfRecordedSessions)).setText(String.valueOf(numberOfRecordedSessions));
+        String sessionCountText;
+		if(numberOfRecordedSessions == 1) {
+			sessionCountText = getResources().getString(R.string.home_recorded_session);
+        } else {
+			sessionCountText = getResources().getString(R.string.home_recorded_sessions);
+        }
+    	((TextView)findViewById(R.id.textViewSessionsRecorded)).setText(sessionCountText);
+	}
+	
 	/**
-	 * Schedules a call to hide() in [delay] milliseconds, canceling any
-	 * previously scheduled calls.
+	 * Used to update duration of all recorded events on Home screen
+	 * @param duration Duration [sec] of all recorded events that is to be displayed
 	 */
-	private void delayedHide(int delayMillis) {
-		mHideHandler.removeCallbacks(mHideRunnable);
-		mHideHandler.postDelayed(mHideRunnable, delayMillis);
+	protected void setCummulativeDurationOfRecordings(long duration) {
+		((TextView)findViewById(R.id.textViewDurationOfRecordedEvents)).setText(String.valueOf(duration));
+		
+		String eventsRecorded;
+		
+		if(duration < 60) {
+			// seconds
+			eventsRecorded = getResources().getString(R.string.home_recorded_seconds);
+		} else if (duration >= 60 && duration < 120) {
+			// one minute
+			eventsRecorded = getResources().getString(R.string.home_recorded_minute);
+		} else if (duration >= 120 && duration < 3600) {
+			// minutes
+			eventsRecorded = getResources().getString(R.string.home_recorded_minutes);
+		} else if (duration >= 3600 && duration < 2 * 3600) {
+			// one hour
+			eventsRecorded = getResources().getString(R.string.home_recorded_hour);
+		} else {
+			// hours
+			eventsRecorded = getResources().getString(R.string.home_recorded_hours);
+		}
+		
+		((TextView)findViewById(R.id.textViewEventsRecorded)).setText(eventsRecorded);	
+	}
+	
+	/**
+	 * Used to update last session's properties
+	 * @param name Last session's name
+	 * @param description Last session's description
+	 * @param events Number of events recorded during last session
+	 * @param duration Duration of events recorded during last session
+	 */
+	protected void setLastSessionProps(String name, String description, int events, long duration) {
+		//textViewLastSessionName
+		((TextView)findViewById(R.id.textViewLastSessionName)).setText(name);
+		//textViewLastSessionDescription
+		((TextView)findViewById(R.id.textViewLastSessionDescription)).setText(description);
+		//textViewLastSessionNumberOfEvents
+		((TextView)findViewById(R.id.textViewLastSessionNumberOfEvents)).setText(String.valueOf(events));
+		//textViewLastSessionDurationOfEvents
+		((TextView)findViewById(R.id.textViewLastSessionDurationOfEvents)).setText(String.valueOf(duration));
+	}
+	
+	/**
+	 * Used to update status of connected devices
+	 * @param detected Whether compatible device is connected or not
+	 */
+	protected void setDeviceStatus(boolean detected) {
+		//imageViewDeviceStatus
+		//textViewDeviceStatus
+	    //<string name="home_device_attached">Compatible device is attached.</string>
+	    //<string name="home_device_detached">No compatible devices attached.</string>
+		
+		// TODO Create drawables for attached/detached device display
+		if(detected) {
+			((ImageView)findViewById(R.id.imageViewDeviceStatus)).setImageDrawable(getResources().getDrawable(R.drawable.ic_launcher));
+			((TextView)findViewById(R.id.textViewDeviceStatus)).setText(getResources().getString(R.string.home_device_attached));
+		} else {
+			((ImageView)findViewById(R.id.imageViewDeviceStatus)).setImageDrawable(getResources().getDrawable(R.drawable.ic_launcher));
+			((TextView)findViewById(R.id.textViewDeviceStatus)).setText(getResources().getString(R.string.home_device_detached));		
+		}
 	}
 }
