@@ -30,7 +30,7 @@
 		
 	    <ListPreference 
 	        android:defaultValue="1"
-	        android:entries="@array/pref_list_starting_screen_entries"
+	        android:entries="@array/pref_list_starting_screen_values"
 	        android:entryValues="@array/pref_list_starting_screen_values"
 	        android:key="starting_screen"
 	        android:negativeButtonText="@null"
