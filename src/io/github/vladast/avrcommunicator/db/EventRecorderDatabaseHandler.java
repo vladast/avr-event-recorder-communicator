@@ -399,13 +399,13 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 		
 		String sqlCondition = "";
 		
-		if(dao.getClass().equals(SessionDAO.class.getSimpleName())) {
+		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
 			
-		} else if (dao.getClass().equals(EventDAO.class.getSimpleName())) {
+		} else if (clazz.getSimpleName().equals(EventDAO.class.getSimpleName())) {
 			sqlCondition = String.format("idSession=%d", dao.getId());
-		} else if (dao.getClass().equals(DeviceDAO.class.getSimpleName())) {
+		} else if (clazz.getSimpleName().equals(DeviceDAO.class.getSimpleName())) {
 			
-		} else if (dao.getClass().equals(TouchableDAO.class.getSimpleName())) {
+		} else if (clazz.getSimpleName().equals(TouchableDAO.class.getSimpleName())) {
 			
 		}	
 		
@@ -456,13 +456,13 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 		
 		String sqlCondition = "";
 		
-		if(dao.getClass().equals(SessionDAO.class.getSimpleName())) {
+		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
 			
-		} else if (dao.getClass().equals(EventDAO.class.getSimpleName())) {
+		} else if (clazz.getSimpleName().equals(EventDAO.class.getSimpleName())) {
 			sqlCondition = String.format("idSession=%d", dao.getId());
-		} else if (dao.getClass().equals(DeviceDAO.class.getSimpleName())) {
+		} else if (clazz.getSimpleName().equals(DeviceDAO.class.getSimpleName())) {
 			
-		} else if (dao.getClass().equals(TouchableDAO.class.getSimpleName())) {
+		} else if (clazz.getSimpleName().equals(TouchableDAO.class.getSimpleName())) {
 			
 		}	
 		
