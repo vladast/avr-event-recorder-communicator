@@ -9,6 +9,8 @@ package io.github.vladast.avrcommunicator.db.dao;
  */
 public class EventDAO extends EventRecorderDAO {
 
+	public static final String DB_COUNTABLE_COLUMN = "timestamp";
+	
 	/**
 	 * @param onDatabaseRequestListener
 	 */
