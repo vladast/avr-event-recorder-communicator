@@ -8,6 +8,8 @@ import io.github.vladast.avrcommunicator.R;
 import io.github.vladast.avrcommunicator.Reading;
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.View.OnClickListener;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -21,7 +23,9 @@ import io.github.vladast.avrcommunicator.db.dao.SessionDAO;
  */
 public class EventRecorderHomeActivity extends Activity implements OnAvrRecorderEventListener {
 
-	private boolean mDeviceConnected;
+	private OnClickListener mOnViewSessionsListener;
+	private OnClickListener mOnSessionDetailsListener;
+	private OnClickListener mOnHelpListener;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -33,9 +37,53 @@ public class EventRecorderHomeActivity extends Activity implements OnAvrRecorder
 		
 		setContentView(R.layout.activity_home);
 		
-		mDeviceConnected = false;
-		
 		updateHomeScreenData();
+		
+		mOnViewSessionsListener = new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Navigate to View Sessions activity
+				
+			}
+		};
+		
+		mOnSessionDetailsListener = new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Navigate to Session Details activity
+				// 1. To last session's details
+				// 2. To device session's details
+				
+			}
+		};
+		
+		mOnHelpListener = new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Navigate to Help activity
+				// 1. From menu --> to general Help
+				// 2. From device status --> to device specific Help
+			}
+		};
+		
+		//linearLayoutHomeNumOfRecordedSessions
+		//linearLayoutHomeNumOfRecordedEvents
+		//linearLayoutLastSession --> check if buton on click can be detected!
+		//relativeLayoutDeviceStatus
+		findViewById(R.id.linearLayoutHomeNumOfRecordedSessions).setOnClickListener(mOnViewSessionsListener);
+		findViewById(R.id.linearLayoutHomeNumOfRecordedEvents).setOnClickListener(mOnViewSessionsListener);
+		findViewById(R.id.linearLayoutLastSession).setOnClickListener(mOnSessionDetailsListener);
+		findViewById(R.id.relativeLayoutDeviceStatus).setOnClickListener(mOnHelpListener);
+		
+		findViewById(R.id.imageButtonNewSession).setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				// TODO Navigate to New Session activity
+			}
+		});
 	}
 
 	@Override
@@ -192,11 +240,13 @@ public class EventRecorderHomeActivity extends Activity implements OnAvrRecorder
 	@Override
 	public void OnDeviceConnected() {
 		setDeviceStatus(true);
+		findViewById(R.id.relativeLayoutDeviceStatus).setOnClickListener(mOnSessionDetailsListener);
 	}
 
 	@Override
 	public void OnDeviceSearching() {
 		setDeviceStatus(false);
+		findViewById(R.id.relativeLayoutDeviceStatus).setOnClickListener(mOnHelpListener);
 	}
 
 	@Override
