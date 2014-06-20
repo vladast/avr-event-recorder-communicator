@@ -1,6 +1,11 @@
 package io.github.vladast.avrcommunicator.activities;
 
+import java.util.ArrayList;
+
+import io.github.vladast.avrcommunicator.AvrRecorderErrors;
+import io.github.vladast.avrcommunicator.OnAvrRecorderEventListener;
 import io.github.vladast.avrcommunicator.R;
+import io.github.vladast.avrcommunicator.Reading;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.Window;
@@ -14,8 +19,9 @@ import io.github.vladast.avrcommunicator.db.dao.SessionDAO;
 /**
  * Event Recorder's Home activity
  */
-public class EventRecorderHomeActivity extends Activity {
+public class EventRecorderHomeActivity extends Activity implements OnAvrRecorderEventListener {
 
+	private boolean mDeviceConnected;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +32,8 @@ public class EventRecorderHomeActivity extends Activity {
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);		
 		
 		setContentView(R.layout.activity_home);
+		
+		mDeviceConnected = false;
 		
 		updateHomeScreenData();
 	}
@@ -38,6 +46,7 @@ public class EventRecorderHomeActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
+		
 		updateHomeScreenData();
 	}
 	
@@ -68,6 +77,7 @@ public class EventRecorderHomeActivity extends Activity {
 		/**
 		 * Check if compatible USB device is attached.
 		 */
+		((EventRecorderApplication)getApplicationContext()).getCommunicator().startDeviceDetection();
 		
 		/**
 		 * Update Home screen with read data
@@ -75,7 +85,6 @@ public class EventRecorderHomeActivity extends Activity {
 		setNumberOfRecordedSessions(numberOfRecordedSessions);
 		setCummulativeDurationOfRecordings(durationOfRecordedEvents);
 		setLastSessionProps(lastSessionName, lastSessionDescription, lastSessionCount, lastSessionDuration);
-		setDeviceStatus(devicePresent);
 	}
 	
 	/**
@@ -172,5 +181,56 @@ public class EventRecorderHomeActivity extends Activity {
 			((ImageView)findViewById(R.id.imageViewDeviceStatus)).setImageDrawable(getResources().getDrawable(R.drawable.ic_launcher));
 			((TextView)findViewById(R.id.textViewDeviceStatus)).setText(getResources().getString(R.string.home_device_detached));		
 		}
+	}
+
+	@Override
+	public void OnDeviceFound() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnDeviceConnected() {
+		setDeviceStatus(true);
+	}
+
+	@Override
+	public void OnDeviceSearching() {
+		setDeviceStatus(false);
+	}
+
+	@Override
+	public void OnDeviceReInitiated() {
+		setDeviceStatus(false);
+	}
+
+	@Override
+	public void OnRecordsRead(ArrayList<Reading> eventReadings) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnError(AvrRecorderErrors avrRecorderErrors) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnError(AvrRecorderErrors avrRecorderErrors, int data) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnReadingStarted() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnDebugMessage(String message) {
+		// TODO Auto-generated method stub
+		
 	}
 }
