@@ -61,7 +61,6 @@ public class EventRecorderHomeActivity extends Activity implements OnAvrRecorder
 		String lastSessionDescription = "";
 		long lastSessionCount = 0;
 		long lastSessionDuration = 0;
-		boolean devicePresent = false;
 		
 		/**
 		 * Read data from database
