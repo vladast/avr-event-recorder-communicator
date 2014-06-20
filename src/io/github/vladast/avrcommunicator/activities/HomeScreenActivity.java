@@ -3,6 +3,7 @@ package io.github.vladast.avrcommunicator.activities;
 import java.util.ArrayList;
 
 import io.github.vladast.avrcommunicator.AvrRecorderErrors;
+import io.github.vladast.avrcommunicator.Communicator;
 import io.github.vladast.avrcommunicator.EventRecorderApplication;
 import io.github.vladast.avrcommunicator.OnAvrRecorderEventListener;
 import io.github.vladast.avrcommunicator.R;
@@ -17,6 +18,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -29,8 +31,12 @@ import android.widget.Toast;
  * status bar and navigation/system bar) with user interaction.
  * 
  * @see SystemUiHider
+ * @deprecated Using <code>EventRecorderHomeActivity</code> instead.
  */
 public class HomeScreenActivity extends Activity implements OnAvrRecorderEventListener {
+	
+	public static final String TAG = HomeScreenActivity.class.getSimpleName();
+	
 	/**
 	 * Whether or not the system UI should be auto-hidden after
 	 * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -169,8 +175,8 @@ public class HomeScreenActivity extends Activity implements OnAvrRecorderEventLi
 		 */
 		((EventRecorderApplication)getApplicationContext()).getCommunicator().registerListener(this);
 		
-		int numOfRecordedSessions = ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjectCount(SessionDAO.class);
-		int sumOfEventsInSecs = ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjectValueCount(EventDAO.class, "timestamp");
+		long numOfRecordedSessions = ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjectCount(SessionDAO.class);
+		long sumOfEventsInSecs = ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjectValueCount(EventDAO.class, "timestamp");
 		String lastSessionDescription = ((SessionDAO)((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getLastDatabaseObject(SessionDAO.class)).getDescription();
 		
 		textViewHomeSessionCountValue.setText(String.valueOf(numOfRecordedSessions));
@@ -196,6 +202,28 @@ public class HomeScreenActivity extends Activity implements OnAvrRecorderEventLi
 		textViewHomeSessionLastText.setText(lastSessionDescription);
 		
 		// TODO Hide device state if disabled via Preferences
+		
+		
+/*
+	    settings = PreferenceManager
+	            .getDefaultSharedPreferences(getBaseContext());
+
+	    String action = settings.getString("Activitypref","mypackage.ActivityA");
+	    Intent intent = new Intent(action);
+	    startActivity(intent);*/
+		
+
+		String preferedScreen = PreferenceManager.getDefaultSharedPreferences(this).getString(EventRecorderSettingsActivity.KEY_PREF_STARTING_SCREEN, "1");
+		Log.d(TAG, String.format("Prefered screen is '%s'", preferedScreen));
+		if(preferedScreen.equals(getResources().getString(R.string.activity_home_pref_name))) {
+			
+		} else if (preferedScreen.equals(getResources().getString(R.string.activity_upload_data_pref_name))) {
+			startActivity(new Intent(this, DeviceWatchActivity.class));
+		} else if (preferedScreen.equals(getResources().getString(R.string.activity_new_session_pref_name))) {
+			
+		} else {
+			
+		}
 	}
 
 	@Override
