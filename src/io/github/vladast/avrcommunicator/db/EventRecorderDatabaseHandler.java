@@ -387,6 +387,32 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 		return result;
 	}
 	
+	public long getDatabaseObjectCountByForeignId(Class<?> clazz, EventRecorderDAO dao) {
+		SQLiteDatabase db = getReadableDatabase();
+		long result = 0;
+		
+		String sqlCondition = "";
+		
+		if(dao.getClass().equals(SessionDAO.class.getSimpleName())) {
+			
+		} else if (dao.getClass().equals(EventDAO.class.getSimpleName())) {
+			sqlCondition = String.format("idSession=%s", dao.getId());
+		} else if (dao.getClass().equals(DeviceDAO.class.getSimpleName())) {
+			
+		} else if (dao.getClass().equals(TouchableDAO.class.getSimpleName())) {
+			
+		}	
+		
+		String sqlQuery = String.format("select count(*) from %s where %s", getTableNameFromClassDao(clazz), sqlCondition);
+		
+		SQLiteStatement sqliteStatement = db.compileStatement(sqlQuery);
+		result = sqliteStatement.simpleQueryForLong();
+		
+		db.close();
+		
+		return result;
+	}
+	
 	/**
 	 * Counts values within the specified column of give table
 	 * @param clazz Database object's class.
