@@ -387,6 +387,12 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 		return result;
 	}
 	
+	/**
+	 * Counts number of row within particular table per foreign object's ID value
+	 * @param clazz Database object's class to be queried.
+	 * @param dao Database object from which ID value is to be extracted.
+	 * @return Number of rows within class' table.
+	 */
 	public long getDatabaseObjectCountByForeignId(Class<?> clazz, EventRecorderDAO dao) {
 		SQLiteDatabase db = getReadableDatabase();
 		long result = 0;
@@ -396,7 +402,7 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 		if(dao.getClass().equals(SessionDAO.class.getSimpleName())) {
 			
 		} else if (dao.getClass().equals(EventDAO.class.getSimpleName())) {
-			sqlCondition = String.format("idSession=%s", dao.getId());
+			sqlCondition = String.format("idSession=%d", dao.getId());
 		} else if (dao.getClass().equals(DeviceDAO.class.getSimpleName())) {
 			
 		} else if (dao.getClass().equals(TouchableDAO.class.getSimpleName())) {
@@ -418,7 +424,7 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 	 * @param clazz Database object's class.
 	 * @param columnName Name of the column containing numbers.
 	 * <b>NOTE:</b> It is expected that column is of type INTEGER
-	 * @return Sum of all values within give column.
+	 * @return Sum of all values within given column.
 	 */
 	public long getDatabaseObjectValueCount(Class<?> clazz, String columnName) {
 		// TODO Perform addition of all values within same column of the same table + check column type by calling getType on the cursor
@@ -427,6 +433,43 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 		long result = 0;
 		
 		SQLiteStatement sqliteStatement = db.compileStatement(String.format("select sum(%s) from %s", columnName, getTableNameFromClassDao(clazz)));
+		result = sqliteStatement.simpleQueryForLong();
+		
+		db.close();
+		
+		return result;
+	}
+	
+	/**
+	 * Counts values within the specified column of given table, per foreign object's ID
+	 * @param clazz Database object's class.
+	 * @param columnName Name of the column containing numbers.
+	 * <b>NOTE:</b> It is expected that column is of type INTEGER
+	 * @param dao Database object from which ID value is to be extracted.
+	 * @return Sum of all values within given column.
+	 */
+	public long getDatabaseObjectValueCountByForeignId(Class<?> clazz, String columnName, EventRecorderDAO dao) {
+		// TODO Perform addition of all values within same column of the same table + check column type by calling getType on the cursor
+		
+		SQLiteDatabase db = getReadableDatabase();
+		long result = 0;
+		
+		String sqlCondition = "";
+		
+		if(dao.getClass().equals(SessionDAO.class.getSimpleName())) {
+			
+		} else if (dao.getClass().equals(EventDAO.class.getSimpleName())) {
+			sqlCondition = String.format("idSession=%d", dao.getId());
+		} else if (dao.getClass().equals(DeviceDAO.class.getSimpleName())) {
+			
+		} else if (dao.getClass().equals(TouchableDAO.class.getSimpleName())) {
+			
+		}	
+		
+		String sqlQuery = String.format("select sum(%s) from %s where %s", columnName, getTableNameFromClassDao(clazz), sqlCondition);		
+		
+		
+		SQLiteStatement sqliteStatement = db.compileStatement(sqlQuery);
 		result = sqliteStatement.simpleQueryForLong();
 		
 		db.close();
