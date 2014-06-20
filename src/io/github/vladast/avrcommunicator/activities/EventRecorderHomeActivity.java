@@ -126,6 +126,7 @@ public class EventRecorderHomeActivity extends Activity implements OnAvrRecorder
 			// hours
 			eventsRecorded = getResources().getString(R.string.home_recorded_hours);
 		}
+		eventsRecorded += " " + getResources().getString(R.string.home_recorded_events);
 		
 		((TextView)findViewById(R.id.textViewEventsRecorded)).setText(eventsRecorded);	
 	}
