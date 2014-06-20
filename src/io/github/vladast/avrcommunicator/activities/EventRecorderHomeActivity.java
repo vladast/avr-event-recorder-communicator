@@ -7,6 +7,9 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.ImageView;
+import io.github.vladast.avrcommunicator.EventRecorderApplication;
+import io.github.vladast.avrcommunicator.db.dao.EventDAO;
+import io.github.vladast.avrcommunicator.db.dao.SessionDAO;
 
 /**
  * Event Recorder's Home activity
@@ -34,6 +37,7 @@ public class EventRecorderHomeActivity extends Activity {
 	
 	@Override
 	protected void onResume() {
+		super.onResume();
 		updateHomeScreenData();
 	}
 	
@@ -42,14 +46,32 @@ public class EventRecorderHomeActivity extends Activity {
 	 */
 	protected void updateHomeScreenData() {
 		// TODO Read data from database
-		int numberOfRecordedSessions = 0;
+		long numberOfRecordedSessions = 0;
 		long durationOfRecordedEvents = 0;
 		String lastSessionName = "";
 		String lastSessionDescription = "";
-		int lastSessionCount = 0;
+		long lastSessionCount = 0;
 		long lastSessionDuration = 0;
 		boolean devicePresent = false;
-		// TODO Displayed read data
+		
+		/**
+		 * Read data from database
+		 */
+		numberOfRecordedSessions = ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjectCount(SessionDAO.class);
+		durationOfRecordedEvents = ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjectValueCount(EventDAO.class, EventDAO.DB_COUNTABLE_COLUMN);
+		SessionDAO lastSession = (SessionDAO) ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getLastDatabaseObject(SessionDAO.class);
+		lastSessionName = lastSession.getName();
+		lastSessionDescription = lastSession.getDescription();
+		lastSessionCount = ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjectCountByForeignId(EventDAO.class, lastSession);
+		lastSessionDuration = ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjectValueCountByForeignId(EventDAO.class, EventDAO.DB_COUNTABLE_COLUMN, lastSession);
+
+		/**
+		 * Check if compatible USB device is attached.
+		 */
+		
+		/**
+		 * Update Home screen with read data
+		 */
 		setNumberOfRecordedSessions(numberOfRecordedSessions);
 		setCummulativeDurationOfRecordings(durationOfRecordedEvents);
 		setLastSessionProps(lastSessionName, lastSessionDescription, lastSessionCount, lastSessionDuration);
@@ -60,7 +82,7 @@ public class EventRecorderHomeActivity extends Activity {
 	 * Used to update number of recorded sessions Home screen content 
 	 * @param numberOfRecordedSessions Number of recorded sessions to be displayed on Home screen
 	 */
-	protected void setNumberOfRecordedSessions(int numberOfRecordedSessions) {
+	protected void setNumberOfRecordedSessions(long numberOfRecordedSessions) {
 		((TextView)findViewById(R.id.textViewNumOfRecordedSessions)).setText(String.valueOf(numberOfRecordedSessions));
         String sessionCountText;
 		if(numberOfRecordedSessions == 1) {
@@ -107,15 +129,34 @@ public class EventRecorderHomeActivity extends Activity {
 	 * @param events Number of events recorded during last session
 	 * @param duration Duration of events recorded during last session
 	 */
-	protected void setLastSessionProps(String name, String description, int events, long duration) {
-		//textViewLastSessionName
+	protected void setLastSessionProps(String name, String description, long events, long duration) {
 		((TextView)findViewById(R.id.textViewLastSessionName)).setText(name);
-		//textViewLastSessionDescription
 		((TextView)findViewById(R.id.textViewLastSessionDescription)).setText(description);
-		//textViewLastSessionNumberOfEvents
-		((TextView)findViewById(R.id.textViewLastSessionNumberOfEvents)).setText(String.valueOf(events));
-		//textViewLastSessionDurationOfEvents
-		((TextView)findViewById(R.id.textViewLastSessionDurationOfEvents)).setText(String.valueOf(duration));
+		((TextView)findViewById(R.id.textViewLastSessionNumberOfEvents)).setText(String.valueOf(events) + 
+				" " + getResources().getString(R.string.home_recorded_events_only));
+		
+		String eventsRecorded = String.valueOf(duration) + " ";
+		
+		if(duration < 60) {
+			// seconds
+			eventsRecorded += getResources().getString(R.string.home_recorded_seconds);
+		} else if (duration >= 60 && duration < 120) {
+			// one minute
+			eventsRecorded += getResources().getString(R.string.home_recorded_minute);
+		} else if (duration >= 120 && duration < 3600) {
+			// minutes
+			eventsRecorded += getResources().getString(R.string.home_recorded_minutes);
+		} else if (duration >= 3600 && duration < 2 * 3600) {
+			// one hour
+			eventsRecorded += getResources().getString(R.string.home_recorded_hour);
+		} else {
+			// hours
+			eventsRecorded += getResources().getString(R.string.home_recorded_hours);
+		}		
+		
+		eventsRecorded += " " + getResources().getString(R.string.home_recorded_events);
+		
+		((TextView)findViewById(R.id.textViewLastSessionDurationOfEvents)).setText(eventsRecorded);
 	}
 	
 	/**
@@ -123,11 +164,6 @@ public class EventRecorderHomeActivity extends Activity {
 	 * @param detected Whether compatible device is connected or not
 	 */
 	protected void setDeviceStatus(boolean detected) {
-		//imageViewDeviceStatus
-		//textViewDeviceStatus
-	    //<string name="home_device_attached">Compatible device is attached.</string>
-	    //<string name="home_device_detached">No compatible devices attached.</string>
-		
 		// TODO Create drawables for attached/detached device display
 		if(detected) {
 			((ImageView)findViewById(R.id.imageViewDeviceStatus)).setImageDrawable(getResources().getDrawable(R.drawable.ic_launcher));
