@@ -98,7 +98,7 @@ public class EventRecorderSessionDetailFragment extends Fragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		if (getArguments().containsKey(ARG_SESSION_ID)) {
+		if (getActivity().getIntent().getExtras() == null) {
 			mItem = new SessionDAO(null);
 			mItem.setId(getArguments().getLong(ARG_SESSION_ID));
 			mItem.setIdDevice(getArguments().getLong(ARG_SESSION_DEVICE_ID));
@@ -108,6 +108,17 @@ public class EventRecorderSessionDetailFragment extends Fragment {
 			mItem.setNumberOfEvents(getArguments().getInt(ARG_SESSION_NUM_EVENTS));
 			mItem.setNumberOfEventTypes(getArguments().getInt(ARG_SESSION_NUM_EVENT_TYPES));
 			mItem.setTimestampRecorded(new Date(getArguments().getLong(ARG_SESSION_TIMESTAMP_REC)));
+		} else {
+			Bundle bundle = getActivity().getIntent().getExtras().getBundle(ARG_SESSION_OBJ);
+			mItem = new SessionDAO(null);
+			mItem.setId(bundle.getLong(ARG_SESSION_ID));
+			mItem.setIdDevice(bundle.getLong(ARG_SESSION_DEVICE_ID));
+			mItem.setName(bundle.getString(ARG_SESSION_NAME));
+			mItem.setDescription(bundle.getString(ARG_SESSION_DESCRIPTION));
+			mItem.setIndexDeviceSession(bundle.getInt(ARG_SESSION_INDEX_DEVICE_SESSION));
+			mItem.setNumberOfEvents(bundle.getInt(ARG_SESSION_NUM_EVENTS));
+			mItem.setNumberOfEventTypes(bundle.getInt(ARG_SESSION_NUM_EVENT_TYPES));
+			mItem.setTimestampRecorded(new Date(bundle.getLong(ARG_SESSION_TIMESTAMP_REC)));
 		}
 	}
 
