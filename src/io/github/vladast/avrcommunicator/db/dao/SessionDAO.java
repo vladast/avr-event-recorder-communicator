@@ -16,7 +16,6 @@ public class SessionDAO extends EventRecorderDAO {
 	 */
 	public SessionDAO(OnDatabaseRequestListener onDatabaseRequestListener) {
 		super(onDatabaseRequestListener);
-		// TODO Auto-generated constructor stub
 	}
 
 	/*
