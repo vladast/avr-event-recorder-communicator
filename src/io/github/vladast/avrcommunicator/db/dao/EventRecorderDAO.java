@@ -57,7 +57,7 @@ public class EventRecorderDAO implements OnDatabaseRequestListener {
 	 */
 	@Override
 	public long OnAdd(Object obj) {
-		return mOnDatabaseRequestListener.OnAdd(obj);
+		return mOnDatabaseRequestListener != null ? mOnDatabaseRequestListener.OnAdd(obj) : 0;
 	}
 
 	/* (non-Javadoc)
@@ -65,7 +65,8 @@ public class EventRecorderDAO implements OnDatabaseRequestListener {
 	 */
 	@Override
 	public void OnUpdate(Object obj) {
-		mOnDatabaseRequestListener.OnUpdate(obj);
+		if(mOnDatabaseRequestListener != null) 
+			mOnDatabaseRequestListener.OnUpdate(obj);
 	}
 
 	/* (non-Javadoc)
@@ -73,7 +74,8 @@ public class EventRecorderDAO implements OnDatabaseRequestListener {
 	 */
 	@Override
 	public void OnDelete(Object obj) {
-		mOnDatabaseRequestListener.OnDelete(obj);
+		if(mOnDatabaseRequestListener != null)
+			mOnDatabaseRequestListener.OnDelete(obj);
 	}
 
 	/**
