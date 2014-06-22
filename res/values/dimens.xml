@@ -3,5 +3,12 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+    
+    <!-- Home activity dimensions -->
+    <dimen name="activity_home_global_padding">5dp</dimen>
+    <dimen name="activity_home_text_margin">5dp</dimen>
 
+    <!-- Sessions activity dimensions -->
+    <dimen name="activity_sessions_text_indent">16dp</dimen>
+    
 </resources>
