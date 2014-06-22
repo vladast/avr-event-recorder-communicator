@@ -275,7 +275,7 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 	 * @param id Database object's identifier.
 	 * @return Database object.
 	 */
-	public EventRecorderDAO getDatabaseObjectById(Class<?> clazz, int id) {
+	public EventRecorderDAO getDatabaseObjectById(Class<?> clazz, long id) {
 		SQLiteDatabase db = getReadableDatabase();
 		EventRecorderDAO resultDAO = null;
 		String sqlQuery = String.format("select * from %s where id=%d", getTableNameFromClassDao(clazz), id);
