@@ -282,36 +282,38 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 		
 		Cursor cursor = db.rawQuery(sqlQuery, null);
 		
-		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
-			resultDAO = new SessionDAO(this);
-			((SessionDAO)resultDAO).setId(cursor.getInt(0));
-			((SessionDAO)resultDAO).setIdDevice(cursor.getInt(1));
-			((SessionDAO)resultDAO).setName(cursor.getString(2));
-			((SessionDAO)resultDAO).setDescription(cursor.getString(3));
-			((SessionDAO)resultDAO).setNumberOfEvents(cursor.getInt(4));
-			((SessionDAO)resultDAO).setNumberOfEventTypes(cursor.getInt(5));
-			((SessionDAO)resultDAO).setIndexDeviceSession(cursor.getInt(6));
-			// TODO Initiate timestamps as well!
-		} else if (clazz.getSimpleName().equals(EventDAO.class.getSimpleName())) {
-			resultDAO = new EventDAO(this);
-			((EventDAO)resultDAO).setId(cursor.getInt(0));
-			((EventDAO)resultDAO).setIdSession(cursor.getInt(1));
-			((EventDAO)resultDAO).setIdTouchable(cursor.getInt(2));
-			((EventDAO)resultDAO).setIndexDeviceEvent(cursor.getInt(3));
-			((EventDAO)resultDAO).setTimestamp(cursor.getInt(4));
-		} else if (clazz.getSimpleName().equals(DeviceDAO.class.getSimpleName())) {
-			resultDAO = new DeviceDAO(this);
-			((DeviceDAO)resultDAO).setId(cursor.getInt(0));
-			((DeviceDAO)resultDAO).setType(cursor.getInt(1));
-			((DeviceDAO)resultDAO).setCode(cursor.getInt(2));
-			((DeviceDAO)resultDAO).setDescription(cursor.getString(3));
-			((DeviceDAO)resultDAO).setVendorId(cursor.getInt(4));
-			((DeviceDAO)resultDAO).setProductId(cursor.getInt(5));
-		} else if (clazz.getSimpleName().equals(TouchableDAO.class.getSimpleName())) {
-			resultDAO = new TouchableDAO(this);
-			((TouchableDAO)resultDAO).setId(cursor.getInt(0));
-			((TouchableDAO)resultDAO).setName(cursor.getString(1));
-		}	
+		if(cursor.moveToFirst()){ // Only one object is expected
+			if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
+				resultDAO = new SessionDAO(this);
+				((SessionDAO)resultDAO).setId(cursor.getInt(0));
+				((SessionDAO)resultDAO).setIdDevice(cursor.getInt(1));
+				((SessionDAO)resultDAO).setName(cursor.getString(2));
+				((SessionDAO)resultDAO).setDescription(cursor.getString(3));
+				((SessionDAO)resultDAO).setNumberOfEvents(cursor.getInt(4));
+				((SessionDAO)resultDAO).setNumberOfEventTypes(cursor.getInt(5));
+				((SessionDAO)resultDAO).setIndexDeviceSession(cursor.getInt(6));
+				// TODO Initiate timestamps as well!
+			} else if (clazz.getSimpleName().equals(EventDAO.class.getSimpleName())) {
+				resultDAO = new EventDAO(this);
+				((EventDAO)resultDAO).setId(cursor.getInt(0));
+				((EventDAO)resultDAO).setIdSession(cursor.getInt(1));
+				((EventDAO)resultDAO).setIdTouchable(cursor.getInt(2));
+				((EventDAO)resultDAO).setIndexDeviceEvent(cursor.getInt(3));
+				((EventDAO)resultDAO).setTimestamp(cursor.getInt(4));
+			} else if (clazz.getSimpleName().equals(DeviceDAO.class.getSimpleName())) {
+				resultDAO = new DeviceDAO(this);
+				((DeviceDAO)resultDAO).setId(cursor.getInt(0));
+				((DeviceDAO)resultDAO).setType(cursor.getInt(1));
+				((DeviceDAO)resultDAO).setCode(cursor.getInt(2));
+				((DeviceDAO)resultDAO).setDescription(cursor.getString(3));
+				((DeviceDAO)resultDAO).setVendorId(cursor.getInt(4));
+				((DeviceDAO)resultDAO).setProductId(cursor.getInt(5));
+			} else if (clazz.getSimpleName().equals(TouchableDAO.class.getSimpleName())) {
+				resultDAO = new TouchableDAO(this);
+				((TouchableDAO)resultDAO).setId(cursor.getInt(0));
+				((TouchableDAO)resultDAO).setName(cursor.getString(1));
+			}				
+		}
 		
 		db.close();
 		return resultDAO;	
