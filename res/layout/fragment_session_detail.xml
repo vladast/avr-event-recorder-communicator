@@ -11,18 +11,76 @@
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent" >
+    android:layout_height="wrap_content" >
 
-    <TextView
-        android:id="@+id/session_detail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TextView" />
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
 
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TextView" />
+        <TextView
+            android:id="@+id/textViewSessionName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Large Text"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:id="@+id/textViewSessionDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/activity_sessions_text_indent"
+            android:text="TextViewPrvi" />
+
+        <TextView
+            android:id="@+id/textViewSessionEventCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/activity_sessions_text_indent"
+            android:text="TextViewDrugi" />
+
+        <TextView
+            android:id="@+id/textViewSessionEventsDuration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/activity_sessions_text_indent"
+            android:text="TextView" />
+
+        <TextView
+            android:id="@+id/textViewSessionRecordingDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/activity_sessions_text_indent"
+            android:text="TextView" />
+        
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <ImageView
+                android:id="@+id/imageViewDevice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_launcher"
+                android:layout_alignParentLeft="true" />
+
+            <ImageButton
+                android:id="@+id/imageButtonSave"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/btn_star"
+                android:layout_alignParentRight="true" />
+            
+            <ImageButton
+                android:id="@+id/imageButtonEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/btn_star"
+                android:layout_toLeftOf="@id/imageButtonSave" />
+
+
+        </RelativeLayout>
+
+    </LinearLayout>
 
 </LinearLayout>
