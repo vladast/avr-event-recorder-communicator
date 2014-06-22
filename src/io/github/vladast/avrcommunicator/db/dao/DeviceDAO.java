@@ -9,6 +9,9 @@ package io.github.vladast.avrcommunicator.db.dao;
  */
 public class DeviceDAO extends EventRecorderDAO {
 
+	public static final int		DEVICE_TYPE_ANDROID = 1;
+	public static final int		DEVICE_TYPE_AVR = 2;
+	
 	/**
 	 * @param onDatabaseRequestListener
 	 */
