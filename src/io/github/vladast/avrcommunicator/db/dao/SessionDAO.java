@@ -33,13 +33,13 @@ public class SessionDAO extends EventRecorderDAO {
 		);
 	*/
 	
-	private int mIdDevice;
+	private long mIdDevice;
 	
-	public int getIdDevice() {
+	public long getIdDevice() {
 		return mIdDevice;
 	}
 	
-	public void setIdDevice(int idDevice) {
+	public void setIdDevice(long idDevice) {
 		mIdDevice = idDevice;
 	}
 	
