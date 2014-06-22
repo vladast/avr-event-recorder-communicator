@@ -352,6 +352,7 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 					eventDAO.setIdTouchable(cursor.getInt(2));
 					eventDAO.setIndexDeviceEvent(cursor.getInt(3));
 					eventDAO.setTimestamp(cursor.getInt(4));
+					resultDAO.add(eventDAO);
 				} else if (clazz.getSimpleName().equals(DeviceDAO.class.getSimpleName())) {
 					DeviceDAO deviceDAO = new DeviceDAO(this);
 					deviceDAO.setId(cursor.getInt(0));
@@ -360,10 +361,12 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 					deviceDAO.setDescription(cursor.getString(3));
 					deviceDAO.setVendorId(cursor.getInt(4));
 					deviceDAO.setProductId(cursor.getInt(5));
+					resultDAO.add(deviceDAO);
 				} else if (clazz.getSimpleName().equals(TouchableDAO.class.getSimpleName())) {
 					TouchableDAO touchableDAO = new TouchableDAO(this);
 					touchableDAO.setId(cursor.getInt(0));
 					touchableDAO.setName(cursor.getString(1));
+					resultDAO.add(touchableDAO);
 				}				
 			} while(cursor.moveToNext());
 		}
@@ -411,6 +414,7 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 					eventDAO.setIdTouchable(cursor.getInt(2));
 					eventDAO.setIndexDeviceEvent(cursor.getInt(3));
 					eventDAO.setTimestamp(cursor.getInt(4));
+					resultDAO.add(eventDAO);
 				} else if (clazz.getSimpleName().equals(DeviceDAO.class.getSimpleName())) {
 					DeviceDAO deviceDAO = new DeviceDAO(this);
 					deviceDAO.setId(cursor.getInt(0));
@@ -419,10 +423,12 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 					deviceDAO.setDescription(cursor.getString(3));
 					deviceDAO.setVendorId(cursor.getInt(4));
 					deviceDAO.setProductId(cursor.getInt(5));
+					resultDAO.add(deviceDAO);
 				} else if (clazz.getSimpleName().equals(TouchableDAO.class.getSimpleName())) {
 					TouchableDAO touchableDAO = new TouchableDAO(this);
 					touchableDAO.setId(cursor.getInt(0));
 					touchableDAO.setName(cursor.getString(1));
+					resultDAO.add(touchableDAO);
 				}				
 			} while(cursor.moveToNext());
 		}
