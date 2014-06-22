@@ -372,6 +372,65 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 		return resultDAO;		
 	}
 	
+	public ArrayList<EventRecorderDAO> getDatabaseObjectsByForeign(Class<?> clazz, EventRecorderDAO foreign) {
+		ArrayList<EventRecorderDAO> resultDAO = new ArrayList<EventRecorderDAO>();
+		
+		String sqlCondition = "";
+		
+		if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
+			
+		} else if (clazz.getSimpleName().equals(EventDAO.class.getSimpleName())) {
+			sqlCondition = String.format("idSession=%d", foreign.getId());
+		} else if (clazz.getSimpleName().equals(DeviceDAO.class.getSimpleName())) {
+			
+		} else if (clazz.getSimpleName().equals(TouchableDAO.class.getSimpleName())) {
+			
+		}
+		
+		String sqlQuery = String.format("select * from %s where %s", getTableNameFromClassDao(clazz), sqlCondition);
+		SQLiteDatabase db = getReadableDatabase();
+		Cursor cursor = db.rawQuery(sqlQuery, null);
+		
+		if(cursor.moveToFirst()) {
+			do {
+				if(clazz.getSimpleName().equals(SessionDAO.class.getSimpleName())) {
+					SessionDAO sessionDAO = new SessionDAO(this);
+					sessionDAO.setId(cursor.getInt(0));
+					sessionDAO.setIdDevice(cursor.getInt(1));
+					sessionDAO.setName(cursor.getString(2));
+					sessionDAO.setDescription(cursor.getString(3));
+					sessionDAO.setNumberOfEvents(cursor.getInt(4));
+					sessionDAO.setNumberOfEventTypes(cursor.getInt(5));
+					sessionDAO.setIndexDeviceSession(cursor.getInt(6));
+					// TODO Initiate timestamps as well!					
+					resultDAO.add(sessionDAO);
+				} else if (clazz.getSimpleName().equals(EventDAO.class.getSimpleName())) {
+					EventDAO eventDAO = new EventDAO(this);
+					eventDAO.setId(cursor.getInt(0));
+					eventDAO.setIdSession(cursor.getInt(1));
+					eventDAO.setIdTouchable(cursor.getInt(2));
+					eventDAO.setIndexDeviceEvent(cursor.getInt(3));
+					eventDAO.setTimestamp(cursor.getInt(4));
+				} else if (clazz.getSimpleName().equals(DeviceDAO.class.getSimpleName())) {
+					DeviceDAO deviceDAO = new DeviceDAO(this);
+					deviceDAO.setId(cursor.getInt(0));
+					deviceDAO.setType(cursor.getInt(1));
+					deviceDAO.setCode(cursor.getInt(2));
+					deviceDAO.setDescription(cursor.getString(3));
+					deviceDAO.setVendorId(cursor.getInt(4));
+					deviceDAO.setProductId(cursor.getInt(5));
+				} else if (clazz.getSimpleName().equals(TouchableDAO.class.getSimpleName())) {
+					TouchableDAO touchableDAO = new TouchableDAO(this);
+					touchableDAO.setId(cursor.getInt(0));
+					touchableDAO.setName(cursor.getString(1));
+				}				
+			} while(cursor.moveToNext());
+		}
+		
+		db.close();
+		return resultDAO;
+	}
+	
 	/**
 	 * Counts number of row within given table
 	 * @param clazz Database object's class.
