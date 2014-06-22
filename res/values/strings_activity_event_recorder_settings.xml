@@ -41,17 +41,15 @@
     </string-array>
     <string name="pref_title_starting_screen">Starting screen</string>
     <string name="pref_description_starting_screen">Screen displayed when application starts</string>
-    <string-array name="pref_list_starting_screen_entries">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-    </string-array>
+    <string name="activity_home_pref_name">Overview</string>
+    <string name="activity_upload_data_pref_name">Device Data</string>
+    <string name="activity_new_session_pref_name">New Session</string>
+    <string name="activity_view_sessions_pref_name">Sessions View</string>
     <string-array name="pref_list_starting_screen_values">
-        <item>Overview</item>
-        <item>Device Data</item>
-        <item>New Session</item>
-        <item>Sessions View</item>
+        <item>@string/activity_home_pref_name</item>
+        <item>@string/activity_upload_data_pref_name</item>
+        <item>@string/activity_new_session_pref_name</item>
+        <item>@string/activity_view_sessions_pref_name</item>
     </string-array>
     
     <!-- Touchables settings -->
