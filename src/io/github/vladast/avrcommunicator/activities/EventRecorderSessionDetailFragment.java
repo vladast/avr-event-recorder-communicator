@@ -39,6 +39,10 @@ public class EventRecorderSessionDetailFragment extends Fragment {
 	 */
 	public static final String ARG_SESSION_ID = "session_id";
 	/**
+	 * The fragment argument representing the session object.
+	 */
+	public static final String ARG_SESSION_OBJ = "session_obj";
+	/**
 	 * The fragment argument representing ID of the device used to record particular session.
 	 */
 	public static final String ARG_SESSION_DEVICE_ID = "session_device_id";
