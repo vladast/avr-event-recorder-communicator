@@ -7,7 +7,10 @@ import io.github.vladast.avrcommunicator.OnAvrRecorderEventListener;
 import io.github.vladast.avrcommunicator.R;
 import io.github.vladast.avrcommunicator.Reading;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.View.OnClickListener;
 import android.view.View;
 import android.view.Window;
@@ -23,10 +26,14 @@ import io.github.vladast.avrcommunicator.db.dao.SessionDAO;
  */
 public class EventRecorderHomeActivity extends Activity implements OnAvrRecorderEventListener {
 
+	private static final String TAG = EventRecorderHomeActivity.class.getSimpleName();
+	
 	private OnClickListener mOnViewSessionsListener;
 	private OnClickListener mOnSessionDetailsListener;
 	private OnClickListener mOnHelpListener;
 
+	private Bundle mBundleSession;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -44,7 +51,8 @@ public class EventRecorderHomeActivity extends Activity implements OnAvrRecorder
 			@Override
 			public void onClick(View v) {
 				// TODO Navigate to View Sessions activity
-				
+				Log.d(TAG, "Clicked on view sessions listener.");
+				startActivity(new Intent(v.getContext(), EventRecorderSessionListActivity.class));
 			}
 		};
 		
@@ -55,7 +63,11 @@ public class EventRecorderHomeActivity extends Activity implements OnAvrRecorder
 				// TODO Navigate to Session Details activity
 				// 1. To last session's details
 				// 2. To device session's details
+				Log.d(TAG, "Clicked on session details listener.");
 				
+				Intent detailIntent = new Intent(v.getContext(), EventRecorderSessionDetailActivity.class);
+				detailIntent.putExtra(EventRecorderSessionDetailFragment.ARG_SESSION_OBJ, mBundleSession);
+				startActivity(detailIntent);
 			}
 		};
 		
@@ -66,13 +78,10 @@ public class EventRecorderHomeActivity extends Activity implements OnAvrRecorder
 				// TODO Navigate to Help activity
 				// 1. From menu --> to general Help
 				// 2. From device status --> to device specific Help
+				Log.d(TAG, "Clicked on help listener.");
 			}
 		};
 		
-		//linearLayoutHomeNumOfRecordedSessions
-		//linearLayoutHomeNumOfRecordedEvents
-		//linearLayoutLastSession --> check if buton on click can be detected!
-		//relativeLayoutDeviceStatus
 		findViewById(R.id.linearLayoutHomeNumOfRecordedSessions).setOnClickListener(mOnViewSessionsListener);
 		findViewById(R.id.linearLayoutHomeNumOfRecordedEvents).setOnClickListener(mOnViewSessionsListener);
 		findViewById(R.id.linearLayoutLastSession).setOnClickListener(mOnSessionDetailsListener);
@@ -82,6 +91,7 @@ public class EventRecorderHomeActivity extends Activity implements OnAvrRecorder
 			@Override
 			public void onClick(View v) {
 				// TODO Navigate to New Session activity
+				Log.d(TAG, "Clicked on image button.");
 			}
 		});
 	}
@@ -121,6 +131,19 @@ public class EventRecorderHomeActivity extends Activity implements OnAvrRecorder
 		lastSessionCount = ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjectCountByForeignId(EventDAO.class, lastSession);
 		lastSessionDuration = ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjectValueCountByForeignId(EventDAO.class, EventDAO.DB_COUNTABLE_COLUMN, lastSession);
 
+		/**
+		 * Save session's data into bundle - used to navigate to session details activity.
+		 */
+		mBundleSession = new Bundle();
+		mBundleSession.putLong(EventRecorderSessionDetailFragment.ARG_SESSION_ID, lastSession.getId());
+		mBundleSession.putLong(EventRecorderSessionDetailFragment.ARG_SESSION_DEVICE_ID, lastSession.getIdDevice());
+		mBundleSession.putString(EventRecorderSessionDetailFragment.ARG_SESSION_NAME, lastSession.getName());
+		mBundleSession.putString(EventRecorderSessionDetailFragment.ARG_SESSION_DESCRIPTION, lastSession.getDescription());
+		mBundleSession.putInt(EventRecorderSessionDetailFragment.ARG_SESSION_INDEX_DEVICE_SESSION, lastSession.getIndexDeviceSession());
+		mBundleSession.putInt(EventRecorderSessionDetailFragment.ARG_SESSION_NUM_EVENTS, lastSession.getNumberOfEvents());
+		mBundleSession.putInt(EventRecorderSessionDetailFragment.ARG_SESSION_NUM_EVENT_TYPES, lastSession.getNumberOfEventTypes());
+		mBundleSession.putLong(EventRecorderSessionDetailFragment.ARG_SESSION_TIMESTAMP_REC, lastSession.getTimestampRecorded().getTime());		
+		
 		/**
 		 * Check if compatible USB device is attached.
 		 */
