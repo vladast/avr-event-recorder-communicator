@@ -16,6 +16,8 @@ public class SessionDAO extends EventRecorderDAO {
 	 */
 	public SessionDAO(OnDatabaseRequestListener onDatabaseRequestListener) {
 		super(onDatabaseRequestListener);
+		mTimestampUploaded = new Date(0L);
+		mTimestampRecorded = new Date(0L);
 	}
 
 	/*
