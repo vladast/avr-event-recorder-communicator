@@ -86,6 +86,12 @@ public class EventRecorderSessionListFragment extends ListFragment {
 		mSessionsList = ((EventRecorderApplication)(getActivity().getApplicationContext())).getDatabaseHandler().getDatabaseObjects(SessionDAO.class);		
 		setListAdapter(new EventRecorderSessionArrayAdapter(mContext, mSessionsList));
 	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		mCallbacks.onItemSelected((SessionDAO)mSessionsList.get(mSessionsList.size() - 1));
+	}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
