@@ -106,7 +106,7 @@ public class EventRecorderSessionListActivity extends FragmentActivity implement
 			// In single-pane mode, simply start the detail activity
 			// for the selected item ID.
 			Intent detailIntent = new Intent(this, EventRecorderSessionDetailActivity.class);
-			detailIntent.putExtra(EventRecorderSessionDetailFragment.ARG_SESSION_ID, bundleSession);
+			detailIntent.putExtra(EventRecorderSessionDetailFragment.ARG_SESSION_OBJ, bundleSession);
 			startActivity(detailIntent);
 		}
 	}
