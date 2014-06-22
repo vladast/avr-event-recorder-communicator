@@ -33,10 +33,10 @@
     <string name="device_records">records</string>
 
     <!-- Records Table -->
-    <string name="records_table_title">Records</string>
+    <string name="records_table_title">Recorded Events</string>
     <string name="records_table_column_index">Index</string>
     <string name="records_table_column_entry">Entry</string>
-    <string name="records_table_column_switch_id">Switch ID</string>
+    <string name="records_table_column_switch_id">Trigger</string>
     <string name="records_table_column_timestamp">Timestamp</string>
 
     <!-- Records Options -->
@@ -51,5 +51,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_home">HomeActivity</string>
+    <string name="title_session_list">Sessions</string>
+    <string name="title_session_detail">Session Detail</string>
 
 </resources>

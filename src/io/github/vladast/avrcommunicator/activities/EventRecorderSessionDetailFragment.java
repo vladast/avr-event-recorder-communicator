@@ -1,20 +1,30 @@
 package io.github.vladast.avrcommunicator.activities;
 
 import java.sql.Date;
+import java.util.ArrayList;
 
+import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.format.DateFormat;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.webkit.WebView.FindListener;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TableLayout.LayoutParams;
+import android.widget.TableRow;
 import android.widget.TextView;
 import io.github.vladast.avrcommunicator.EventRecorderApplication;
 import io.github.vladast.avrcommunicator.R;
 import io.github.vladast.avrcommunicator.db.dao.DeviceDAO;
 import io.github.vladast.avrcommunicator.db.dao.EventDAO;
+import io.github.vladast.avrcommunicator.db.dao.EventRecorderDAO;
 import io.github.vladast.avrcommunicator.db.dao.SessionDAO;
 
 /**
@@ -59,10 +69,20 @@ public class EventRecorderSessionDetailFragment extends Fragment {
 	public static final String ARG_SESSION_TIMESTAMP_REC = "session_timestamp_recorded";
 
 	/**
-	 * The dummy content this fragment is presenting.
+	 * The session object that is represented by this fragment.
 	 */
 	private SessionDAO mItem;
 
+	/**
+	 * Recorded events that are being displayed on the fragment.
+	 */
+	private ArrayList<EventRecorderDAO> mRecords;
+	
+	/**
+	 * Context of the fragment
+	 */
+	private Context mContext;
+	
 	/**
 	 * Mandatory empty constructor for the fragment manager to instantiate the
 	 * fragment (e.g. upon screen orientation changes).
@@ -88,8 +108,7 @@ public class EventRecorderSessionDetailFragment extends Fragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fragment_session_detail,
 				container, false);
 
@@ -155,8 +174,53 @@ public class EventRecorderSessionDetailFragment extends Fragment {
 					// TODO Open Edit dialog fragment --> editing mItem object
 				}
 			});
+			
+			mRecords = ((EventRecorderApplication)getActivity().getApplicationContext()).getDatabaseHandler().getDatabaseObjectsByForeign(EventDAO.class, mItem);
+			
+			ViewGroup.LayoutParams tableRowLayoutParams = ((TableRow)rootView.findViewById(R.id.tableRowEventsHeader)).getLayoutParams();
+			ViewGroup.LayoutParams textViewIndexLayoutParams = ((TextView)rootView.findViewById(R.id.tableLayoutResults_columnIndex)).getLayoutParams();
+			ViewGroup.LayoutParams textViewNonIndexLayoutParams = ((TextView)rootView.findViewById(R.id.tableLayoutResults_columnSwitchId)).getLayoutParams();
+			
+			int colorEvenRow, colorOddRow;
+			colorEvenRow = 0xffeaeaea;	// TODO Extract from resources
+			colorOddRow = 0xffbababa;	// TODO Extract from resources
+			
+			for(int i = 0; i < mRecords.size(); ++i) {
+				/* Create one row per result */
+				TableRow tableRow;
+				TextView textViewIndex, textViewTrigger, textViewTimestamp;
+				
+				tableRow = new TableRow(rootView.getContext());
+				
+				textViewIndex = new TextView(rootView.getContext());
+				textViewIndex.setText(String.valueOf(i + 1)); // starting from 1
+				textViewIndex.setGravity(Gravity.CENTER_HORIZONTAL);
+				
+				textViewTrigger = new TextView(rootView.getContext());
+				textViewTrigger.setText(Long.toString(((EventDAO)mRecords.get(i)).getIdTouchable())); // TODO Extract friendly name from DB
+				textViewTrigger.setGravity(Gravity.CENTER_HORIZONTAL);
+				
+				textViewTimestamp = new TextView(rootView.getContext());
+				textViewTimestamp.setText(String.valueOf(((EventDAO)mRecords.get(i)).getTimestamp()));
+				textViewTimestamp.setGravity(Gravity.CENTER_HORIZONTAL);
+				
+				tableRow.addView(textViewIndex, textViewIndexLayoutParams);
+				tableRow.addView(textViewTrigger, textViewNonIndexLayoutParams);
+				tableRow.addView(textViewTimestamp, textViewNonIndexLayoutParams);
+				tableRow.setGravity(Gravity.CENTER_HORIZONTAL);
+				tableRow.setBackgroundColor(((i + 1) % 2 == 0) ? colorEvenRow : colorOddRow);
+				
+				((TableLayout)rootView.findViewById(R.id.tableLayoutEventRecords)).addView(tableRow, tableRowLayoutParams);
+				rootView.invalidate();
+			}
 		}
 
 		return rootView;
+	}
+	
+	@Override
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
+		mContext = activity;		
 	}
 }
