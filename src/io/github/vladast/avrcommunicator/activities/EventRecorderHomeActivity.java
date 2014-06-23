@@ -92,6 +92,7 @@ public class EventRecorderHomeActivity extends Activity implements OnAvrRecorder
 			public void onClick(View v) {
 				// TODO Navigate to New Session activity
 				Log.d(TAG, "Clicked on image button.");
+				startActivity(new Intent(v.getContext(), EventRecorderNewSessionActivity.class));
 			}
 		});
 	}
