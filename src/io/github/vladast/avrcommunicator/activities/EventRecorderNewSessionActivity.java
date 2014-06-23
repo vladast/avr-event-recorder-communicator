@@ -29,11 +29,15 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 
 	private static final String TAG = EventRecorderNewSessionActivity.class.getSimpleName();
 	
+	/** A flag that indicates whether timer is started on not. */
 	private boolean mTimerStarted;
-	
+	/** <code>TextView</code> element linked to time display. */
 	private TextView mTextViewTimer;
+	/** Timer handler used to start/stop timer thread. */
 	private Handler mHandlerTimer;
+	/** Start time in miliseconds. */
 	private long mStartTime;
+	/** Current time in miliseconds. */
 	private long mCurrentTime;
 	
 	@Override
@@ -64,23 +68,31 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				// TODO Change button image to "recording in progress" (toggling image each second)
 			}
 		} else {
-			
+			// TODO Other clickable elements were clicked
 		}
 	}
 	
-   private Runnable mRunnableTimerThread = new Runnable() {
+	/**
+	 * Timer thread.
+	 */
+	private Runnable mRunnableTimerThread = new Runnable() {
 	   public void run() {
 		   mCurrentTime = SystemClock.elapsedRealtime() - mStartTime;
 		   mTextViewTimer.setText(getFormattedTime(mCurrentTime));
 		   mHandlerTimer.postDelayed(this, 1);
 	   }
-   };
-   
-   private String getFormattedTime(long time) {
+	};
+	
+	/**
+	 * Helper method used to format time into hh:mm:ss.SSS format.
+	 * @param time Time in miliseconds to be formatted.
+	 * @return Formatted time.
+	 */
+	private String getFormattedTime(long time) {
 	   long msecs = time % 1000;
 	   long secs = (time / 1000) % 60;
 	   long mins = (time / (1000 * 60)) % 60;
 	   long hrs = time / (1000 * 60 * 60);	   
 	   return String.format("%02d:%02d:%02d.%03d", hrs, mins, secs, msecs);
-   }
+	}
 }
