@@ -29,7 +29,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 
 	private static final String TAG = EventRecorderNewSessionActivity.class.getSimpleName();
 	
-	private boolean mChronometerStarted;
+	private boolean mTimerStarted;
 	
 	private TextView mTextViewTimer;
 	private Handler mHandlerTimer;
@@ -47,20 +47,20 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		
 		((ImageButton)findViewById(R.id.imageButtonRecordToggle)).setOnClickListener(this);
 		
-		mChronometerStarted = false;
+		mTimerStarted = false;
 	}
 
 	@Override
 	public void onClick(View clickableView) {
 		if(clickableView.getId() == R.id.imageButtonRecordToggle){
-			if(mChronometerStarted) {
+			if(mTimerStarted) {
 				mHandlerTimer.removeCallbacks(mRunnableTimerThread);
-				mChronometerStarted = false;
+				mTimerStarted = false;
 				// TODO Change button image to "save" & open dialog box (dialog fragment) with save/edit options
 			} else {
 				mStartTime = SystemClock.elapsedRealtime();
 				mHandlerTimer.postDelayed(mRunnableTimerThread, 1);
-				mChronometerStarted = true;
+				mTimerStarted = true;
 				// TODO Change button image to "recording in progress" (toggling image each second)
 			}
 		} else {
