@@ -66,7 +66,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	private static final int LAYOUT_CHECK_INTERVAL 	= 100;
 	
 	/** Static member defining outbound margin for touchable elements */
-	private static final int TOUCHABLES_LAYOUT_OUT_MARGIN	= 10;
+	private static final int TOUCHABLES_LAYOUT_OUT_MARGIN	= 4;
 	/** Static member defining inbound margin for touchable elements */
 	private static final int TOUCHABLES_LAYOUT_IN_MARGIN	= 10;
 	/** Static member defining ratio of touchable's height and count text height */
@@ -102,6 +102,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	private int mColorTouchable;
 	/** Color of disabled touchable element */
 	private int mColorTouchableDisabled;
+	private ArrayList<EventDAO> mEvents;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -143,6 +144,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		((TextView)findViewById(R.id.textViewSessionCount)).setText(String.valueOf(currentSessionCount));
 		
 		mTouchables = ((EventRecorderApplication)this.getApplicationContext()).getDatabaseHandler().getDatabaseObjects(TouchableDAO.class);
+		mEvents = new ArrayList<EventDAO>();
 		
 		/** Initialize map of counts */
 		mSparseIntArrayTouchCounts = new SparseIntArray(mTouchables.size());
@@ -164,7 +166,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	/**
 	 * Displays touchable elements dynamically.
 	 */
-	public void displayTouchables() {
+	private void displayTouchables() {
 		/**
 		 * Create table dynamically
 		 * 
@@ -1224,6 +1226,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				
 				mSparseIntArrayTouchCounts.put(clickableView.getId(), mSparseIntArrayTouchCounts.get(clickableView.getId()) + 1);
 				((TextView)(findViewById(clickableView.getId()).findViewById(0))).setText(String.valueOf(mSparseIntArrayTouchCounts.get(clickableView.getId())));
+				addEvent(clickableView.getId(), mCurrentTime);
 			} else {
 				// TODO Buzz a user that buttons are disabled
 			}
@@ -1291,5 +1294,18 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 			if(touchableView != null)
 				touchableView.setBackgroundColor(color);
 		}
+	}
+	
+	/**
+	 * Adds detected event to the list of events.
+	 * @param idTouchable Identifier of touchable element that produced event.
+	 * @param timeSample Current timer reading.
+	 */
+	private void addEvent(long idTouchable, long timeSample) {
+		Log.d(TAG, String.format("Event (idTouchable/timestamp) = %d/%d", idTouchable, timeSample));
+		EventDAO event = new EventDAO(null);
+		event.setIdTouchable((int) idTouchable);
+		event.setTimestamp(timeSample);
+		mEvents.add(event);
 	}
 }
