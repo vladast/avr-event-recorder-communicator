@@ -1,17 +1,27 @@
 package io.github.vladast.avrcommunicator.activities;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import io.github.vladast.avrcommunicator.AvrRecorderConstants;
+import io.github.vladast.avrcommunicator.EventRecorderApplication;
 import io.github.vladast.avrcommunicator.R;
 import io.github.vladast.avrcommunicator.R.layout;
 import io.github.vladast.avrcommunicator.db.dao.EventDAO;
+import io.github.vladast.avrcommunicator.db.dao.EventRecorderDAO;
+import io.github.vladast.avrcommunicator.db.dao.SessionDAO;
+import io.github.vladast.avrcommunicator.db.dao.TouchableDAO;
 import android.app.Activity;
 import android.app.ActionBar;
 import android.app.Fragment;
+import android.content.Context;
+import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.hardware.usb.UsbDevice;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -20,18 +30,22 @@ import android.os.Message;
 import android.os.SystemClock;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.util.SparseIntArray;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.Chronometer.OnChronometerTickListener;
 import android.widget.TableLayout.LayoutParams;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -48,14 +62,20 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	private static final boolean MEASURE_MILLISECONDS = false;
 	/** Static member defining layout check interval in milliseconds */
 	private static final int LAYOUT_CHECK_INTERVAL 	= 100;
-	/** Static member used for "timer tick" message */
-	private static final int MSG_TIMER_TICK			= 0x0001;
-	/** Static member used for "timer stop" message */
-	private static final int MSG_TIMER_STOP			= 0x0002;
-	/** Static member used for "check layout" message */
-	private static final int MSG_CHECK_LAYOUT		= 0x0003;
-	/** Static member used for "display touchables" message */
-	private static final int MSG_DISPLAY_TOUCHABLES	= 0x0004;	
+	
+	/** Static member defining outbound margin for touchable elements */
+	private static final int TOUCHABLES_LAYOUT_OUT_MARGIN	= 10;
+	/** Static member defining inbound margin for touchable elements */
+	private static final int TOUCHABLES_LAYOUT_IN_MARGIN	= 10;
+	/** Static member defining ratio of touchable's height and count text height */
+	private static final int TOUCHABLES_COUNT_RATIO			= 20;
+	/** Static member defining ratio of touchable's height and name text height */
+	private static final int TOUCHABLES_NAME_RATIO			= 10;
+	
+	/** Static member used for "change to key down color" message */
+	private static final int MSG_TOUCH_KEY_DOWN_COLOR		= 0x0001;
+	/** Static member used for "change to key up color" message */
+	private static final int MSG_TOUCH_KEY_UP_COLOR			= 0x0002;	
 	
 	/** A flag that indicates whether timer is started on not. */
 	private boolean mTimerStarted;
@@ -65,10 +85,16 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	private Handler mHandlerTimer;
 	/** Layout handler used to start/stop layout thread. */
 	private Handler mHandlerLayout;
+	/** Layout handler used to change background color of touched elements */
+	private Handler mHandlerTouch;
 	/** Start time in milliseconds. */
 	private long mStartTime;
 	/** Current time in milliseconds. */
 	private long mCurrentTime;
+	/** List of database objects designating available touchable elements */
+	private ArrayList<EventRecorderDAO> mTouchables;
+	/** Map of counts for each touchable element */
+	private SparseIntArray mSparseIntArrayTouchCounts;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -77,12 +103,43 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		
 		mHandlerTimer = new Handler();
 		mHandlerLayout = new Handler();
+		mHandlerTouch = new Handler() {
+			@Override
+	        public void handleMessage(Message msg) {
+	            switch (msg.what) {
+		            case MSG_TOUCH_KEY_DOWN_COLOR:
+		            	findViewById(((Integer)msg.obj).intValue()).setBackgroundColor(0xba00ba);
+		            	Message keyUpMessage = new Message();
+		            	keyUpMessage.what = MSG_TOUCH_KEY_UP_COLOR;
+		            	keyUpMessage.obj = msg.obj;
+		            	mHandlerTouch.sendMessageDelayed(keyUpMessage, 100);
+		            	break;
+	                case MSG_TOUCH_KEY_UP_COLOR:
+		            	findViewById(((Integer)msg.obj).intValue()).setBackgroundColor(0x0000baba);
+	                    break;
+	                default:
+	                    super.handleMessage(msg);
+	                    break;
+	            }
+	        }
+		};
 		
 		mTextViewTimer = (TextView)findViewById(R.id.textViewTimer);
 		mTextViewTimer.setText(MEASURE_MILLISECONDS ? "00:00:00.000" : "00:00:00");
 		mTimerStarted = false;
 		
 		((ImageButton)findViewById(R.id.imageButtonRecordToggle)).setOnClickListener(this);
+		
+		long currentSessionCount = ((EventRecorderApplication)this.getApplicationContext()).getDatabaseHandler().getDatabaseObjectCount(SessionDAO.class) + 1;
+		((TextView)findViewById(R.id.textViewSessionCount)).setText(String.valueOf(currentSessionCount));
+		
+		mTouchables = ((EventRecorderApplication)this.getApplicationContext()).getDatabaseHandler().getDatabaseObjects(TouchableDAO.class);
+		
+		/** Initialize map of counts */
+		mSparseIntArrayTouchCounts = new SparseIntArray(mTouchables.size());
+		for (EventRecorderDAO touchable : mTouchables) {
+			mSparseIntArrayTouchCounts.put((int) touchable.getId(), 0);
+		}
 	}
 	
 	@Override
@@ -117,72 +174,60 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				TableLayout.LayoutParams.MATCH_PARENT);
 
 		TableRow.LayoutParams tableRowLayoutParams = new TableRow.LayoutParams(
-				TableRow.LayoutParams.MATCH_PARENT,
+				TableRow.LayoutParams.WRAP_CONTENT,
 				TableRow.LayoutParams.WRAP_CONTENT);
 		
-		RelativeLayout.LayoutParams relativeLayoutCellLayoutParams;/* = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.WRAP_CONTENT,
-				RelativeLayout.LayoutParams.WRAP_CONTENT);*/
+		RelativeLayout.LayoutParams relativeLayoutCellLayoutParams = new RelativeLayout.LayoutParams(
+				RelativeLayout.LayoutParams.MATCH_PARENT,
+				RelativeLayout.LayoutParams.MATCH_PARENT);
 		
 		// tableLayoutTouchables
 		TableLayout tableLayoutTouchables = (TableLayout)findViewById(R.id.tableLayoutTouchables);
 		int touchableWidth = 0;
 		int touchableHeight = 0;
 		
-		// TODO dynamically calculate width/height based on the number of touchables instead of harcoding it.
 		numberOfTouchables = 1;
 		switch (numberOfTouchables) {
 		case 1:
+			/**
+			 * Number of rows:		1
+			 * Number of columns:	1
+			 * No inbound margins
+			 */
+			TableRow tableRow = new TableRow(this);
+			tableRow.setBackgroundColor(0xff00bada);
+			
 			touchableWidth = tableLayoutTouchables.getWidth();
 			touchableHeight = tableLayoutTouchables.getHeight();
 			
-			TableRow tableRow = new TableRow(this);
+			tableRowLayoutParams.width = touchableWidth - 10;
+			tableRowLayoutParams.height = touchableHeight - 10;
+			tableRowLayoutParams.setMargins(5, 5, 5, 5);
 			
-			Button buttonCell = new Button(this);
-			buttonCell.setWidth(touchableWidth - 10);
-			buttonCell.setHeight(touchableHeight - 10);
-			
-			
-			RelativeLayout relativeLayoutCell = new RelativeLayout(this);
 			TextView textViewTouchCounter = new TextView(this);
 			TextView textViewTouchableName = new TextView(this);
 			
-			textViewTouchCounter.setText("19");
-			textViewTouchCounter.setGravity(Gravity.CENTER);
+			textViewTouchCounter.setId(0);
+			textViewTouchCounter.setTextSize(touchableHeight / TOUCHABLES_COUNT_RATIO);
+			textViewTouchCounter.setTypeface(textViewTouchCounter.getTypeface(), Typeface.BOLD);
+			textViewTouchCounter.setGravity(Gravity.TOP | Gravity.LEFT);
 			
-			textViewTouchableName.setText("Switch 01");
-			textViewTouchableName.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+			textViewTouchableName.setText(((TouchableDAO)mTouchables.get(0)).getName());
+			textViewTouchableName.setTextSize(touchableHeight / TOUCHABLES_NAME_RATIO);
+			textViewTouchableName.setTypeface(textViewTouchableName.getTypeface(), Typeface.BOLD);
+			textViewTouchableName.setGravity(Gravity.CENTER);
 			
-			/*
-			relativeLayoutCellLayoutParams.width = touchableWidth;
-			relativeLayoutCellLayoutParams.height = touchableHeight;
-			
-			relativeLayoutCell.addView(textViewTouchCounter);
-			relativeLayoutCell.addView(textViewTouchableName);
-			
-			tableRow.addView(relativeLayoutCell, relativeLayoutCellLayoutParams);
-			
-			tableLayoutTouchables.addView(tableRow, tableRowLayoutParams);
-			*/
-			
-			//relativeLayoutCellLayoutParams.width = touchableWidth;
-			//relativeLayoutCellLayoutParams.height = touchableHeight;
+			RelativeLayout relativeLayoutCell = new RelativeLayout(this);
+			relativeLayoutCell.setId((int) mTouchables.get(0).getId()); // There's only one touchable --> index 0 is hardcoded
+			relativeLayoutCell.setGravity(Gravity.CENTER);
 			relativeLayoutCell.setBackgroundColor(0xffdaeaba);
-			relativeLayoutCellLayoutParams = new RelativeLayout.LayoutParams(70, 90);
-			relativeLayoutCellLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-			relativeLayoutCell.setLayoutParams(relativeLayoutCellLayoutParams);
-			relativeLayoutCell.addView(textViewTouchCounter);
+			relativeLayoutCell.addView(textViewTouchCounter, relativeLayoutCellLayoutParams);
+			relativeLayoutCell.addView(textViewTouchableName, relativeLayoutCellLayoutParams);
 			
+			relativeLayoutCell.setOnClickListener(this);
 
-			
-			//relativeLayoutCell.addView(textViewTouchableName);
-			
-			//tableRow.addView(relativeLayoutCell/*, relativeLayoutCellLayoutParams*/);
-			tableRow.addView(buttonCell);
-			tableRow.setBackgroundColor(0xff00bada);
-			
-			tableLayoutTouchables.addView(tableRow, tableRowLayoutParams);
-			
+			tableRow.addView(relativeLayoutCell, tableRowLayoutParams/*, relativeLayoutCellLayoutParams*/);
+			tableLayoutTouchables.addView(tableRow);
 			break;
 		case 2:
 			touchableWidth = tableLayoutTouchables.getWidth();
@@ -224,7 +269,16 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				// TODO Change button image to "recording in progress" (toggling image each second)
 			}
 		} else {
-			// TODO Other clickable elements were clicked
+			Log.d(TAG, "Received click on event from view with ID of " + clickableView.getId());
+			Log.d(TAG, "ID of first relative layout is " + mTouchables.get(0).getId());
+			
+			Message keyDownMessage = new Message();
+			keyDownMessage.what = MSG_TOUCH_KEY_DOWN_COLOR;
+			keyDownMessage.obj = Integer.valueOf(clickableView.getId());
+        	mHandlerTouch.sendMessage(keyDownMessage);
+			
+			mSparseIntArrayTouchCounts.put(clickableView.getId(), mSparseIntArrayTouchCounts.get(clickableView.getId()) + 1);
+			((TextView)(findViewById((int)mTouchables.get(0).getId()).findViewById(0))).setText(String.valueOf(mSparseIntArrayTouchCounts.get(clickableView.getId())));
 		}
 	}
 	
