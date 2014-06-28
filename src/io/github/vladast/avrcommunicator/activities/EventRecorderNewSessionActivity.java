@@ -197,8 +197,6 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		int numberOfRows = 0;
 		int numberOfColumns = 0;
 		
-		// TODO Use value from database.
-		numberOfTouchables = 7;
 		switch (numberOfTouchables) {
 		case 1:
 		{
