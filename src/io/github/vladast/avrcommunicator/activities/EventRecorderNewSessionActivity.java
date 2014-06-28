@@ -203,7 +203,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		int numberOfColumns = 0;
 		
 		// TODO Use value from database.
-		numberOfTouchables = 8;
+		numberOfTouchables = 5;
 		switch (numberOfTouchables) {
 		case 1:
 		{
@@ -559,7 +559,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				 * 	Number of rows:		3
 				 * 	Number of columns:	2
 				 */
-				numberOfRows = 2;
+				numberOfRows = 3;
 				numberOfColumns = 2;
 				touchableWidth = (tableLayoutTouchables.getWidth() - (numberOfColumns + 1) * TOUCHABLES_LAYOUT_OUT_MARGIN) / numberOfColumns;
 				touchableHeight = (tableLayoutTouchables.getHeight() - (numberOfRows + 1) * TOUCHABLES_LAYOUT_OUT_MARGIN) / numberOfRows;
@@ -573,7 +573,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 						tableRowLayoutParams.width = touchableWidth;
 						tableRowLayoutParams.height = touchableHeight;
 						
-						indexTouchable = 2 * i + j;
+						indexTouchable = numberOfColumns * i + j;
 						
 						switch (indexTouchable) {
 						case 0:
@@ -586,11 +586,15 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 							break;
 						case 2:
 							tableRowLayoutParams.setMargins(
-									TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN);
+									TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN / 2);
 							break;
 						case 3:
 							tableRowLayoutParams.setMargins(
-									TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN);
+									TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN / 2);
+							break;
+						case 4:
+							tableRowLayoutParams.setMargins(
+									TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN);
 							break;
 						}
 							
@@ -618,12 +622,86 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 						
 						relativeLayoutCell.setOnClickListener(this);
 
+						tableRow.setGravity(Gravity.CENTER_HORIZONTAL);
 						tableRow.addView(relativeLayoutCell, tableRowLayoutParams);	
+						if(indexTouchable == 4)
+							break;
 					}
 					tableLayoutTouchables.addView(tableRow);
 				}
 			} else {
-				
+				/**
+				 * Landscape:
+				 * 	Number of rows:		2
+				 * 	Number of columns:	3
+				 */
+				numberOfRows = 2;
+				numberOfColumns = 3;
+				touchableWidth = (tableLayoutTouchables.getWidth() - (numberOfColumns + 1) * TOUCHABLES_LAYOUT_OUT_MARGIN) / numberOfColumns;
+				touchableHeight = (tableLayoutTouchables.getHeight() - (numberOfRows + 1) * TOUCHABLES_LAYOUT_OUT_MARGIN) / numberOfRows;
+				int indexTouchable = 0;
+				for(int i = 0; i < numberOfRows; ++i) {
+					tableRow = new TableRow(this);
+					for(int j = 0; j < numberOfColumns; ++j) {
+						tableRowLayoutParams = new TableRow.LayoutParams(
+								TableRow.LayoutParams.WRAP_CONTENT,
+								TableRow.LayoutParams.WRAP_CONTENT);
+						tableRowLayoutParams.width = touchableWidth;
+						tableRowLayoutParams.height = touchableHeight;
+						
+						indexTouchable = numberOfColumns * i + j;
+						
+						switch (indexTouchable) {
+						case 0:
+							tableRowLayoutParams.setMargins(
+									TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN / 2);
+							break;
+						case 1:
+							tableRowLayoutParams.setMargins(
+									TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN / 2);
+							break;
+						case 2:
+							tableRowLayoutParams.setMargins(
+									TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN / 2);
+							break;
+						case 3:
+						case 4:
+							tableRowLayoutParams.setMargins(
+									TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN);
+							break;
+						}
+							
+						
+						textViewTouchCounter = new TextView(this);
+						textViewTouchableName = new TextView(this);
+						
+						textViewTouchCounter.setId(0);
+						textViewTouchCounter.setText("0");
+						textViewTouchCounter.setTextSize(touchableHeight / TOUCHABLES_COUNT_RATIO);
+						textViewTouchCounter.setTypeface(textViewTouchCounter.getTypeface(), Typeface.BOLD);
+						textViewTouchCounter.setGravity(Gravity.TOP | Gravity.LEFT);
+						
+						textViewTouchableName.setText(((TouchableDAO)mTouchables.get(indexTouchable)).getName());
+						textViewTouchableName.setTextSize(touchableHeight / TOUCHABLES_NAME_RATIO);
+						textViewTouchableName.setTypeface(textViewTouchableName.getTypeface(), Typeface.BOLD);
+						textViewTouchableName.setGravity(Gravity.CENTER);
+						
+						relativeLayoutCell = new RelativeLayout(this);
+						relativeLayoutCell.setId((int) mTouchables.get(indexTouchable).getId());
+						relativeLayoutCell.setGravity(Gravity.CENTER);
+						relativeLayoutCell.setBackgroundColor(mColorTouchable);
+						relativeLayoutCell.addView(textViewTouchCounter, relativeLayoutCellLayoutParams);
+						relativeLayoutCell.addView(textViewTouchableName, relativeLayoutCellLayoutParams);
+						
+						relativeLayoutCell.setOnClickListener(this);
+
+						tableRow.setGravity(Gravity.CENTER_HORIZONTAL);
+						tableRow.addView(relativeLayoutCell, tableRowLayoutParams);
+						if(indexTouchable == 4)
+							break;
+					}
+					tableLayoutTouchables.addView(tableRow);
+				}				
 			}
 			break;
 		}
