@@ -100,6 +100,8 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	/** Color of touchable element */
 	// TODO Create a map between touchables and colors from settings; that can be also pulled out from db.
 	private int mColorTouchable;
+	/** Color of disabled touchable element */
+	private int mColorTouchableDisabled;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -149,6 +151,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		}
 		
 		mColorTouchable = 0xffdaeaba; // TODO Read this value from Settings
+		mColorTouchableDisabled = 0xff00da00; // TODO Read this value from Settings
 	}
 	
 	@Override
@@ -1211,13 +1214,17 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				// TODO Change button image to "recording in progress" (toggling image each second)
 			}
 		} else {
-			Message keyDownMessage = new Message();
-			keyDownMessage.what = MSG_TOUCH_KEY_DOWN_COLOR;
-			keyDownMessage.obj = Integer.valueOf(clickableView.getId());
-        	mHandlerTouch.sendMessage(keyDownMessage);
-			
-			mSparseIntArrayTouchCounts.put(clickableView.getId(), mSparseIntArrayTouchCounts.get(clickableView.getId()) + 1);
-			((TextView)(findViewById(clickableView.getId()).findViewById(0))).setText(String.valueOf(mSparseIntArrayTouchCounts.get(clickableView.getId())));
+			if(mTimerStarted) {
+				Message keyDownMessage = new Message();
+				keyDownMessage.what = MSG_TOUCH_KEY_DOWN_COLOR;
+				keyDownMessage.obj = Integer.valueOf(clickableView.getId());
+	        	mHandlerTouch.sendMessage(keyDownMessage);
+				
+				mSparseIntArrayTouchCounts.put(clickableView.getId(), mSparseIntArrayTouchCounts.get(clickableView.getId()) + 1);
+				((TextView)(findViewById(clickableView.getId()).findViewById(0))).setText(String.valueOf(mSparseIntArrayTouchCounts.get(clickableView.getId())));
+			} else {
+				// TODO Buzz a user that buttons are disabled
+			}
 		}
 	}
 	
