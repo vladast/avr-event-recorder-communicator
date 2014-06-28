@@ -179,10 +179,6 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		Log.d(TAG, String.format("Creating %d touchable elements...", numberOfTouchables));
 		
 		boolean isPortraitOrientation = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
-		
-		TableLayout.LayoutParams tableLayoutParams = new TableLayout.LayoutParams(
-				TableLayout.LayoutParams.MATCH_PARENT,
-				TableLayout.LayoutParams.MATCH_PARENT);
 
 		TableRow.LayoutParams tableRowLayoutParams = null;
 		
@@ -191,7 +187,6 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				RelativeLayout.LayoutParams.MATCH_PARENT);
 		
 		TableLayout tableLayoutTouchables = (TableLayout)findViewById(R.id.tableLayoutTouchables);
-		ArrayList<TableRow> tableRows = new ArrayList<TableRow>();
 		TableRow tableRow = null;
 		TextView textViewTouchCounter = null;
 		TextView textViewTouchableName = null;
