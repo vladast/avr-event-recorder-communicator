@@ -1205,12 +1205,14 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				//mHandlerTimer.removeMessages(MSG_TIMER_TICK);
 				mTimerStarted = false;
 				// TODO Change button image to "save" & open dialog box (dialog fragment) with save/edit options
+				changeColorOnTouchables(mColorTouchableDisabled);
 			} else {
 				mStartTime = SystemClock.elapsedRealtime();
 				// When start button is clicked, fire timer event with 1ms delay, no matter of MEASURE_MILLISECONDS value
 				mHandlerTimer.postDelayed(mRunnableTimerThread, 1);
 				//mHandlerTimer.sendEmptyMessageDelayed(MSG_TIMER_TICK, 1);
 				mTimerStarted = true;
+				changeColorOnTouchables(mColorTouchable);
 				// TODO Change button image to "recording in progress" (toggling image each second)
 			}
 		} else {
@@ -1253,6 +1255,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		   else {
 			   mHandlerLayout.removeCallbacks(mRunnableLayoutThread);
 			   displayTouchables();
+			   changeColorOnTouchables(mColorTouchableDisabled);
 		   }
 	   }
 	};
@@ -1271,5 +1274,22 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		   return String.format("%02d:%02d:%02d.%03d", hrs, mins, secs, msecs);
 	   else
 		   return String.format("%02d:%02d:%02d", hrs, mins, secs);
+	}
+	
+	/**
+	 * Changes color onto all touchable elements.
+	 * @param color Color that is to be set on touchable elements.
+	 */
+	private void changeColorOnTouchables(int color) {
+		/**
+		 * Run through all views and find all of RelativeLayout types.
+		 * For RelativeLayout elements, change color based upon given value.
+		 */
+		TableLayout tableLayoutTouchables = (TableLayout)findViewById(R.id.tableLayoutTouchables);
+		for (EventRecorderDAO touchable : mTouchables) {
+			View touchableView = tableLayoutTouchables.findViewById((int) touchable.getId());
+			if(touchableView != null)
+				touchableView.setBackgroundColor(color);
+		}
 	}
 }
