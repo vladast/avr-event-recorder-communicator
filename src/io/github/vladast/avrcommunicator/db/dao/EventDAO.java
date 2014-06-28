@@ -61,13 +61,13 @@ public class EventDAO extends EventRecorderDAO {
 		mIndexDeviceEvent = indexDeviceEvent;
 	}
 	
-	private int mTimestamp;
+	private long mTimestamp;
 	
-	public int getTimestamp() {
+	public long getTimestamp() {
 		return mTimestamp;
 	}
 	
-	public void setTimestamp(int timestamp) {
-		mTimestamp = timestamp;
+	public void setTimestamp(long timeSample) {
+		mTimestamp = timeSample;
 	}
 }
