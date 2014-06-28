@@ -20,6 +20,8 @@ import android.app.Activity;
 import android.app.ActionBar;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.hardware.usb.UsbDevice;
@@ -95,6 +97,9 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	private ArrayList<EventRecorderDAO> mTouchables;
 	/** Map of counts for each touchable element */
 	private SparseIntArray mSparseIntArrayTouchCounts;
+	/** Color of touchable element */
+	// TODO Create a map between touchables and colors from settings; that can be also pulled out from db.
+	private int mColorTouchable;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +113,8 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	        public void handleMessage(Message msg) {
 	            switch (msg.what) {
 		            case MSG_TOUCH_KEY_DOWN_COLOR:
+	                	// TODO Use inverted color value for the background color
+	                	// TODO Add additional Settings entry - user can choose whether inverted color should be displayed, or pre-defined ones.
 		            	findViewById(((Integer)msg.obj).intValue()).setBackgroundColor(0xba00ba);
 		            	Message keyUpMessage = new Message();
 		            	keyUpMessage.what = MSG_TOUCH_KEY_UP_COLOR;
@@ -115,7 +122,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		            	mHandlerTouch.sendMessageDelayed(keyUpMessage, 100);
 		            	break;
 	                case MSG_TOUCH_KEY_UP_COLOR:
-		            	findViewById(((Integer)msg.obj).intValue()).setBackgroundColor(0x0000baba);
+		            	findViewById(((Integer)msg.obj).intValue()).setBackgroundColor(mColorTouchable);
 	                    break;
 	                default:
 	                    super.handleMessage(msg);
@@ -140,6 +147,8 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		for (EventRecorderDAO touchable : mTouchables) {
 			mSparseIntArrayTouchCounts.put((int) touchable.getId(), 0);
 		}
+		
+		mColorTouchable = 0xffdaeaba; // TODO Read this value from Settings
 	}
 	
 	@Override
@@ -169,45 +178,58 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		int numberOfTouchables = PreferenceManager.getDefaultSharedPreferences(this).getInt(EventRecorderSettingsActivity.KEY_PREF_EVENT_NUMBER, 3); 
 		Log.d(TAG, String.format("Creating %d touchable elements...", numberOfTouchables));
 		
+		boolean isPortraitOrientation = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
+		
 		TableLayout.LayoutParams tableLayoutParams = new TableLayout.LayoutParams(
 				TableLayout.LayoutParams.MATCH_PARENT,
 				TableLayout.LayoutParams.MATCH_PARENT);
 
-		TableRow.LayoutParams tableRowLayoutParams = new TableRow.LayoutParams(
-				TableRow.LayoutParams.WRAP_CONTENT,
-				TableRow.LayoutParams.WRAP_CONTENT);
+		TableRow.LayoutParams tableRowLayoutParams = null;
 		
 		RelativeLayout.LayoutParams relativeLayoutCellLayoutParams = new RelativeLayout.LayoutParams(
 				RelativeLayout.LayoutParams.MATCH_PARENT,
 				RelativeLayout.LayoutParams.MATCH_PARENT);
 		
-		// tableLayoutTouchables
 		TableLayout tableLayoutTouchables = (TableLayout)findViewById(R.id.tableLayoutTouchables);
+		ArrayList<TableRow> tableRows = new ArrayList<TableRow>();
+		TableRow tableRow = null;
+		TextView textViewTouchCounter = null;
+		TextView textViewTouchableName = null;
+		RelativeLayout relativeLayoutCell = null;
+		
 		int touchableWidth = 0;
 		int touchableHeight = 0;
+		int numberOfRows = 0;
+		int numberOfColumns = 0;
 		
-		numberOfTouchables = 1;
+		// TODO Use value from database.
+		numberOfTouchables = 2;
 		switch (numberOfTouchables) {
 		case 1:
+		{
 			/**
 			 * Number of rows:		1
 			 * Number of columns:	1
 			 * No inbound margins
 			 */
-			TableRow tableRow = new TableRow(this);
-			tableRow.setBackgroundColor(0xff00bada);
 			
-			touchableWidth = tableLayoutTouchables.getWidth();
-			touchableHeight = tableLayoutTouchables.getHeight();
+			touchableWidth = tableLayoutTouchables.getWidth() - 2 * TOUCHABLES_LAYOUT_OUT_MARGIN;
+			touchableHeight = tableLayoutTouchables.getHeight() - 2 * TOUCHABLES_LAYOUT_OUT_MARGIN;
 			
-			tableRowLayoutParams.width = touchableWidth - 10;
-			tableRowLayoutParams.height = touchableHeight - 10;
-			tableRowLayoutParams.setMargins(5, 5, 5, 5);
+			tableRow = new TableRow(this);
 			
-			TextView textViewTouchCounter = new TextView(this);
-			TextView textViewTouchableName = new TextView(this);
+			tableRowLayoutParams = new TableRow.LayoutParams(
+					TableRow.LayoutParams.WRAP_CONTENT,
+					TableRow.LayoutParams.WRAP_CONTENT);
+			tableRowLayoutParams.width = touchableWidth;
+			tableRowLayoutParams.height = touchableHeight;
+			tableRowLayoutParams.setMargins(TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN);
+			
+			textViewTouchCounter = new TextView(this);
+			textViewTouchableName = new TextView(this);
 			
 			textViewTouchCounter.setId(0);
+			textViewTouchCounter.setText("0");
 			textViewTouchCounter.setTextSize(touchableHeight / TOUCHABLES_COUNT_RATIO);
 			textViewTouchCounter.setTypeface(textViewTouchCounter.getTypeface(), Typeface.BOLD);
 			textViewTouchCounter.setGravity(Gravity.TOP | Gravity.LEFT);
@@ -217,22 +239,131 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 			textViewTouchableName.setTypeface(textViewTouchableName.getTypeface(), Typeface.BOLD);
 			textViewTouchableName.setGravity(Gravity.CENTER);
 			
-			RelativeLayout relativeLayoutCell = new RelativeLayout(this);
+			relativeLayoutCell = new RelativeLayout(this);
 			relativeLayoutCell.setId((int) mTouchables.get(0).getId()); // There's only one touchable --> index 0 is hardcoded
 			relativeLayoutCell.setGravity(Gravity.CENTER);
-			relativeLayoutCell.setBackgroundColor(0xffdaeaba);
+			relativeLayoutCell.setBackgroundColor(mColorTouchable);
 			relativeLayoutCell.addView(textViewTouchCounter, relativeLayoutCellLayoutParams);
 			relativeLayoutCell.addView(textViewTouchableName, relativeLayoutCellLayoutParams);
 			
 			relativeLayoutCell.setOnClickListener(this);
 
-			tableRow.addView(relativeLayoutCell, tableRowLayoutParams/*, relativeLayoutCellLayoutParams*/);
+			tableRow.addView(relativeLayoutCell, tableRowLayoutParams);
 			tableLayoutTouchables.addView(tableRow);
 			break;
+		}
 		case 2:
-			touchableWidth = tableLayoutTouchables.getWidth();
-			touchableHeight = tableLayoutTouchables.getHeight() / 2;
+		{
+			if(isPortraitOrientation) {
+				/**
+				 * Portrait:
+				 * 	Number of rows:		2
+				 * 	Number of columns:	1
+				 */	
+				numberOfRows = 2;
+				numberOfColumns = 1;
+				touchableWidth = tableLayoutTouchables.getWidth() - 2 * TOUCHABLES_LAYOUT_OUT_MARGIN;
+				touchableHeight = (tableLayoutTouchables.getHeight() - 3 * TOUCHABLES_LAYOUT_OUT_MARGIN) / 2;
+				
+				for(int i = 0; i < numberOfRows; ++i) {
+					tableRow = new TableRow(this);
+					
+					tableRowLayoutParams = new TableRow.LayoutParams(
+							TableRow.LayoutParams.WRAP_CONTENT,
+							TableRow.LayoutParams.WRAP_CONTENT);
+					tableRowLayoutParams.width = touchableWidth;
+					tableRowLayoutParams.height = touchableHeight;
+					if(i == 0)
+						// For first row, bottom margin is twice as smaller than outbound margin
+						tableRowLayoutParams.setMargins(
+								TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN / 2);
+					else
+						// For second row, top margin is twice as smaller than outbount margin
+						tableRowLayoutParams.setMargins(
+								TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN);
+					
+					textViewTouchCounter = new TextView(this);
+					textViewTouchableName = new TextView(this);
+					
+					textViewTouchCounter.setId(0);
+					textViewTouchCounter.setText("0");
+					textViewTouchCounter.setTextSize(touchableHeight / TOUCHABLES_COUNT_RATIO);
+					textViewTouchCounter.setTypeface(textViewTouchCounter.getTypeface(), Typeface.BOLD);
+					textViewTouchCounter.setGravity(Gravity.TOP | Gravity.LEFT);
+					
+					textViewTouchableName.setText(((TouchableDAO)mTouchables.get(i)).getName());
+					textViewTouchableName.setTextSize(touchableHeight / TOUCHABLES_NAME_RATIO);
+					textViewTouchableName.setTypeface(textViewTouchableName.getTypeface(), Typeface.BOLD);
+					textViewTouchableName.setGravity(Gravity.CENTER);
+					
+					relativeLayoutCell = new RelativeLayout(this);
+					relativeLayoutCell.setId((int) mTouchables.get(i).getId());
+					relativeLayoutCell.setGravity(Gravity.CENTER);
+					relativeLayoutCell.setBackgroundColor(mColorTouchable);
+					relativeLayoutCell.addView(textViewTouchCounter, relativeLayoutCellLayoutParams);
+					relativeLayoutCell.addView(textViewTouchableName, relativeLayoutCellLayoutParams);
+					
+					relativeLayoutCell.setOnClickListener(this);
+
+					tableRow.addView(relativeLayoutCell, tableRowLayoutParams);
+					tableLayoutTouchables.addView(tableRow);
+				}
+				
+			} else {
+				/**
+				 * Landscape:
+				 * 	Number of rows:		1
+				 * 	Number of columns:	2
+				 */
+				numberOfRows = 1;
+				numberOfColumns = 2;
+				touchableWidth = (tableLayoutTouchables.getWidth() - 3 * TOUCHABLES_LAYOUT_OUT_MARGIN) / 2; // 4 = (3 - 1) * 2
+				touchableHeight = tableLayoutTouchables.getHeight() - 2 * TOUCHABLES_LAYOUT_OUT_MARGIN;
+				
+				tableRow = new TableRow(this);
+				
+				for(int i = 0; i < numberOfColumns; ++i) {
+					tableRowLayoutParams = new TableRow.LayoutParams(
+							TableRow.LayoutParams.WRAP_CONTENT,
+							TableRow.LayoutParams.WRAP_CONTENT);
+					tableRowLayoutParams.width = touchableWidth;
+					tableRowLayoutParams.height = touchableHeight;
+					
+					if(i == 0)
+						tableRowLayoutParams.setMargins(
+								TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN);
+					else
+						tableRowLayoutParams.setMargins(
+								TOUCHABLES_LAYOUT_OUT_MARGIN / 2, TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN, TOUCHABLES_LAYOUT_OUT_MARGIN);
+					
+					textViewTouchCounter = new TextView(this);
+					textViewTouchableName = new TextView(this);
+					
+					textViewTouchCounter.setId(0);
+					textViewTouchCounter.setText("0");
+					textViewTouchCounter.setTextSize(touchableHeight / TOUCHABLES_COUNT_RATIO);
+					textViewTouchCounter.setTypeface(textViewTouchCounter.getTypeface(), Typeface.BOLD);
+					textViewTouchCounter.setGravity(Gravity.TOP | Gravity.LEFT);
+					
+					textViewTouchableName.setText(((TouchableDAO)mTouchables.get(i)).getName());
+					textViewTouchableName.setTextSize(touchableHeight / TOUCHABLES_NAME_RATIO);
+					textViewTouchableName.setTypeface(textViewTouchableName.getTypeface(), Typeface.BOLD);
+					textViewTouchableName.setGravity(Gravity.CENTER);
+					
+					relativeLayoutCell = new RelativeLayout(this);
+					relativeLayoutCell.setId((int) mTouchables.get(i).getId());
+					relativeLayoutCell.setGravity(Gravity.CENTER);
+					relativeLayoutCell.setBackgroundColor(mColorTouchable);
+					relativeLayoutCell.addView(textViewTouchCounter, relativeLayoutCellLayoutParams);
+					relativeLayoutCell.addView(textViewTouchableName, relativeLayoutCellLayoutParams);
+					relativeLayoutCell.setOnClickListener(this);
+
+					tableRow.addView(relativeLayoutCell, tableRowLayoutParams);
+				}
+				tableLayoutTouchables.addView(tableRow);				
+			}
 			break;
+		}
 		case 3:
 			touchableWidth = tableLayoutTouchables.getWidth();
 			touchableHeight = tableLayoutTouchables.getHeight() / 3;
@@ -269,16 +400,13 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				// TODO Change button image to "recording in progress" (toggling image each second)
 			}
 		} else {
-			Log.d(TAG, "Received click on event from view with ID of " + clickableView.getId());
-			Log.d(TAG, "ID of first relative layout is " + mTouchables.get(0).getId());
-			
 			Message keyDownMessage = new Message();
 			keyDownMessage.what = MSG_TOUCH_KEY_DOWN_COLOR;
 			keyDownMessage.obj = Integer.valueOf(clickableView.getId());
         	mHandlerTouch.sendMessage(keyDownMessage);
 			
 			mSparseIntArrayTouchCounts.put(clickableView.getId(), mSparseIntArrayTouchCounts.get(clickableView.getId()) + 1);
-			((TextView)(findViewById((int)mTouchables.get(0).getId()).findViewById(0))).setText(String.valueOf(mSparseIntArrayTouchCounts.get(clickableView.getId())));
+			((TextView)(findViewById(clickableView.getId()).findViewById(0))).setText(String.valueOf(mSparseIntArrayTouchCounts.get(clickableView.getId())));
 		}
 	}
 	
