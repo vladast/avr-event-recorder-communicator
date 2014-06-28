@@ -317,7 +317,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				 */
 				numberOfRows = 1;
 				numberOfColumns = 2;
-				touchableWidth = (tableLayoutTouchables.getWidth() - 3 * TOUCHABLES_LAYOUT_OUT_MARGIN) / 2; // 4 = (3 - 1) * 2
+				touchableWidth = (tableLayoutTouchables.getWidth() - 3 * TOUCHABLES_LAYOUT_OUT_MARGIN) / 2;
 				touchableHeight = tableLayoutTouchables.getHeight() - 2 * TOUCHABLES_LAYOUT_OUT_MARGIN;
 				
 				tableRow = new TableRow(this);
