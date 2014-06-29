@@ -113,7 +113,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	/** List of recorded events. */
 	private ArrayList<EventDAO> mEvents;
 	/** Current session's name. Created when recording is completed, from completion date&time */
-	private String mCurrentSessionName;
+	private SessionDAO mCurrentSession;
 	/** Indicates whether session is saved in the database. */
 	private boolean mPersisentSession;
 	/** Timestamp of the recording, when recording got completed. */
@@ -160,6 +160,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		
 		mTouchables = ((EventRecorderApplication)this.getApplicationContext()).getDatabaseHandler().getDatabaseObjects(TouchableDAO.class);
 		mEvents = new ArrayList<EventDAO>();
+		mCurrentSession = new SessionDAO(null);
 		
 		/** Initialize map of counts */
 		mSparseIntArrayTouchCounts = new SparseIntArray(mTouchables.size());
@@ -1226,7 +1227,8 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				// TODO Change button image to "save" & open dialog box (dialog fragment) with save/edit options
 				changeColorOnTouchables(mColorTouchableDisabled);
 				mTimestampRecording = new Date();
-				mCurrentSessionName = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(mTimestampRecording);
+				mCurrentSession.setName(new SimpleDateFormat("yyyy-MM-dd").format(mTimestampRecording));
+				mCurrentSession.setDescription(new SimpleDateFormat("HH:mm:ss").format(mTimestampRecording));
 				saveSessionAndEvents();
 				mPersisentSession = false;
 				showDialogSave();
@@ -1257,25 +1259,23 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	
 	private void saveSessionAndEvents() {
 		// TODO Auto-generated method stub
-		SessionDAO sessionCurrent = new SessionDAO(null);
 		for(EventRecorderDAO record : ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjects(DeviceDAO.class)) {
 			if(((DeviceDAO)record).getType() == DeviceDAO.DEVICE_TYPE_ANDROID) {
-				sessionCurrent.setIdDevice(((DeviceDAO)record).getId());
+				mCurrentSession.setIdDevice(((DeviceDAO)record).getId());
 				break;
 			}
 		}
-		sessionCurrent.setIndexDeviceSession(0);
-		sessionCurrent.setName(mCurrentSessionName);
-		sessionCurrent.setNumberOfEvents(mEvents.size());
-		sessionCurrent.setNumberOfEventTypes(PreferenceManager.getDefaultSharedPreferences(this).getInt(EventRecorderSettingsActivity.KEY_PREF_EVENT_NUMBER, 3));
-		sessionCurrent.setTimestampRecorded(mTimestampRecording);
-		sessionCurrent.setTimestampUploaded(mTimestampRecording);
+		mCurrentSession.setIndexDeviceSession(0);
+		mCurrentSession.setNumberOfEvents(mEvents.size());
+		mCurrentSession.setNumberOfEventTypes(PreferenceManager.getDefaultSharedPreferences(this).getInt(EventRecorderSettingsActivity.KEY_PREF_EVENT_NUMBER, 3));
+		mCurrentSession.setTimestampRecorded(mTimestampRecording);
+		mCurrentSession.setTimestampUploaded(mTimestampRecording);
 		
-		((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().OnAdd(sessionCurrent);
-		sessionCurrent.setId(((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getLastDatabaseObject(SessionDAO.class).getId());
+		((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().OnAdd(mCurrentSession);
+		mCurrentSession.setId(((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getLastDatabaseObject(SessionDAO.class).getId());
 		
 		for(EventDAO event : mEvents) {
-			event.setIdSession((int) sessionCurrent.getId());
+			event.setIdSession((int) mCurrentSession.getId());
 			((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().OnAdd(event);
 		}	
 	}
@@ -1290,6 +1290,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		dialogSave.setContentView(R.layout.dialog_save_new_session);
 		dialogSave.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
 		dialogSave.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+		
 		dialogSave.findViewById(R.id.imageButtonSave).setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -1299,13 +1300,29 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				dialogSave.dismiss();
 			}
 		});
+		
 		dialogSave.findViewById(R.id.imageButtonView).setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
 				Log.d(TAG, "View clicked!");
-				Intent intentViewSession = new Intent(getParent(), EventRecorderSessionDetailActivity.class);
+
 				Bundle bundleSessionData = new Bundle();
+				bundleSessionData.putLong(EventRecorderSessionDetailFragment.ARG_SESSION_ID, mCurrentSession.getId());
+				bundleSessionData.putLong(EventRecorderSessionDetailFragment.ARG_SESSION_DEVICE_ID, mCurrentSession.getIdDevice());
+				bundleSessionData.putString(EventRecorderSessionDetailFragment.ARG_SESSION_NAME, mCurrentSession.getName());
+				bundleSessionData.putString(EventRecorderSessionDetailFragment.ARG_SESSION_DESCRIPTION, mCurrentSession.getDescription());
+				bundleSessionData.putInt(EventRecorderSessionDetailFragment.ARG_SESSION_INDEX_DEVICE_SESSION, mCurrentSession.getIndexDeviceSession());
+				bundleSessionData.putInt(EventRecorderSessionDetailFragment.ARG_SESSION_NUM_EVENTS, mCurrentSession.getNumberOfEvents());
+				bundleSessionData.putInt(EventRecorderSessionDetailFragment.ARG_SESSION_NUM_EVENT_TYPES, mCurrentSession.getNumberOfEventTypes());
+				bundleSessionData.putLong(EventRecorderSessionDetailFragment.ARG_SESSION_TIMESTAMP_REC, mCurrentSession.getTimestampRecorded().getTime());
+				// If not persistent, Save button should be displayed on details activity so that user can save it's session.
+				bundleSessionData.putBoolean(EventRecorderSessionDetailFragment.ARG_SESSION_PERISTENT, mPersisentSession);
+				
+				Intent intentViewSession = new Intent(v.getContext(), EventRecorderSessionDetailActivity.class);				
+				intentViewSession.putExtra(EventRecorderSessionDetailFragment.ARG_SESSION_OBJ, bundleSessionData);
+				startActivity(intentViewSession);				
+				
 				dialogSave.dismiss();
 			}
 		});
