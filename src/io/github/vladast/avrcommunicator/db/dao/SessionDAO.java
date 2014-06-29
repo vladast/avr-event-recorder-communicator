@@ -3,7 +3,7 @@
  */
 package io.github.vladast.avrcommunicator.db.dao;
 
-import java.sql.Date;
+import java.util.Date;
 
 /**
  * @author vladimir.stankovic
@@ -111,7 +111,7 @@ public class SessionDAO extends EventRecorderDAO {
 		return mTimestampRecorded;
 	}
 	
-	public void setTimestampRecorded(Date timestampRecorded) {
-		mTimestampRecorded = timestampRecorded;
+	public void setTimestampRecorded(java.util.Date mTimestampRecording) {
+		mTimestampRecorded = mTimestampRecording;
 	}
 }
