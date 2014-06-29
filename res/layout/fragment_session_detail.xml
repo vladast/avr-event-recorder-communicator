@@ -31,14 +31,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/activity_sessions_text_indent"
-            android:text="TextViewPrvi" />
+            android:text="TextView" />
 
         <TextView
             android:id="@+id/textViewSessionEventCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/activity_sessions_text_indent"
-            android:text="TextViewDrugi" />
+            android:text="TextView" />
 
         <TextView
             android:id="@+id/textViewSessionEventsDuration"
@@ -78,6 +78,13 @@
                 android:layout_height="wrap_content"
                 android:src="@android:drawable/btn_star"
                 android:layout_toLeftOf="@id/imageButtonSave" />
+            
+            <TextView 
+                android:id="@+id/textViewSessionSaveStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="Dummy content" />
 
 
         </RelativeLayout>
