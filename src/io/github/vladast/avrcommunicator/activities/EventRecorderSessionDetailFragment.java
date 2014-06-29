@@ -71,8 +71,6 @@ public class EventRecorderSessionDetailFragment extends Fragment {
 	 * The fragment argument representing the time of the recording.
 	 */
 	public static final String ARG_SESSION_TIMESTAMP_REC = "session_timestamp_recorded";
-	/** The fragment argument representing the flag of session's persitency - whether session is to be kept in the database or not. */
-	public static final String ARG_SESSION_PERISTENT = "session_persistent";
 	
 	/**
 	 * The session object that is represented by this fragment.
@@ -89,6 +87,9 @@ public class EventRecorderSessionDetailFragment extends Fragment {
 	 */
 	private Context mContext;
 	
+	/** Indicates whether session data has been modified */
+	private boolean mDirty;
+	
 	/**
 	 * Mandatory empty constructor for the fragment manager to instantiate the
 	 * fragment (e.g. upon screen orientation changes).
@@ -99,6 +100,8 @@ public class EventRecorderSessionDetailFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		mDirty = false;
 
 		if (getActivity().getIntent().getExtras() == null) {
 			mItem = new SessionDAO(null);
@@ -191,6 +194,9 @@ public class EventRecorderSessionDetailFragment extends Fragment {
 					// TODO Open Edit dialog fragment --> editing mItem object
 				}
 			});
+			
+			((TextView)rootView.findViewById(R.id.textViewSessionSaveStatus)).setText(
+					mDirty ? getResources().getString(R.string.session_details_not_saved) : getResources().getString(R.string.session_details_saved));
 			
 			mRecords = ((EventRecorderApplication)getActivity().getApplicationContext()).getDatabaseHandler().getDatabaseObjectsByForeign(EventDAO.class, mItem);
 			

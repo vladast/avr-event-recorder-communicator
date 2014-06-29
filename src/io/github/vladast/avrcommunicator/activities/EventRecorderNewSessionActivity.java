@@ -114,8 +114,6 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	private ArrayList<EventDAO> mEvents;
 	/** Current session's name. Created when recording is completed, from completion date&time */
 	private SessionDAO mCurrentSession;
-	/** Indicates whether session is saved in the database. */
-	private boolean mPersisentSession;
 	/** Timestamp of the recording, when recording got completed. */
 	private Date mTimestampRecording;
 	
@@ -170,8 +168,6 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		
 		mColorTouchable = 0xffdaeaba; // TODO Read this value from Settings
 		mColorTouchableDisabled = 0xff00da00; // TODO Read this value from Settings
-		
-		mPersisentSession = false;
 	}
 	
 	@Override
@@ -1230,7 +1226,6 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				mCurrentSession.setName(new SimpleDateFormat("yyyy-MM-dd").format(mTimestampRecording));
 				mCurrentSession.setDescription(new SimpleDateFormat("HH:mm:ss").format(mTimestampRecording));
 				saveSessionAndEvents();
-				mPersisentSession = false;
 				showDialogSave();
 			} else {
 				mStartTime = SystemClock.elapsedRealtime();
@@ -1307,7 +1302,6 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 			@Override
 			public void onClick(View v) {
 				Log.d(TAG, "Save clicked!");
-				mPersisentSession = true;
 				dialogSave.dismiss();
 			}
 		});
@@ -1339,8 +1333,6 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				bundleSessionData.putInt(EventRecorderSessionDetailFragment.ARG_SESSION_NUM_EVENTS, mCurrentSession.getNumberOfEvents());
 				bundleSessionData.putInt(EventRecorderSessionDetailFragment.ARG_SESSION_NUM_EVENT_TYPES, mCurrentSession.getNumberOfEventTypes());
 				bundleSessionData.putLong(EventRecorderSessionDetailFragment.ARG_SESSION_TIMESTAMP_REC, mCurrentSession.getTimestampRecorded().getTime());
-				// If not persistent, Save button should be displayed on details activity so that user can save it's session.
-				bundleSessionData.putBoolean(EventRecorderSessionDetailFragment.ARG_SESSION_PERISTENT, mPersisentSession);
 				
 				Intent intentViewSession = new Intent(v.getContext(), EventRecorderSessionDetailActivity.class);				
 				intentViewSession.putExtra(EventRecorderSessionDetailFragment.ARG_SESSION_OBJ, bundleSessionData);
