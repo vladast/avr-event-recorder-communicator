@@ -12,8 +12,10 @@ import io.github.vladast.avrcommunicator.AvrRecorderConstants;
 import io.github.vladast.avrcommunicator.EventRecorderApplication;
 import io.github.vladast.avrcommunicator.R;
 import io.github.vladast.avrcommunicator.R.layout;
+import io.github.vladast.avrcommunicator.db.dao.DeviceDAO;
 import io.github.vladast.avrcommunicator.db.dao.EventDAO;
 import io.github.vladast.avrcommunicator.db.dao.EventRecorderDAO;
+import io.github.vladast.avrcommunicator.db.dao.OnDatabaseRequestListener;
 import io.github.vladast.avrcommunicator.db.dao.SessionDAO;
 import io.github.vladast.avrcommunicator.db.dao.TouchableDAO;
 import android.app.Activity;
@@ -34,6 +36,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.text.format.DateFormat;
+import android.text.format.Time;
 import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.Gravity;
@@ -111,6 +114,10 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	private ArrayList<EventDAO> mEvents;
 	/** Current session's name. Created when recording is completed, from completion date&time */
 	private String mCurrentSessionName;
+	/** Indicates whether session is saved in the database. */
+	private boolean mPersisentSession;
+	/** Timestamp of the recording, when recording got completed. */
+	private Date mTimestampRecording;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -162,6 +169,8 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		
 		mColorTouchable = 0xffdaeaba; // TODO Read this value from Settings
 		mColorTouchableDisabled = 0xff00da00; // TODO Read this value from Settings
+		
+		mPersisentSession = false;
 	}
 	
 	@Override
@@ -1216,7 +1225,10 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				mTimerStarted = false;
 				// TODO Change button image to "save" & open dialog box (dialog fragment) with save/edit options
 				changeColorOnTouchables(mColorTouchableDisabled);
-				mCurrentSessionName = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+				mTimestampRecording = new Date();
+				mCurrentSessionName = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(mTimestampRecording);
+				saveSessionAndEvents();
+				mPersisentSession = false;
 				showDialogSave();
 			} else {
 				mStartTime = SystemClock.elapsedRealtime();
@@ -1227,11 +1239,6 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				changeColorOnTouchables(mColorTouchable);
 				// TODO Change button image to "recording in progress" (toggling image each second)
 			}
-		} else if(clickableView.getId() == R.id.imageButtonSave) {
-			Log.d(TAG, "Save cliecked!");
-		} else if(clickableView.getId() == R.id.imageButtonView) {
-			Log.d(TAG, "View clicked!");
-			Bundle bundleSessionData;
 		} else {
 			if(mTimerStarted) {
 				Message keyDownMessage = new Message();
@@ -1248,6 +1255,31 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		}
 	}
 	
+	private void saveSessionAndEvents() {
+		// TODO Auto-generated method stub
+		SessionDAO sessionCurrent = new SessionDAO(null);
+		for(EventRecorderDAO record : ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjects(DeviceDAO.class)) {
+			if(((DeviceDAO)record).getType() == DeviceDAO.DEVICE_TYPE_ANDROID) {
+				sessionCurrent.setIdDevice(((DeviceDAO)record).getId());
+				break;
+			}
+		}
+		sessionCurrent.setIndexDeviceSession(0);
+		sessionCurrent.setName(mCurrentSessionName);
+		sessionCurrent.setNumberOfEvents(mEvents.size());
+		sessionCurrent.setNumberOfEventTypes(PreferenceManager.getDefaultSharedPreferences(this).getInt(EventRecorderSettingsActivity.KEY_PREF_EVENT_NUMBER, 3));
+		sessionCurrent.setTimestampRecorded(mTimestampRecording);
+		sessionCurrent.setTimestampUploaded(mTimestampRecording);
+		
+		((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().OnAdd(sessionCurrent);
+		sessionCurrent.setId(((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getLastDatabaseObject(SessionDAO.class).getId());
+		
+		for(EventDAO event : mEvents) {
+			event.setIdSession((int) sessionCurrent.getId());
+			((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().OnAdd(event);
+		}	
+	}
+
 	/**
 	 * Displays Save/View dialog. 
 	 * <b>NOTE:</b> Called from onClick method when recording stops, or on timeout.
@@ -1258,8 +1290,25 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		dialogSave.setContentView(R.layout.dialog_save_new_session);
 		dialogSave.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
 		dialogSave.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-		dialogSave.findViewById(R.id.imageButtonSave).setOnClickListener(this);
-		dialogSave.findViewById(R.id.imageButtonView).setOnClickListener(this);
+		dialogSave.findViewById(R.id.imageButtonSave).setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Log.d(TAG, "Save clicked!");
+				mPersisentSession = true;
+				dialogSave.dismiss();
+			}
+		});
+		dialogSave.findViewById(R.id.imageButtonView).setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Log.d(TAG, "View clicked!");
+				Intent intentViewSession = new Intent(getParent(), EventRecorderSessionDetailActivity.class);
+				Bundle bundleSessionData = new Bundle();
+				dialogSave.dismiss();
+			}
+		});
 		dialogSave.show();
 	}
 
@@ -1332,10 +1381,10 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	 * @param timeSample Current timer reading.
 	 */
 	private void addEvent(long idTouchable, long timeSample) {
-		Log.d(TAG, String.format("Event (idTouchable/timestamp) = %d/%d", idTouchable, timeSample));
+		Log.d(TAG, String.format("Event (idTouchable/timestamp) = %d/%d", idTouchable, timeSample / 1000));
 		EventDAO event = new EventDAO(null);
 		event.setIdTouchable((int) idTouchable);
-		event.setTimestamp(timeSample);
+		event.setTimestamp(timeSample / 1000);
 		mEvents.add(event);
 	}
 }
