@@ -71,7 +71,9 @@ public class EventRecorderSessionDetailFragment extends Fragment {
 	 * The fragment argument representing the time of the recording.
 	 */
 	public static final String ARG_SESSION_TIMESTAMP_REC = "session_timestamp_recorded";
-
+	/** The fragment argument representing the flag of session's persitency - whether session is to be kept in the database or not. */
+	public static final String ARG_SESSION_PERISTENT = "session_persistent";
+	
 	/**
 	 * The session object that is represented by this fragment.
 	 */
