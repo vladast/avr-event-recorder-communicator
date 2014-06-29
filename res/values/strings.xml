@@ -59,4 +59,10 @@
     <string name="session_details_saved">Session saved!</string>
     <string name="session_details_not_saved">Session is not saved!</string>
     
+    <!-- New Session -->
+    <string name="new_session_pre_discard_title">Discard session data?</string>
+    <string name="new_session_pre_discard_message">Discarding session data is irreversible! All session data will be lost! Press Cancel to return. Otherwise, discard session data by pressing Discard button.</string>
+    <string name="new_session_pre_discard_button_text_discard">Discard</string>
+    <string name="new_session_pre_discard_button_text_cancel">Cancel</string>
+    
 </resources>
