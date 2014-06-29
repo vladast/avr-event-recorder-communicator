@@ -120,6 +120,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	private SessionDAO mCurrentSession;
 	/** Timestamp of the recording, when recording got completed. */
 	private Date mTimestampRecording;
+	/** Dialog displayed before session gets discarded. By clicking on Cancel, user is able to cancel the action. */
 	private DiscardNewSessionAlertDialog mPreDiscardDialog;
 	
 	@Override
