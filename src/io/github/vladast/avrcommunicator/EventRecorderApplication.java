@@ -155,6 +155,7 @@ public class EventRecorderApplication extends Application implements OnSharedPre
 		PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
 		
 		mEventRecorderDatabaseHandler = new EventRecorderDatabaseHandler(this);
+		mEventRecorderDatabaseHandler.getWritableDatabase().close(); // Just to ensure that database is created --> check if necessary!
 	}
 	
 	@Override
