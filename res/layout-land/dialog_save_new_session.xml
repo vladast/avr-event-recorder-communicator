@@ -15,7 +15,14 @@
             android:layout_height="wrap_content"
             android:src="@drawable/ic_launcher"
             android:layout_marginRight="@dimen/activity_vertical_margin" />
-
+        
+        <ImageButton
+            android:id="@+id/imageButtonDiscart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_launcher"
+            android:layout_marginRight="@dimen/activity_vertical_margin"
+            
         <ImageButton
             android:id="@+id/imageButtonView"
             android:layout_width="wrap_content"
