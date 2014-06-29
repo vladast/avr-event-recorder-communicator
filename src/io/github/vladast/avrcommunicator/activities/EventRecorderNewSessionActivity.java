@@ -107,7 +107,10 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	private int mColorTouchable;
 	/** Color of disabled touchable element */
 	private int mColorTouchableDisabled;
+	/** List of recorded events. */
 	private ArrayList<EventDAO> mEvents;
+	/** Current session's name. Created when recording is completed, from completion date&time */
+	private String mCurrentSessionName;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -1213,6 +1216,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				mTimerStarted = false;
 				// TODO Change button image to "save" & open dialog box (dialog fragment) with save/edit options
 				changeColorOnTouchables(mColorTouchableDisabled);
+				mCurrentSessionName = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 				showDialogSave();
 			} else {
 				mStartTime = SystemClock.elapsedRealtime();
@@ -1227,6 +1231,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 			Log.d(TAG, "Save cliecked!");
 		} else if(clickableView.getId() == R.id.imageButtonView) {
 			Log.d(TAG, "View clicked!");
+			Bundle bundleSessionData;
 		} else {
 			if(mTimerStarted) {
 				Message keyDownMessage = new Message();
