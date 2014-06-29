@@ -18,11 +18,15 @@ import io.github.vladast.avrcommunicator.db.dao.EventRecorderDAO;
 import io.github.vladast.avrcommunicator.db.dao.OnDatabaseRequestListener;
 import io.github.vladast.avrcommunicator.db.dao.SessionDAO;
 import io.github.vladast.avrcommunicator.db.dao.TouchableDAO;
+import io.github.vladast.avrcommunicator.dialogs.DiscardNewSessionAlertDialog;
 import android.app.Activity;
 import android.app.ActionBar;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -116,6 +120,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	private SessionDAO mCurrentSession;
 	/** Timestamp of the recording, when recording got completed. */
 	private Date mTimestampRecording;
+	private DiscardNewSessionAlertDialog mPreDiscardDialog;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -167,7 +172,39 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		}
 		
 		mColorTouchable = 0xffdaeaba; // TODO Read this value from Settings
-		mColorTouchableDisabled = 0xff00da00; // TODO Read this value from Settings
+		mColorTouchableDisabled = 0xff00da00; // TODO Read this value from Settings	
+		
+		mPreDiscardDialog = new DiscardNewSessionAlertDialog(this);
+		mPreDiscardDialog.setTitle(R.string.new_session_pre_discard_title);
+		mPreDiscardDialog.setMessage(R.string.new_session_pre_discard_message);
+		mPreDiscardDialog.setPositiveButton(R.string.new_session_pre_discard_button_text_discard, new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				removeSessionAndEvents();
+				switch (mPreDiscardDialog.getCaller()) {
+				case DiscardNewSessionAlertDialog.DIALOG_DISCARD:
+					Intent intentHome = new Intent(mPreDiscardDialog.getContext(), EventRecorderHomeActivity.class);
+					startActivity(intentHome);
+					break;
+				case DiscardNewSessionAlertDialog.DIALOG_DISCARD_BACK:
+					((Activity)mPreDiscardDialog.getContext()).onBackPressed();
+					break;
+				case DiscardNewSessionAlertDialog.DIALOG_DISCARD_NAVIGATE_UP:
+					((Activity)mPreDiscardDialog.getContext()).onNavigateUp();
+					break;
+				default:
+					break;
+				}
+			}
+		});
+		mPreDiscardDialog.setNegativeButton(R.string.new_session_pre_discard_button_text_cancel, new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				Log.d(TAG, "Session discard canceled");
+			}
+		});
 	}
 	
 	@Override
@@ -175,6 +212,25 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		super.onResume();
 		Log.d(TAG, "onResume...");
 		mHandlerLayout.postDelayed(mRunnableLayoutThread, LAYOUT_CHECK_INTERVAL);
+	}
+	
+	@Override
+	public void onBackPressed() {
+		Log.d(TAG, "Back pressed!");
+		if(mPreDiscardDialog.getCaller() != DiscardNewSessionAlertDialog.DIALOG_DISCARD_BACK && mEvents.size() > 1)
+			mPreDiscardDialog.show(DiscardNewSessionAlertDialog.DIALOG_DISCARD_BACK);
+		else
+			super.onBackPressed();
+	}
+	
+	@Override
+	public boolean onNavigateUp() {
+		Log.d(TAG, "Navigate up pressed!");
+		if(mPreDiscardDialog.getCaller() != DiscardNewSessionAlertDialog.DIALOG_DISCARD_NAVIGATE_UP && mEvents.size() > 1)
+			mPreDiscardDialog.show(DiscardNewSessionAlertDialog.DIALOG_DISCARD_NAVIGATE_UP);
+		else
+			super.onNavigateUp();
+		return true;
 	}
 	
 	/**
@@ -1216,7 +1272,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	@Override
 	public void onClick(View clickableView) {
 		if(clickableView.getId() == R.id.imageButtonRecordToggle){
-			if(mTimerStarted) {
+			if(mTimerStarted || mEvents.size() > 1) {
 				mHandlerTimer.removeCallbacks(mRunnableTimerThread);
 				//mHandlerTimer.removeMessages(MSG_TIMER_TICK);
 				mTimerStarted = false;
@@ -1228,13 +1284,15 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				saveSessionAndEvents();
 				showDialogSave();
 			} else {
-				mStartTime = SystemClock.elapsedRealtime();
-				// When start button is clicked, fire timer event with 1ms delay, no matter of MEASURE_MILLISECONDS value
-				mHandlerTimer.postDelayed(mRunnableTimerThread, 1);
-				//mHandlerTimer.sendEmptyMessageDelayed(MSG_TIMER_TICK, 1);
-				mTimerStarted = true;
-				changeColorOnTouchables(mColorTouchable);
-				// TODO Change button image to "recording in progress" (toggling image each second)
+				if(mEvents.size() < 1) {
+					mStartTime = SystemClock.elapsedRealtime();
+					// When start button is clicked, fire timer event with 1ms delay, no matter of MEASURE_MILLISECONDS value
+					mHandlerTimer.postDelayed(mRunnableTimerThread, 1);
+					//mHandlerTimer.sendEmptyMessageDelayed(MSG_TIMER_TICK, 1);
+					mTimerStarted = true;
+					changeColorOnTouchables(mColorTouchable);
+					// TODO Change button image to "recording in progress" (toggling image each second)					
+				}
 			}
 		} else {
 			if(mTimerStarted) {
@@ -1302,6 +1360,8 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 			@Override
 			public void onClick(View v) {
 				Log.d(TAG, "Save clicked!");
+				Intent intentHome = new Intent(v.getContext(), EventRecorderHomeActivity.class);
+				startActivity(intentHome);
 				dialogSave.dismiss();
 			}
 		});
@@ -1311,10 +1371,8 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 			@Override
 			public void onClick(View v) {
 				Log.d(TAG, "Discard clicked!");
-				removeSessionAndEvents();
-				Intent intentViewSession = new Intent(v.getContext(), EventRecorderHomeActivity.class);
-				startActivity(intentViewSession);
 				dialogSave.dismiss();
+				mPreDiscardDialog.show(DiscardNewSessionAlertDialog.DIALOG_DISCARD);
 			}
 		});
 		
@@ -1341,6 +1399,15 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				dialogSave.dismiss();
 			}
 		});
+		
+		dialogSave.setOnCancelListener(new OnCancelListener() {
+			
+			@Override
+			public void onCancel(DialogInterface dialog) {
+				Log.d(TAG, "Dialog canceled");
+			}
+		});
+		
 		dialogSave.show();
 	}
 
