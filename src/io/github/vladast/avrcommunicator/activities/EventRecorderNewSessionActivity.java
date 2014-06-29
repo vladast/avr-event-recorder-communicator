@@ -18,12 +18,15 @@ import io.github.vladast.avrcommunicator.db.dao.SessionDAO;
 import io.github.vladast.avrcommunicator.db.dao.TouchableDAO;
 import android.app.Activity;
 import android.app.ActionBar;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
 import android.hardware.usb.UsbDevice;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -42,6 +45,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.Chronometer.OnChronometerTickListener;
@@ -1208,6 +1213,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				mTimerStarted = false;
 				// TODO Change button image to "save" & open dialog box (dialog fragment) with save/edit options
 				changeColorOnTouchables(mColorTouchableDisabled);
+				showDialogSave();
 			} else {
 				mStartTime = SystemClock.elapsedRealtime();
 				// When start button is clicked, fire timer event with 1ms delay, no matter of MEASURE_MILLISECONDS value
@@ -1217,6 +1223,10 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				changeColorOnTouchables(mColorTouchable);
 				// TODO Change button image to "recording in progress" (toggling image each second)
 			}
+		} else if(clickableView.getId() == R.id.imageButtonSave) {
+			Log.d(TAG, "Save cliecked!");
+		} else if(clickableView.getId() == R.id.imageButtonView) {
+			Log.d(TAG, "View clicked!");
 		} else {
 			if(mTimerStarted) {
 				Message keyDownMessage = new Message();
@@ -1233,6 +1243,21 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		}
 	}
 	
+	/**
+	 * Displays Save/View dialog. 
+	 * <b>NOTE:</b> Called from onClick method when recording stops, or on timeout.
+	 */
+	private void showDialogSave() {
+		final Dialog dialogSave = new Dialog(this);
+		dialogSave.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		dialogSave.setContentView(R.layout.dialog_save_new_session);
+		dialogSave.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+		dialogSave.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+		dialogSave.findViewById(R.id.imageButtonSave).setOnClickListener(this);
+		dialogSave.findViewById(R.id.imageButtonView).setOnClickListener(this);
+		dialogSave.show();
+	}
+
 	/**
 	 * Timer thread.
 	 */
