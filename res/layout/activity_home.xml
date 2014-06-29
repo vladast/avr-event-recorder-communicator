@@ -73,15 +73,17 @@
             android:layout_marginRight="10dp"
             android:gravity="left|top"
             android:padding="2dp"
-            android:text="LAST SESSION"
-            android:background="#bababa" />
+            android:text="@string/home_recorded_last"
+            android:textSize="12dp"
+            android:background="#aebada" />
 
         <TextView
             android:id="@+id/textViewLastSessionName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Fishing at Sava river"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:textSize="20dp" />
 
         <TextView
             android:id="@+id/textViewLastSessionDescription"
@@ -147,7 +149,7 @@
            android:layout_width="wrap_content"
            android:layout_height="wrap_content"
            android:layout_toRightOf="@id/imageViewDeviceStatus"
-           android:text="No compatible device detected." />
+           android:text="@string/home_device_detached" />
            
    	</RelativeLayout>
    
