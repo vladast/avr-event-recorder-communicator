@@ -1258,7 +1258,6 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	}
 	
 	private void saveSessionAndEvents() {
-		// TODO Auto-generated method stub
 		for(EventRecorderDAO record : ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjects(DeviceDAO.class)) {
 			if(((DeviceDAO)record).getType() == DeviceDAO.DEVICE_TYPE_ANDROID) {
 				mCurrentSession.setIdDevice(((DeviceDAO)record).getId());
@@ -1271,6 +1270,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		mCurrentSession.setTimestampRecorded(mTimestampRecording);
 		mCurrentSession.setTimestampUploaded(mTimestampRecording);
 		
+		// TODO Implement bulk add operation 
 		((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().OnAdd(mCurrentSession);
 		mCurrentSession.setId(((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getLastDatabaseObject(SessionDAO.class).getId());
 		
@@ -1278,6 +1278,17 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 			event.setIdSession((int) mCurrentSession.getId());
 			((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().OnAdd(event);
 		}	
+	}
+	
+	private void removeSessionAndEvents() {
+		
+		// TODO Implement bulk delete operation
+		for(EventDAO event : mEvents) {
+			event.setIdSession((int) mCurrentSession.getId());
+			((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().OnDelete(event);
+		}
+		
+		((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().OnDelete(mCurrentSession);
 	}
 
 	/**
@@ -1297,6 +1308,18 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 			public void onClick(View v) {
 				Log.d(TAG, "Save clicked!");
 				mPersisentSession = true;
+				dialogSave.dismiss();
+			}
+		});
+
+		dialogSave.findViewById(R.id.imageButtonDiscard).setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Log.d(TAG, "Discard clicked!");
+				removeSessionAndEvents();
+				Intent intentViewSession = new Intent(v.getContext(), EventRecorderHomeActivity.class);
+				startActivity(intentViewSession);
 				dialogSave.dismiss();
 			}
 		});
