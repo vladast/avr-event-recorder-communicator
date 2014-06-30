@@ -65,4 +65,13 @@
     <string name="new_session_pre_discard_button_text_discard">Discard</string>
     <string name="new_session_pre_discard_button_text_cancel">Cancel</string>
     
+    <!-- Edit Session Data -->
+    <string name="edit_session_data_title">Edit Session Data</string>
+    <string name="edit_session_data_message">Following properties can be updated. When finished, click on Keep Changes to update session data. Otherwise, select Discard.</string>
+    <string name="edit_session_data_session_name">Name:</string>
+    <string name="edit_session_data_session_description">Description:</string>
+    <string name="edit_session_data_session_recorded_on">Recorded on:</string>
+    <string name="edit_session_data_session_button_keep_changes">Keep Changes</string>
+    <string name="edit_session_data_session_button_discard">Discard</string>
+    
 </resources>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?><LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/edit_session_data_message" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/edit_session_data_session_name" />
+
+    <EditText
+        android:id="@+id/editTextSessionName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="text" >
+
+        <requestFocus />
+    </EditText>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/edit_session_data_session_description" />
+
+    <EditText
+        android:id="@+id/editTextSessionDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:minLines="2"
+        android:maxLines="3"
+        android:inputType="textMultiLine" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/edit_session_data_session_recorded_on" />
+
+   	<LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" 
+        android:gravity="center" >
+
+   		<DatePicker
+   		    android:id="@+id/datePickerRecordedOn"
+   		    android:layout_width="wrap_content"
+   		    android:layout_height="wrap_content"
+   		    android:calendarViewShown="false" />
+
+   		<TimePicker
+   		    android:id="@+id/timePickerRecordedOn"
+   		    android:layout_width="wrap_content"
+   		    android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+   	<RelativeLayout
+   	    android:layout_width="match_parent"
+   	    android:layout_height="wrap_content"
+        android:orientation="horizontal" 
+        android:gravity="center"
+        android:background="#ffadadba" >
+
+   		<Button
+   		    android:id="@+id/buttonKeepChanges"
+   		    android:layout_width="wrap_content"
+   		    android:layout_height="wrap_content"
+   		    android:layout_alignParentLeft="true"
+   		    android:text="@string/edit_session_data_session_button_keep_changes" />
+
+   		<Button
+   		    android:id="@+id/buttonDiscard"
+   		    android:layout_width="wrap_content"
+   		    android:layout_height="wrap_content"
+   		    android:layout_alignParentRight="true"
+   		    android:text="@string/edit_session_data_session_button_discard" />
+
+   	</RelativeLayout>
+
+</LinearLayout>

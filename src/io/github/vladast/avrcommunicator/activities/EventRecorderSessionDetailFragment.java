@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,13 +27,17 @@ import io.github.vladast.avrcommunicator.db.dao.DeviceDAO;
 import io.github.vladast.avrcommunicator.db.dao.EventDAO;
 import io.github.vladast.avrcommunicator.db.dao.EventRecorderDAO;
 import io.github.vladast.avrcommunicator.db.dao.SessionDAO;
+import io.github.vladast.avrcommunicator.dialogs.EditSessionDataDialog;
+import io.github.vladast.avrcommunicator.dialogs.OnEditSessionDataDialogListener;
 
 /**
  * A fragment representing a single Session detail screen. This fragment is
  * either contained in a {@link EventRecorderSessionListActivity} in two-pane mode (on
  * tablets) or a {@link EventRecorderSessionDetailActivity} on handsets.
  */
-public class EventRecorderSessionDetailFragment extends Fragment {
+public class EventRecorderSessionDetailFragment extends Fragment implements OnEditSessionDataDialogListener {
+	
+	private static final String TAG = EventRecorderSessionDetailFragment.class.getSimpleName();
 	/**
 	 * The fragment argument representing the session ID.
 	 * It's also used as fragment identifier.
@@ -71,7 +76,6 @@ public class EventRecorderSessionDetailFragment extends Fragment {
 	 * The fragment argument representing the time of the recording.
 	 */
 	public static final String ARG_SESSION_TIMESTAMP_REC = "session_timestamp_recorded";
-	
 	/**
 	 * The session object that is represented by this fragment.
 	 */
@@ -89,6 +93,9 @@ public class EventRecorderSessionDetailFragment extends Fragment {
 	
 	/** Indicates whether session data has been modified */
 	private boolean mDirty;
+	
+	/** Root view of the display fragment */
+	private View mRootView;
 	
 	/**
 	 * Mandatory empty constructor for the fragment manager to instantiate the
@@ -129,18 +136,17 @@ public class EventRecorderSessionDetailFragment extends Fragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View rootView = inflater.inflate(R.layout.fragment_session_detail,
-				container, false);
+		mRootView = inflater.inflate(R.layout.fragment_session_detail, container, false);
 
 		// Show the dummy content as text in a TextView.
 		if (mItem != null) {
 			// Set name and description directly from session DAO
-			((TextView) rootView.findViewById(R.id.textViewSessionName)).setText(mItem.getName());
-			((TextView) rootView.findViewById(R.id.textViewSessionDescription)).setText(mItem.getDescription());
+			((TextView) mRootView.findViewById(R.id.textViewSessionName)).setText(mItem.getName());
+			((TextView) mRootView.findViewById(R.id.textViewSessionDescription)).setText(mItem.getDescription());
 			
 			// Display message based on the number of events
 			String numberOfEvents = String.valueOf(mItem.getNumberOfEvents()) + " " + getResources().getString(R.string.home_recorded_events_only);
-			((TextView) rootView.findViewById(R.id.textViewSessionEventCount)).setText(numberOfEvents);
+			((TextView) mRootView.findViewById(R.id.textViewSessionEventCount)).setText(numberOfEvents);
 			
 			// Display message based on recorded events duration
 			long duration = ((EventRecorderApplication)getActivity().getApplicationContext()).getDatabaseHandler().getDatabaseObjectValueCountByForeignId(EventDAO.class, EventDAO.DB_COUNTABLE_COLUMN, mItem);
@@ -164,22 +170,22 @@ public class EventRecorderSessionDetailFragment extends Fragment {
 			}		
 			
 			eventsRecorded += " " + getResources().getString(R.string.home_recorded_events);
-			((TextView) rootView.findViewById(R.id.textViewSessionEventsDuration)).setText(eventsRecorded);
+			((TextView) mRootView.findViewById(R.id.textViewSessionEventsDuration)).setText(eventsRecorded);
 			
 			// Display date
-			((TextView) rootView.findViewById(R.id.textViewSessionRecordingDate)).setText(DateFormat.format("MM-DD-YYYY", mItem.getTimestampRecorded()));
+			((TextView) mRootView.findViewById(R.id.textViewSessionRecordingDate)).setText(DateFormat.format("MM-DD-YYYY", mItem.getTimestampRecorded()));
 			
 			int deviceType = ((DeviceDAO)((EventRecorderApplication)getActivity().getApplicationContext()).getDatabaseHandler().getDatabaseObjectById(DeviceDAO.class, mItem.getIdDevice())).getType();
 			if(deviceType == DeviceDAO.DEVICE_TYPE_AVR) {
 				// TODO Display USB icon
-				((ImageView)rootView.findViewById(R.id.imageViewDevice)).setImageDrawable(getResources().getDrawable(R.drawable.ic_launcher));
+				((ImageView)mRootView.findViewById(R.id.imageViewDevice)).setImageDrawable(getResources().getDrawable(R.drawable.ic_launcher));
 			} else {
 				// TODO Display Android icon
-				((ImageView)rootView.findViewById(R.id.imageViewDevice)).setImageDrawable(getResources().getDrawable(R.drawable.ic_launcher));
+				((ImageView)mRootView.findViewById(R.id.imageViewDevice)).setImageDrawable(getResources().getDrawable(R.drawable.ic_launcher));
 			}
 			
 			// Set click listeners for Edit&Save buttons
-			rootView.findViewById(R.id.imageButtonSave).setOnClickListener(new OnClickListener() {
+			mRootView.findViewById(R.id.imageButtonSave).setOnClickListener(new OnClickListener() {
 				
 				@Override
 				public void onClick(View v) {
@@ -187,22 +193,24 @@ public class EventRecorderSessionDetailFragment extends Fragment {
 				}
 			});
 			
-			rootView.findViewById(R.id.imageButtonEdit).setOnClickListener(new OnClickListener() {
+			mRootView.findViewById(R.id.imageButtonEdit).setOnClickListener(new OnClickListener() {
 				
 				@Override
 				public void onClick(View v) {
-					// TODO Open Edit dialog fragment --> editing mItem object
+					EditSessionDataDialog dialog = new EditSessionDataDialog(mContext, mItem);
+					dialog.registerSessionDataListener(getSessionDataListener());
+					dialog.show();
 				}
 			});
 			
-			((TextView)rootView.findViewById(R.id.textViewSessionSaveStatus)).setText(
+			((TextView)mRootView.findViewById(R.id.textViewSessionSaveStatus)).setText(
 					mDirty ? getResources().getString(R.string.session_details_not_saved) : getResources().getString(R.string.session_details_saved));
 			
 			mRecords = ((EventRecorderApplication)getActivity().getApplicationContext()).getDatabaseHandler().getDatabaseObjectsByForeign(EventDAO.class, mItem);
 			
-			ViewGroup.LayoutParams tableRowLayoutParams = ((TableRow)rootView.findViewById(R.id.tableRowEventsHeader)).getLayoutParams();
-			ViewGroup.LayoutParams textViewIndexLayoutParams = ((TextView)rootView.findViewById(R.id.tableLayoutResults_columnIndex)).getLayoutParams();
-			ViewGroup.LayoutParams textViewNonIndexLayoutParams = ((TextView)rootView.findViewById(R.id.tableLayoutResults_columnSwitchId)).getLayoutParams();
+			ViewGroup.LayoutParams tableRowLayoutParams = ((TableRow)mRootView.findViewById(R.id.tableRowEventsHeader)).getLayoutParams();
+			ViewGroup.LayoutParams textViewIndexLayoutParams = ((TextView)mRootView.findViewById(R.id.tableLayoutResults_columnIndex)).getLayoutParams();
+			ViewGroup.LayoutParams textViewNonIndexLayoutParams = ((TextView)mRootView.findViewById(R.id.tableLayoutResults_columnSwitchId)).getLayoutParams();
 			
 			int colorEvenRow, colorOddRow;
 			colorEvenRow = 0xffeaeaea;	// TODO Extract from resources
@@ -213,17 +221,17 @@ public class EventRecorderSessionDetailFragment extends Fragment {
 				TableRow tableRow;
 				TextView textViewIndex, textViewTrigger, textViewTimestamp;
 				
-				tableRow = new TableRow(rootView.getContext());
+				tableRow = new TableRow(mRootView.getContext());
 				
-				textViewIndex = new TextView(rootView.getContext());
+				textViewIndex = new TextView(mRootView.getContext());
 				textViewIndex.setText(String.valueOf(i + 1)); // starting from 1
 				textViewIndex.setGravity(Gravity.CENTER_HORIZONTAL);
 				
-				textViewTrigger = new TextView(rootView.getContext());
+				textViewTrigger = new TextView(mRootView.getContext());
 				textViewTrigger.setText(Long.toString(((EventDAO)mRecords.get(i)).getIdTouchable())); // TODO Extract friendly name from DB
 				textViewTrigger.setGravity(Gravity.CENTER_HORIZONTAL);
 				
-				textViewTimestamp = new TextView(rootView.getContext());
+				textViewTimestamp = new TextView(mRootView.getContext());
 				textViewTimestamp.setText(String.valueOf(((EventDAO)mRecords.get(i)).getTimestamp()));
 				textViewTimestamp.setGravity(Gravity.CENTER_HORIZONTAL);
 				
@@ -233,17 +241,46 @@ public class EventRecorderSessionDetailFragment extends Fragment {
 				tableRow.setGravity(Gravity.CENTER_HORIZONTAL);
 				tableRow.setBackgroundColor(((i + 1) % 2 == 0) ? colorEvenRow : colorOddRow);
 				
-				((TableLayout)rootView.findViewById(R.id.tableLayoutEventRecords)).addView(tableRow, tableRowLayoutParams);
-				rootView.invalidate();
+				((TableLayout)mRootView.findViewById(R.id.tableLayoutEventRecords)).addView(tableRow, tableRowLayoutParams);
+				mRootView.invalidate();
 			}
 		}
 
-		return rootView;
+		return mRootView;
 	}
 	
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
 		mContext = activity;		
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		Log.d(TAG, "onResume...");
+	}
+
+	@Override
+	public void OnSessionDataChanged(SessionDAO sessionData) {
+		// Update class data
+		mItem.setName(sessionData.getName());
+		mItem.setDescription(sessionData.getDescription());
+		mItem.setTimestampRecorded(sessionData.getTimestampRecorded());
+		// Update fragment data
+		((TextView) getActivity().findViewById(R.id.textViewSessionName)).setText(mItem.getName());
+		((TextView) getActivity().findViewById(R.id.textViewSessionDescription)).setText(mItem.getDescription());
+		((TextView) getActivity().findViewById(R.id.textViewSessionRecordingDate)).setText(DateFormat.format("MM-DD-YYYY", mItem.getTimestampRecorded()));
+		// Update database
+		((EventRecorderApplication)this.getActivity().getApplicationContext()).getDatabaseHandler().OnUpdate(mItem);
+	}
+	
+	/**
+	 * Getter for listener.
+	 * <b>NOTE:</b> This listener is being used by Edit Session Data dialog.
+	 * @return Edit session data listener.
+	 */
+	private OnEditSessionDataDialogListener getSessionDataListener() {
+		return this;
 	}
 }
