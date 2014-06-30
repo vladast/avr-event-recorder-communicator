@@ -175,13 +175,16 @@ public class EventRecorderSessionDetailFragment extends Fragment implements OnEd
 			// Display date
 			((TextView) mRootView.findViewById(R.id.textViewSessionRecordingDate)).setText(DateFormat.format("MM-dd-yyyy", mItem.getTimestampRecorded()));
 			
-			int deviceType = ((DeviceDAO)((EventRecorderApplication)getActivity().getApplicationContext()).getDatabaseHandler().getDatabaseObjectById(DeviceDAO.class, mItem.getIdDevice())).getType();
-			if(deviceType == DeviceDAO.DEVICE_TYPE_AVR) {
-				// TODO Display USB icon
-				((ImageView)mRootView.findViewById(R.id.imageViewDevice)).setImageDrawable(getResources().getDrawable(R.drawable.ic_launcher));
-			} else {
-				// TODO Display Android icon
-				((ImageView)mRootView.findViewById(R.id.imageViewDevice)).setImageDrawable(getResources().getDrawable(R.drawable.ic_launcher));
+			DeviceDAO deviceDAO = ((DeviceDAO)((EventRecorderApplication)getActivity().getApplicationContext()).getDatabaseHandler().getDatabaseObjectById(DeviceDAO.class, mItem.getIdDevice()));
+			if(deviceDAO != null) {
+				int deviceType = deviceDAO.getType();
+				if(deviceType == DeviceDAO.DEVICE_TYPE_AVR) {
+					// TODO Display USB icon
+					((ImageView)mRootView.findViewById(R.id.imageViewDevice)).setImageDrawable(getResources().getDrawable(R.drawable.ic_launcher));
+				} else {
+					// TODO Display Android icon
+					((ImageView)mRootView.findViewById(R.id.imageViewDevice)).setImageDrawable(getResources().getDrawable(R.drawable.ic_launcher));
+				}	
 			}
 			
 			// Set click listeners for Edit&Save buttons
