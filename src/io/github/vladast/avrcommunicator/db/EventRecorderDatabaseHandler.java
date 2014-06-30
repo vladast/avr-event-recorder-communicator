@@ -293,7 +293,8 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 				((SessionDAO)resultDAO).setNumberOfEvents(cursor.getInt(4));
 				((SessionDAO)resultDAO).setNumberOfEventTypes(cursor.getInt(5));
 				((SessionDAO)resultDAO).setIndexDeviceSession(cursor.getInt(6));
-				// TODO Initiate timestamps as well!
+				((SessionDAO)resultDAO).setTimestampUploaded(new Date(cursor.getLong(7)));
+				((SessionDAO)resultDAO).setTimestampRecorded(new Date(cursor.getLong(8)));
 			} else if (clazz.getSimpleName().equals(EventDAO.class.getSimpleName())) {
 				resultDAO = new EventDAO(this);
 				((EventDAO)resultDAO).setId(cursor.getInt(0));
@@ -407,7 +408,8 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 					sessionDAO.setNumberOfEvents(cursor.getInt(4));
 					sessionDAO.setNumberOfEventTypes(cursor.getInt(5));
 					sessionDAO.setIndexDeviceSession(cursor.getInt(6));
-					// TODO Initiate timestamps as well!					
+					sessionDAO.setTimestampUploaded(new Date(cursor.getLong(7)));
+					sessionDAO.setTimestampRecorded(new Date(cursor.getLong(8)));
 					resultDAO.add(sessionDAO);
 				} else if (clazz.getSimpleName().equals(EventDAO.class.getSimpleName())) {
 					EventDAO eventDAO = new EventDAO(this);
@@ -570,7 +572,8 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 				((SessionDAO)resultDAO).setNumberOfEvents(cursor.getInt(4));
 				((SessionDAO)resultDAO).setNumberOfEventTypes(cursor.getInt(5));
 				((SessionDAO)resultDAO).setIndexDeviceSession(cursor.getInt(6));
-				// TODO Initiate timestamps as well!
+				((SessionDAO)resultDAO).setTimestampUploaded(new Date(cursor.getLong(7)));
+				((SessionDAO)resultDAO).setTimestampRecorded(new Date(cursor.getLong(8)));
 			} else if (clazz.getSimpleName().equals(EventDAO.class.getSimpleName())) {
 				resultDAO = new EventDAO(this);
 				((EventDAO)resultDAO).setId(cursor.getInt(0));
