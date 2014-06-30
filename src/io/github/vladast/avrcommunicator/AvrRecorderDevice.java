@@ -2,15 +2,28 @@ package io.github.vladast.avrcommunicator;
 
 import java.util.ArrayList;
 
+/**
+ * Represents abstraction of data stored on the compatible device.
+ * @author vladimir.stankovic
+ */
 public class AvrRecorderDevice {	
+	/** Device code upon which a decision compatible/incompatible is set. */
 	private short _deviceCode;
+	/** Device name stored on the device. Empty string if no name is read from device. */
+	private String _deviceName;
+	/** Device state at the time of the data upload. For device debugging purposes. */
 	private byte _state;
+	/** Device session index stored on the device. */
 	private byte _session;
+	/** Error code set by device. For troubleshooting purposes. */
 	private byte _error;
+	/** Number of events stored on the device. */
 	private short _entryCount;
+	/** List of recorded events. */
 	private ArrayList<Reading> _eventReadings;
 	
-	AvrRecorderDevice(){
+	/** C-tor of <code>AvrRecorderDevice</code> class. */
+	AvrRecorderDevice() {
 		_deviceCode = 0x00;
 		_state = 0x00;
 		_session = 0x00;
@@ -26,6 +39,14 @@ public class AvrRecorderDevice {
 		_deviceCode = deviceCode;
 	}
 
+	public String getDeviceName() {
+		return _deviceName;
+	}
+	
+	public void setDeviceName(String deviceName) {
+		_deviceName = deviceName;
+	}
+	
 	public byte getSession() {
 		return _session;
 	}
