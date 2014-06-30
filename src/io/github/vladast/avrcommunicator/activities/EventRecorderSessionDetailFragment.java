@@ -173,7 +173,7 @@ public class EventRecorderSessionDetailFragment extends Fragment implements OnEd
 			((TextView) mRootView.findViewById(R.id.textViewSessionEventsDuration)).setText(eventsRecorded);
 			
 			// Display date
-			((TextView) mRootView.findViewById(R.id.textViewSessionRecordingDate)).setText(DateFormat.format("MM-DD-YYYY", mItem.getTimestampRecorded()));
+			((TextView) mRootView.findViewById(R.id.textViewSessionRecordingDate)).setText(DateFormat.format("MM-dd-yyyy", mItem.getTimestampRecorded()));
 			
 			int deviceType = ((DeviceDAO)((EventRecorderApplication)getActivity().getApplicationContext()).getDatabaseHandler().getDatabaseObjectById(DeviceDAO.class, mItem.getIdDevice())).getType();
 			if(deviceType == DeviceDAO.DEVICE_TYPE_AVR) {
