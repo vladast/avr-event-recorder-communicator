@@ -1,6 +1,7 @@
 package io.github.vladast.avrcommunicator.db;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import io.github.vladast.avrcommunicator.AvrRecorderConstants;
 import io.github.vladast.avrcommunicator.db.dao.DeviceDAO;
@@ -343,7 +344,8 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 					sessionDAO.setNumberOfEvents(cursor.getInt(4));
 					sessionDAO.setNumberOfEventTypes(cursor.getInt(5));
 					sessionDAO.setIndexDeviceSession(cursor.getInt(6));
-					// TODO Initiate timestamps as well!					
+					sessionDAO.setTimestampUploaded(new Date(cursor.getLong(7)));
+					sessionDAO.setTimestampRecorded(new Date(cursor.getLong(8)));					
 					resultDAO.add(sessionDAO);
 				} else if (clazz.getSimpleName().equals(EventDAO.class.getSimpleName())) {
 					EventDAO eventDAO = new EventDAO(this);
