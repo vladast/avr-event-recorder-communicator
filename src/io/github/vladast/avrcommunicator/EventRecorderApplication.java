@@ -3,12 +3,15 @@
  */
 package io.github.vladast.avrcommunicator;
 
+import io.github.vladast.avrcommunicator.activities.EventRecorderSessionDetailActivity;
+import io.github.vladast.avrcommunicator.activities.EventRecorderSessionDetailFragment;
 import io.github.vladast.avrcommunicator.activities.EventRecorderSettingsActivity;
 import io.github.vladast.avrcommunicator.activities.HomeScreenActivity;
 import io.github.vladast.avrcommunicator.db.EventRecorderDatabaseHandler;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -16,6 +19,8 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import org.xmlpull.v1.XmlSerializer;
 
 import android.app.Application;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -34,6 +39,7 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.util.Xml;
 
@@ -41,7 +47,7 @@ import android.util.Xml;
  * @author vladimir.stankovic
  * Singleton class representing customized <code>Application</code> object.
  */
-public class EventRecorderApplication extends Application implements OnSharedPreferenceChangeListener  {
+public class EventRecorderApplication extends Application implements OnSharedPreferenceChangeListener, OnAvrRecorderEventListener {
 	private final String TAG = EventRecorderApplication.class.getSimpleName();
 	
 	/**
@@ -223,5 +229,75 @@ public class EventRecorderApplication extends Application implements OnSharedPre
             mPreventSleep = sharedPreferences.getBoolean(EventRecorderSettingsActivity.KEY_PREF_PREVENT_SLEEP, true);
             // TODO: Implement sleep prevention
         }
+	}
+
+	@Override
+	public void OnDeviceFound() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnDeviceConnected() {
+
+		
+		//<test>
+		
+		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
+		notificationBuilder.setContentTitle("ContentTitle");
+		notificationBuilder.setContentText("ContentText");
+		notificationBuilder.setTicker("Ticker");
+		notificationBuilder.setSmallIcon(R.drawable.ic_launcher);
+
+		Intent detailIntent = new Intent(this, EventRecorderSessionDetailActivity.class);
+		//detailIntent.putExtra(EventRecorderSessionDetailFragment.ARG_SESSION_OBJ, mBundleSession);
+		
+		PendingIntent i=PendingIntent.getActivity(this, 0, detailIntent, 0);
+
+		notificationBuilder.setContentIntent(i);
+		((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, notificationBuilder.build());
+		//</test>
+	}
+
+	@Override
+	public void OnDeviceSearching() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnDeviceReInitiated() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnRecordsRead(ArrayList<Reading> eventReadings) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnError(AvrRecorderErrors avrRecorderErrors) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnError(AvrRecorderErrors avrRecorderErrors, int data) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnReadingStarted() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void OnDebugMessage(String message) {
+		// TODO Auto-generated method stub
+		
 	}
 }
