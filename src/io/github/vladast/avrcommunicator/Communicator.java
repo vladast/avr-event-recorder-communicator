@@ -148,6 +148,7 @@ public class Communicator {
 			protected UsbDevice doInBackground(Void... arg0) {
 				mEventRecorderListeners.OnDebugMessage("Number of detected USB devices: " + mUsbManager.getDeviceList().size());
 				for (final UsbDevice usbDevice : mUsbManager.getDeviceList().values()) {
+					// TODO Instead of checking PID/VID pair, try to read device code - if present, then device is compatible.
 					if(usbDevice.getVendorId() == AvrRecorderConstants.AVR_REC_VID &&
 							usbDevice.getProductId() == AvrRecorderConstants.AVR_REC_PID)
 					{
@@ -200,7 +201,7 @@ public class Communicator {
 	protected void readDeviceData(UsbDevice usbDevice) {
 		mEventRecorderListeners.OnReadingStarted();
 		
-		mAvrRecorderDevice = new AvrRecorderDevice();
+		mAvrRecorderDevice = new AvrRecorderDevice(usbDevice);
 		
 		mUsbDeviceConnection = mUsbManager.openDevice(usbDevice);
 		
