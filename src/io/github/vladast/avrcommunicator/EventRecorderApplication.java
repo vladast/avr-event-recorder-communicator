@@ -8,10 +8,17 @@ import io.github.vladast.avrcommunicator.activities.EventRecorderSessionDetailFr
 import io.github.vladast.avrcommunicator.activities.EventRecorderSettingsActivity;
 import io.github.vladast.avrcommunicator.activities.HomeScreenActivity;
 import io.github.vladast.avrcommunicator.db.EventRecorderDatabaseHandler;
+import io.github.vladast.avrcommunicator.db.dao.DeviceDAO;
+import io.github.vladast.avrcommunicator.db.dao.EventDAO;
+import io.github.vladast.avrcommunicator.db.dao.EventRecorderDAO;
+import io.github.vladast.avrcommunicator.db.dao.SessionDAO;
+import io.github.vladast.avrcommunicator.db.dao.TouchableDAO;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -40,6 +47,7 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.util.Xml;
 
@@ -240,23 +248,6 @@ public class EventRecorderApplication extends Application implements OnSharedPre
 	@Override
 	public void OnDeviceConnected() {
 
-		
-		//<test>
-		
-		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
-		notificationBuilder.setContentTitle("ContentTitle");
-		notificationBuilder.setContentText("ContentText");
-		notificationBuilder.setTicker("Ticker");
-		notificationBuilder.setSmallIcon(R.drawable.ic_launcher);
-
-		Intent detailIntent = new Intent(this, EventRecorderSessionDetailActivity.class);
-		//detailIntent.putExtra(EventRecorderSessionDetailFragment.ARG_SESSION_OBJ, mBundleSession);
-		
-		PendingIntent i=PendingIntent.getActivity(this, 0, detailIntent, 0);
-
-		notificationBuilder.setContentIntent(i);
-		((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, notificationBuilder.build());
-		//</test>
 	}
 
 	@Override
@@ -273,7 +264,122 @@ public class EventRecorderApplication extends Application implements OnSharedPre
 
 	@Override
 	public void OnRecordsRead(ArrayList<Reading> eventReadings) {
-		// TODO Auto-generated method stub
+		
+		/**
+		 * NOTE:
+		 * 		Instead of notifying user on OnDeviceDetected event, we'll wait for all record to be read from device and then notify user about the device.
+		 */
+		
+		/** 
+		 * Read data from device 
+		 * 	1. Check if detected device info is already in database --> based upon PID/VID pair
+		 * 		a) If in database, get device name from database
+		 * 		b) If not in database, send USB control message, asking for device description that hold device name
+		 * 		   Save new data into database.
+		 * 		c) In the case that device code (0xa002) is read from device, marking it as compatible, in the case that device name is not on the device,
+		 * 		   set it to default value, "Compatible device". TODO Default device name should be configurable from Settings
+		 * 	2. Prepare session data:
+		 * 		mName: Upload date
+		 * 		mDescription: "Read from device at HH:mm:ss"
+		 * 		mNumberOfEvents: Number of events from device
+		 * 		mIndexDeviceSession: Session index stored on device
+		 * 		mNumberOfEventTypes: Number of event types used by particular device --> run through recordings, and determine how many different event types are detected
+		 * 		mTimestampRecorded = mTimestampUploaded: Current datetime.
+		 *  3. Prepare event data (for each one recorded):
+		 *  	mIdSession: session ID of above created session
+		 *  	mIdTouchable: index of touchable element --> TODO map between presets and touchables
+		 * 		mIndexDeviceEvent: event index stored on device, which actually denotes index of device's memory slot holding the event timestamp
+		 * 		mTimestamp: event timestamp (number of seconds after the reading started)
+		 */
+		
+		/** Check if detected device is in the database already.*/
+		// TODO Create appropriate method within database handler
+		DeviceDAO device = null;
+		ArrayList<EventRecorderDAO> devices = mEventRecorderDatabaseHandler.getDatabaseObjects(DeviceDAO.class);
+		for(EventRecorderDAO deviceDao : devices) {
+			if(((DeviceDAO)deviceDao).getProductId() == mCommunicator.getDevice().getProductId() && 
+					((DeviceDAO)deviceDao).getProductId() == mCommunicator.getDevice().getProductId()) {
+				device = (DeviceDAO) deviceDao;
+				break;
+			}
+		}
+		
+		/** If not already in the database, store device info */
+		if(device == null) {
+			device = new DeviceDAO(null);
+			device.setCode(mCommunicator.getDevice().getDeviceCode());
+			device.setDescription(mCommunicator.getDevice().getDeviceName().equals("") ? 
+					String.format("%s [%d/%d]", getResources().getString(R.string.notification_device_detected_default_name), 
+							mCommunicator.getDevice().getVendorId(), mCommunicator.getDevice().getProductId()) :
+					mCommunicator.getDevice().getDeviceName());
+			device.setProductId(mCommunicator.getDevice().getProductId());
+			device.setVendorId(mCommunicator.getDevice().getVendorId());
+			device.setType(DeviceDAO.DEVICE_TYPE_AVR);
+			mEventRecorderDatabaseHandler.OnAdd(device);
+			device.setId(mEventRecorderDatabaseHandler.getLastDatabaseObject(DeviceDAO.class).getId());
+		}
+		
+		/** Prepare session data */
+		SessionDAO session = new SessionDAO(null);
+		Calendar calendar = Calendar.getInstance();
+		ArrayList<Byte> eventTypes = new ArrayList<Byte>();
+		session.setName((String) DateFormat.format("MM-dd-yyyy", calendar));
+		session.setDescription(String.format("%s %s", 
+				getResources().getStringArray(R.string.notification_device_detected_session_description), 
+				DateFormat.format("HH:mm:ss", calendar)));
+		session.setNumberOfEvents(mCommunicator.getDevice().getEventReadings().size());
+		// Determine number of different event types (aka number of touchables)
+		for(Reading reading : mCommunicator.getDevice().getEventReadings()) {
+			if(!eventTypes.contains(reading.getCode()))
+				eventTypes.add(reading.getCode());
+		}
+		session.setNumberOfEventTypes(eventTypes.size());
+		session.setIndexDeviceSession(mCommunicator.getDevice().getSession());
+		session.setTimestampRecorded(calendar.getTime());
+		session.setTimestampUploaded(calendar.getTime());
+		session.setIdDevice(device.getId());
+		mEventRecorderDatabaseHandler.OnAdd(session);
+		session.setId(mEventRecorderDatabaseHandler.getLastDatabaseObject(SessionDAO.class).getId());
+		
+		/** Prepare recordings data */
+		ArrayList<EventRecorderDAO> touchables = mEventRecorderDatabaseHandler.getDatabaseObjects(TouchableDAO.class);
+		Collections.sort(eventTypes);
+		for(Reading reading : mCommunicator.getDevice().getEventReadings()) {
+			EventDAO event = new EventDAO(null);
+			event.setIdSession(session.getId());
+			event.setIdTouchable(touchables.get(eventTypes.indexOf(reading.getCode())).getId());
+			event.setIndexDeviceEvent(reading.getEntry());
+			event.setTimestamp(reading.getTimestamp());
+			mEventRecorderDatabaseHandler.OnAdd(event);
+		}
+		
+		/** Prepare indent extras */
+		// TODO Following section should be extracted as helper method, since is being used on several places
+		Bundle bundleSession = new Bundle();
+		bundleSession.putLong(EventRecorderSessionDetailFragment.ARG_SESSION_ID, session.getId());
+		bundleSession.putLong(EventRecorderSessionDetailFragment.ARG_SESSION_DEVICE_ID, session.getIdDevice());
+		bundleSession.putString(EventRecorderSessionDetailFragment.ARG_SESSION_NAME, session.getName());
+		bundleSession.putString(EventRecorderSessionDetailFragment.ARG_SESSION_DESCRIPTION, session.getDescription());
+		bundleSession.putInt(EventRecorderSessionDetailFragment.ARG_SESSION_INDEX_DEVICE_SESSION, session.getIndexDeviceSession());
+		bundleSession.putInt(EventRecorderSessionDetailFragment.ARG_SESSION_NUM_EVENTS, session.getNumberOfEvents());
+		bundleSession.putInt(EventRecorderSessionDetailFragment.ARG_SESSION_NUM_EVENT_TYPES, session.getNumberOfEventTypes());
+		bundleSession.putLong(EventRecorderSessionDetailFragment.ARG_SESSION_TIMESTAMP_REC, session.getTimestampRecorded().getTime());		
+		
+		Intent detailIntent = new Intent(this, EventRecorderSessionDetailActivity.class);
+		detailIntent.putExtra(EventRecorderSessionDetailFragment.ARG_SESSION_OBJ, bundleSession);
+		
+		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, detailIntent, 0);
+		
+		/** Prepare notification data */
+		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
+		notificationBuilder.setContentTitle(device.getDescription());
+		notificationBuilder.setContentText(
+				String.format("%d %s", session.getNumberOfEvents(), getResources().getString(R.string.notification_device_detected_content_text_fragment))); 
+		notificationBuilder.setTicker(getResources().getString(R.string.notification_device_detected_ticker));
+		notificationBuilder.setSmallIcon(R.drawable.ic_launcher); // TODO Use appropriate icon instead		
+		notificationBuilder.setContentIntent(pendingIntent);
+		
+		((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, notificationBuilder.build());
 		
 	}
 

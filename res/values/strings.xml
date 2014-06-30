@@ -74,4 +74,10 @@
     <string name="edit_session_data_session_button_keep_changes">Keep Changes</string>
     <string name="edit_session_data_session_button_discard">Discard</string>
     
+    <!-- Device Status Notification -->
+    <string name="notification_device_detected_ticker">Compatible device detected</string>
+    <string name="notification_device_detected_default_name">Compatible device</string>
+    <string name="notification_device_detected_session_description">Read from device at</string>
+    <string name="notification_device_detected_content_text_fragment">recorded events.</string> <!-- Example: "15 recorded events." -->
+    
 </resources>
