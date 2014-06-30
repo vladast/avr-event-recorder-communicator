@@ -41,13 +41,13 @@ public class EventDAO extends EventRecorderDAO {
 		mIdSession = idSession;
 	}
 	
-	private int mIdTouchable;
+	private long mIdTouchable;
 	
-	public int getIdTouchable() {
+	public long getIdTouchable() {
 		return mIdTouchable;
 	}
 	
-	public void setIdTouchable(int idTouchable) {
+	public void setIdTouchable(long idTouchable) {
 		mIdTouchable = idTouchable;
 	}
 	
