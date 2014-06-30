@@ -1,11 +1,13 @@
 package io.github.vladast.avrcommunicator.activities;
 
 import java.util.List;
+
 import io.github.vladast.avrcommunicator.R;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +28,11 @@ import io.github.vladast.avrcommunicator.db.dao.SessionDAO;
  */
 public class EventRecorderSessionListFragment extends ListFragment {
 
+	private static final String TAG = EventRecorderSessionListFragment.class.getSimpleName();
+	
+	/** Static member denoting the fragment id, so it can be accessed from detail fragment */
+	public static final int FRAGMENT_ID = 0x1111;
+	
 	/**
 	 * The serialization (saved instance state) Bundle key representing the
 	 * activated item position. Only used on tablets.
@@ -85,6 +92,9 @@ public class EventRecorderSessionListFragment extends ListFragment {
 
 		mSessionsList = ((EventRecorderApplication)(getActivity().getApplicationContext())).getDatabaseHandler().getDatabaseObjects(SessionDAO.class);		
 		setListAdapter(new EventRecorderSessionArrayAdapter(mContext, mSessionsList));
+		
+		Log.d(TAG, "Fragment id is " + this.getId());
+		
 	}
 	
 	@Override
@@ -172,5 +182,20 @@ public class EventRecorderSessionListFragment extends ListFragment {
 		}
 
 		mActivatedPosition = position;
+	}
+	
+	/**
+	 * Updates particular item from the list based on the item's ID value.
+	 * @param listItem New session data.
+	 */
+	public void updateItem(EventRecorderDAO listItem) {
+		for(int i = 0; i < getListAdapter().getCount(); ++i) {
+			if(listItem.getId() == getListAdapter().getItemId(i)){
+				((SessionDAO)getListAdapter().getItem(i)).setName(((SessionDAO)listItem).getName());
+				((SessionDAO)getListAdapter().getItem(i)).setDescription(((SessionDAO)listItem).getDescription());
+				break;
+			}
+		}
+		getListView().invalidateViews();
 	}
 }

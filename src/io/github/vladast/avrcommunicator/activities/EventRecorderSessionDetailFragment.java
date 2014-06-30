@@ -270,9 +270,11 @@ public class EventRecorderSessionDetailFragment extends Fragment implements OnEd
 		// Update fragment data
 		((TextView) getActivity().findViewById(R.id.textViewSessionName)).setText(mItem.getName());
 		((TextView) getActivity().findViewById(R.id.textViewSessionDescription)).setText(mItem.getDescription());
-		((TextView) getActivity().findViewById(R.id.textViewSessionRecordingDate)).setText(DateFormat.format("MM-DD-YYYY", mItem.getTimestampRecorded()));
+		((TextView) getActivity().findViewById(R.id.textViewSessionRecordingDate)).setText(DateFormat.format("MM-dd-yyyy", mItem.getTimestampRecorded()));
 		// Update database
 		((EventRecorderApplication)this.getActivity().getApplicationContext()).getDatabaseHandler().OnUpdate(mItem);
+		// Update list fragment
+		((EventRecorderSessionListFragment)getFragmentManager().findFragmentById(R.id.session_list)).updateItem(mItem);
 	}
 	
 	/**
