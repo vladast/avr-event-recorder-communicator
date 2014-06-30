@@ -31,13 +31,13 @@ public class EventDAO extends EventRecorderDAO {
 		);
 	*/
 	
-	private int mIdSession;
+	private long mIdSession;
 	
-	public int getIdSession() {
+	public long getIdSession() {
 		return mIdSession;
 	}
 	
-	public void setIdSession(int idSession) {
+	public void setIdSession(long idSession) {
 		mIdSession = idSession;
 	}
 	
