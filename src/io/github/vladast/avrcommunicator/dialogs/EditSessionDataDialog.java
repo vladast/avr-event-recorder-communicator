@@ -3,16 +3,13 @@
  */
 package io.github.vladast.avrcommunicator.dialogs;
 
-import io.github.vladast.avrcommunicator.activities.EventRecorderSessionDetailFragment;
 import io.github.vladast.avrcommunicator.db.dao.SessionDAO;
 
 import java.util.Calendar;
-import java.util.Date;
 
 import io.github.vladast.avrcommunicator.R;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -73,9 +70,9 @@ public class EditSessionDataDialog extends Dialog {
 		/**
 		 * Initialize TimePicker
 		 */
-		((TimePicker)findViewById(R.id.timePickerRecordedOn)).setCurrentHour(mDateTimeRecorded.get(Calendar.HOUR));
-		((TimePicker)findViewById(R.id.timePickerRecordedOn)).setCurrentMinute(mDateTimeRecorded.get(Calendar.MINUTE));
 		((TimePicker)findViewById(R.id.timePickerRecordedOn)).setIs24HourView(true);
+		((TimePicker)findViewById(R.id.timePickerRecordedOn)).setCurrentHour(mDateTimeRecorded.get(Calendar.HOUR_OF_DAY));
+		((TimePicker)findViewById(R.id.timePickerRecordedOn)).setCurrentMinute(mDateTimeRecorded.get(Calendar.MINUTE));
 		((TimePicker)findViewById(R.id.timePickerRecordedOn)).setOnTimeChangedListener(new OnTimeChangedListener() {
 			
 			@Override
