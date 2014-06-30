@@ -274,7 +274,8 @@ public class EventRecorderSessionDetailFragment extends Fragment implements OnEd
 		// Update database
 		((EventRecorderApplication)this.getActivity().getApplicationContext()).getDatabaseHandler().OnUpdate(mItem);
 		// Update list fragment
-		((EventRecorderSessionListFragment)getFragmentManager().findFragmentById(R.id.session_list)).updateItem(mItem);
+		if(getFragmentManager().findFragmentById(R.id.session_list) != null)
+			((EventRecorderSessionListFragment)getFragmentManager().findFragmentById(R.id.session_list)).updateItem(mItem);
 	}
 	
 	/**
