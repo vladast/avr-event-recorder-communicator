@@ -2,6 +2,8 @@ package io.github.vladast.avrcommunicator;
 
 import java.util.ArrayList;
 
+import android.hardware.usb.UsbDevice;
+
 /**
  * Represents abstraction of data stored on the compatible device.
  * @author vladimir.stankovic
@@ -11,6 +13,8 @@ public class AvrRecorderDevice {
 	private short _deviceCode;
 	/** Device name stored on the device. Empty string if no name is read from device. */
 	private String _deviceName;
+	/** USB device interface with hardware. */
+	private UsbDevice _usbDevice;
 	/** Device state at the time of the data upload. For device debugging purposes. */
 	private byte _state;
 	/** Device session index stored on the device. */
@@ -26,6 +30,7 @@ public class AvrRecorderDevice {
 	AvrRecorderDevice() {
 		_deviceCode = 0x00;
 		_deviceName = "";
+		_usbDevice = null;
 		_state = 0x00;
 		_session = 0x00;
 		_entryCount = 0x00;
@@ -46,6 +51,19 @@ public class AvrRecorderDevice {
 	
 	public void setDeviceName(String deviceName) {
 		_deviceName = deviceName;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 * @hide
+	 */
+	private UsbDevice getUsbDevice() {
+		return _usbDevice;
+	}
+	
+	public void setUsbDevice(UsbDevice usbDevice) {
+		_usbDevice = usbDevice;
 	}
 	
 	public byte getSession() {
@@ -132,5 +150,25 @@ public class AvrRecorderDevice {
 	 */
 	public void setError(byte error) {
 		_error = error;
+	}
+	
+	public int getVendorId() {
+		return _usbDevice.getVendorId();
+	}
+	
+	public int getProductId() {
+		return _usbDevice.getProductId();
+	}
+	
+	public int getDeviceClass() {
+		return _usbDevice.getDeviceClass();
+	}
+	
+	public int getDeviceSubclass() {
+		return _usbDevice.getDeviceSubclass();
+	}
+	
+	public int getDeviceProtocol() {
+		return _usbDevice.getDeviceProtocol();
 	}
 }
