@@ -25,6 +25,7 @@ public class AvrRecorderDevice {
 	/** C-tor of <code>AvrRecorderDevice</code> class. */
 	AvrRecorderDevice() {
 		_deviceCode = 0x00;
+		_deviceName = "";
 		_state = 0x00;
 		_session = 0x00;
 		_entryCount = 0x00;
