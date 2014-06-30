@@ -37,6 +37,16 @@ public class AvrRecorderDevice {
 		_eventReadings = new ArrayList<Reading>();
 	}
 
+	public AvrRecorderDevice(UsbDevice usbDevice) {
+		_deviceCode = 0x00;
+		_deviceName = "";
+		_usbDevice = usbDevice;
+		_state = 0x00;
+		_session = 0x00;
+		_entryCount = 0x00;
+		_eventReadings = new ArrayList<Reading>();
+	}
+
 	public short getDeviceCode() {
 		return _deviceCode;
 	}
