@@ -1,6 +1,7 @@
 package io.github.vladast.avrcommunicator.activities;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import io.github.vladast.avrcommunicator.AvrRecorderErrors;
 import io.github.vladast.avrcommunicator.OnAvrRecorderEventListener;
@@ -9,12 +10,9 @@ import io.github.vladast.avrcommunicator.Reading;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.View.OnClickListener;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.ImageView;
 import io.github.vladast.avrcommunicator.EventRecorderApplication;
@@ -27,6 +25,8 @@ import io.github.vladast.avrcommunicator.db.dao.SessionDAO;
 public class EventRecorderHomeActivity extends Activity implements OnAvrRecorderEventListener {
 
 	private static final String TAG = EventRecorderHomeActivity.class.getSimpleName();
+
+	protected static final String NotificationManager = null;
 	
 	private OnClickListener mOnViewSessionsListener;
 	private OnClickListener mOnSessionDetailsListener;
@@ -39,8 +39,8 @@ public class EventRecorderHomeActivity extends Activity implements OnAvrRecorder
 		super.onCreate(savedInstanceState);
 
         // Removing title
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);		
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);		
 		
 		setContentView(R.layout.activity_home);
 		
@@ -126,12 +126,22 @@ public class EventRecorderHomeActivity extends Activity implements OnAvrRecorder
 		 */
 		numberOfRecordedSessions = ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjectCount(SessionDAO.class);
 		durationOfRecordedEvents = ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjectValueCount(EventDAO.class, EventDAO.DB_COUNTABLE_COLUMN);
-		SessionDAO lastSession = (SessionDAO) ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getLastDatabaseObject(SessionDAO.class);
+		SessionDAO lastSession = null;
+		if(numberOfRecordedSessions > 0) {
+			lastSession = (SessionDAO) ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getLastDatabaseObject(SessionDAO.class);
+			lastSessionCount = ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjectCountByForeignId(EventDAO.class, lastSession);
+			lastSessionDuration = ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjectValueCountByForeignId(EventDAO.class, EventDAO.DB_COUNTABLE_COLUMN, lastSession);
+		} else {
+			lastSession = new SessionDAO(null);
+			lastSession.setName("No stored sessions");
+			lastSession.setDescription("CLick on + to create new session");
+			lastSession.setTimestampRecorded(Calendar.getInstance().getTime());
+			lastSession.setTimestampUploaded(Calendar.getInstance().getTime());
+			lastSessionCount = lastSessionDuration = 0;
+		}
 		lastSessionName = lastSession.getName();
 		lastSessionDescription = lastSession.getDescription();
-		lastSessionCount = ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjectCountByForeignId(EventDAO.class, lastSession);
-		lastSessionDuration = ((EventRecorderApplication)getApplicationContext()).getDatabaseHandler().getDatabaseObjectValueCountByForeignId(EventDAO.class, EventDAO.DB_COUNTABLE_COLUMN, lastSession);
-
+		
 		/**
 		 * Save session's data into bundle - used to navigate to session details activity.
 		 */
