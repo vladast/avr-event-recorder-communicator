@@ -130,12 +130,14 @@
 	   	</RelativeLayout>
         
     </LinearLayout>    
-    
+
+   <!-- Compatible Device Status -->
     <RelativeLayout
         android:id="@+id/relativeLayoutDeviceStatus"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" 
         android:background="#aeaeae"
+        android:layout_marginTop="@dimen/activity_home_text_margin"
         android:layout_alignParentBottom="true" >
 
        <ImageView
@@ -153,4 +155,16 @@
            
    	</RelativeLayout>
    
+   <!-- Statistics -->
+   <LinearLayout
+       android:layout_width="fill_parent"
+       android:layout_height="wrap_content"
+       android:layout_below="@id/linearLayoutLastSession"
+       android:layout_above="@id/relativeLayoutDeviceStatus"
+       android:orientation="vertical"
+       android:layout_marginTop="@dimen/activity_home_text_margin"
+       android:background="#ffbaeada" >
+   </LinearLayout>    
+    
+    
 </RelativeLayout>
