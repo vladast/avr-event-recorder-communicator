@@ -1286,6 +1286,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				mTimestampRecording = new Date();
 				mCurrentSession.setName(new SimpleDateFormat("yyyy-MM-dd").format(mTimestampRecording));
 				mCurrentSession.setDescription(new SimpleDateFormat("HH:mm:ss").format(mTimestampRecording));
+				addEvent(TouchableDAO.TOUCHABLE_END_EVENT_ID, mCurrentTime - mPreviousTime);
 				saveSessionAndEvents();
 				showDialogSave();
 			} else {
