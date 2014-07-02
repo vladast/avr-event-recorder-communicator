@@ -150,6 +150,11 @@ public class EventRecorderDatabaseHandler extends SQLiteOpenHelper implements On
 			}
 			debugSqlStatement(insertStatement);
 			db.execSQL(insertStatement);	
+
+			insertStatement = String.format("insert into %s (%s,%s) values (%d,'%s')", 
+					TOUCHABLE_TABLE_NAME, TOUCHABLE_COL_ID, TOUCHABLE_COL_NAME, TouchableDAO.TOUCHABLE_END_EVENT_ID, TouchableDAO.TOUCHABLE_END_EVENT_NAME);
+			debugSqlStatement(insertStatement);
+			db.execSQL(insertStatement);
 		}
 		
 	}
