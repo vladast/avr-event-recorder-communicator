@@ -9,6 +9,9 @@ package io.github.vladast.avrcommunicator.db.dao;
  */
 public class TouchableDAO extends EventRecorderDAO {
 
+	public static final int TOUCHABLE_END_EVENT_ID = 1000;
+	public static final String TOUCHABLE_END_EVENT_NAME = "END";
+	
 	/**
 	 * @param onDatabaseRequestListener
 	 */
