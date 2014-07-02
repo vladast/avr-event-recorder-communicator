@@ -105,6 +105,8 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	private long mStartTime;
 	/** Current time in milliseconds. */
 	private long mCurrentTime;
+	/** Previous time in milliseconds. Used to calculate time difference between two events. */
+	private long mPreviousTime;
 	/** List of database objects designating available touchable elements */
 	private ArrayList<EventRecorderDAO> mTouchables;
 	/** Map of counts for each touchable element */
@@ -206,6 +208,8 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				Log.d(TAG, "Session discard canceled");
 			}
 		});
+		
+		mCurrentTime = mStartTime = mPreviousTime = 0;
 	}
 	
 	@Override
@@ -1287,6 +1291,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 			} else {
 				if(mEvents.size() < 1) {
 					mStartTime = SystemClock.elapsedRealtime();
+					mCurrentTime = mPreviousTime = 0;
 					// When start button is clicked, fire timer event with 1ms delay, no matter of MEASURE_MILLISECONDS value
 					mHandlerTimer.postDelayed(mRunnableTimerThread, 1);
 					//mHandlerTimer.sendEmptyMessageDelayed(MSG_TIMER_TICK, 1);
@@ -1304,7 +1309,8 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				
 				mSparseIntArrayTouchCounts.put(clickableView.getId(), mSparseIntArrayTouchCounts.get(clickableView.getId()) + 1);
 				((TextView)(findViewById(clickableView.getId()).findViewById(0))).setText(String.valueOf(mSparseIntArrayTouchCounts.get(clickableView.getId())));
-				addEvent(clickableView.getId(), mCurrentTime);
+				addEvent(clickableView.getId(), mCurrentTime - mPreviousTime);
+				mPreviousTime = mCurrentTime;
 			} else {
 				// TODO Buzz a user that buttons are disabled
 			}
