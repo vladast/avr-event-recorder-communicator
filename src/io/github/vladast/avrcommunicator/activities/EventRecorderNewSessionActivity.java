@@ -91,6 +91,14 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 	/** Static member used for "change to key up color" message */
 	private static final int MSG_TOUCH_KEY_UP_COLOR			= 0x0002;	
 	
+	private static final String STATE_TIME_START			= "timeStart";
+	private static final String STATE_TIME_CURRENT			= "timeCurrent";
+	private static final String STATE_TIME_PREVIOUS			= "timePrevious";
+	private static final String STATE_TIMER_STARTED			= "timerStarted";
+	private static final String STATE_COUNTERS				= "touchCounters";
+	private static final String STATE_EVENTS				= "events";
+	private static final String STATE_SESSION_ID			= "idSession";
+	
 	/** A flag that indicates whether timer is started on not. */
 	private boolean mTimerStarted;
 	/** <code>TextView</code> element linked to time display. */
@@ -130,52 +138,57 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_new_session);
 		
-		mHandlerTimer = new Handler();
-		mHandlerLayout = new Handler();
-		mHandlerTouch = new Handler() {
-			@Override
-	        public void handleMessage(Message msg) {
-	            switch (msg.what) {
-		            case MSG_TOUCH_KEY_DOWN_COLOR:
-	                	// TODO Use inverted color value for the background color
-	                	// TODO Add additional Settings entry - user can choose whether inverted color should be displayed, or pre-defined ones.
-		            	findViewById(((Integer)msg.obj).intValue()).setBackgroundColor(0xba00ba);
-		            	Message keyUpMessage = new Message();
-		            	keyUpMessage.what = MSG_TOUCH_KEY_UP_COLOR;
-		            	keyUpMessage.obj = msg.obj;
-		            	mHandlerTouch.sendMessageDelayed(keyUpMessage, 100);
-		            	break;
-	                case MSG_TOUCH_KEY_UP_COLOR:
-		            	findViewById(((Integer)msg.obj).intValue()).setBackgroundColor(mColorTouchable);
-	                    break;
-	                default:
-	                    super.handleMessage(msg);
-	                    break;
-	            }
-	        }
-		};
+		mColorTouchable = 0xffdaeaba; // TODO Read this value from Settings
+		mColorTouchableDisabled = 0xff00da00; // TODO Read this value from Settings	
 		
 		mTextViewTimer = (TextView)findViewById(R.id.textViewTimer);
 		mTextViewTimer.setText(MEASURE_MILLISECONDS ? "00:00:00.000" : "00:00:00");
-		mTimerStarted = false;
-		
-		((ImageButton)findViewById(R.id.imageButtonRecordToggle)).setOnClickListener(this);
-		
-		long currentSessionCount = ((EventRecorderApplication)this.getApplicationContext()).getDatabaseHandler().getDatabaseObjectCount(SessionDAO.class) + 1;
-		((TextView)findViewById(R.id.textViewSessionCount)).setText(String.valueOf(currentSessionCount));
-		
+
+		((ImageButton)findViewById(R.id.imageButtonRecordToggle)).setOnClickListener(this);		
+
+		long currentSessionCount = ((EventRecorderApplication)this.getApplicationContext()).getDatabaseHandler().getDatabaseObjectCount(SessionDAO.class);		
+
 		mTouchables = ((EventRecorderApplication)this.getApplicationContext()).getDatabaseHandler().getDatabaseObjects(TouchableDAO.class);
 		mEvents = new ArrayList<EventDAO>();
-		mCurrentSession = new SessionDAO(null);
-		
-		/** Initialize map of counts */
+		mCurrentSession = new SessionDAO(null);		
 		mSparseIntArrayTouchCounts = new SparseIntArray(mTouchables.size());
-		for (EventRecorderDAO touchable : mTouchables) {
-			mSparseIntArrayTouchCounts.put((int) touchable.getId(), 0);
-		}
 		
-		mColorTouchable = 0xffdaeaba; // TODO Read this value from Settings
-		mColorTouchableDisabled = 0xff00da00; // TODO Read this value from Settings	
+		if(savedInstanceState == null || !savedInstanceState.containsKey(STATE_TIMER_STARTED)) {
+			
+			mTimerStarted = false;
+
+			((TextView)findViewById(R.id.textViewSessionCount)).setText(String.valueOf(currentSessionCount + 1));
+			
+			/** Initialize map of counts */
+			for (EventRecorderDAO touchable : mTouchables) {
+				mSparseIntArrayTouchCounts.put((int) touchable.getId(), 0);
+			}
+			
+			mCurrentTime = mStartTime = mPreviousTime = 0;			
+		} else {
+			/** Restore data from saved instance state */
+			mTimerStarted = savedInstanceState.getBoolean(STATE_TIMER_STARTED);
+			if(mTimerStarted) {
+				((TextView)findViewById(R.id.textViewSessionCount)).setText(String.valueOf(currentSessionCount + 1));
+				
+				mStartTime = savedInstanceState.getLong(STATE_TIME_START);
+				mCurrentTime = savedInstanceState.getLong(STATE_TIME_CURRENT);
+				mPreviousTime = savedInstanceState.getLong(STATE_TIME_PREVIOUS);
+				mEvents = (ArrayList<EventDAO>) savedInstanceState.getSerializable(STATE_EVENTS);
+			} else {
+				((TextView)findViewById(R.id.textViewSessionCount)).setText(String.valueOf(currentSessionCount));
+				mCurrentSession = (SessionDAO) ((EventRecorderApplication)this.getApplicationContext()).getDatabaseHandler().getDatabaseObjectById(SessionDAO.class, savedInstanceState.getLong(STATE_SESSION_ID));
+				
+				mTimestampRecording = mCurrentSession.getTimestampRecorded();
+				
+				showDialogSave();
+				
+			}
+			ArrayList<Integer> touchCountsInterlaced = savedInstanceState.getIntegerArrayList(STATE_COUNTERS);
+			for(int i = 0; i < touchCountsInterlaced.size(); i += 2) {
+				mSparseIntArrayTouchCounts.put(touchCountsInterlaced.get(i), touchCountsInterlaced.get(i + 1));
+			}
+		}
 		
 		mPreDiscardDialog = new DiscardNewSessionAlertDialog(this);
 		mPreDiscardDialog.setTitle(R.string.new_session_pre_discard_title);
@@ -209,7 +222,30 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 			}
 		});
 		
-		mCurrentTime = mStartTime = mPreviousTime = 0;
+		mHandlerTimer = new Handler();
+		mHandlerLayout = new Handler();
+		mHandlerTouch = new Handler() {
+			@Override
+	        public void handleMessage(Message msg) {
+	            switch (msg.what) {
+		            case MSG_TOUCH_KEY_DOWN_COLOR:
+	                	// TODO Use inverted color value for the background color
+	                	// TODO Add additional Settings entry - user can choose whether inverted color should be displayed, or pre-defined ones.
+		            	findViewById(((Integer)msg.obj).intValue()).setBackgroundColor(0xba00ba);
+		            	Message keyUpMessage = new Message();
+		            	keyUpMessage.what = MSG_TOUCH_KEY_UP_COLOR;
+		            	keyUpMessage.obj = msg.obj;
+		            	mHandlerTouch.sendMessageDelayed(keyUpMessage, 100);
+		            	break;
+	                case MSG_TOUCH_KEY_UP_COLOR:
+		            	findViewById(((Integer)msg.obj).intValue()).setBackgroundColor(mColorTouchable);
+	                    break;
+	                default:
+	                    super.handleMessage(msg);
+	                    break;
+	            }
+	        }
+		};		
 	}
 	
 	@Override
@@ -217,6 +253,39 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		super.onResume();
 		Log.d(TAG, "onResume...");
 		mHandlerLayout.postDelayed(mRunnableLayoutThread, LAYOUT_CHECK_INTERVAL);
+	}
+	
+	@Override
+	public void onSaveInstanceState(Bundle savedInstanceState) {
+		/**
+		 * The only useful cases for saving instance state are:
+		 * 	1. Recording has stopped, and the Save dialog is being opened
+		 * 	2. Recording is in progress
+		 */
+		if(mEvents.size() > 1 || mTimerStarted) {
+			savedInstanceState.putBoolean(STATE_TIMER_STARTED, mTimerStarted);
+			if(mTimerStarted) {
+				savedInstanceState.putLong(STATE_TIME_START, mStartTime);
+				savedInstanceState.putLong(STATE_TIME_CURRENT, mCurrentTime);
+				savedInstanceState.putLong(STATE_TIME_PREVIOUS, mPreviousTime);
+				savedInstanceState.putSerializable(STATE_EVENTS, mEvents);	
+			} else {
+				savedInstanceState.putLong(STATE_SESSION_ID, mCurrentSession.getId());
+			}
+			
+			ArrayList<Integer> touchCountsInterlaced = new ArrayList<Integer>();
+			for(int i = 0; i < mSparseIntArrayTouchCounts.size(); i++) {
+				int value, key;
+				value = mSparseIntArrayTouchCounts.valueAt(i);
+				key = mSparseIntArrayTouchCounts.keyAt(i);
+				touchCountsInterlaced.add(key);
+				touchCountsInterlaced.add(value);
+			}
+			
+			savedInstanceState.putIntegerArrayList(STATE_COUNTERS, touchCountsInterlaced);
+		}
+		
+		super.onSaveInstanceState(savedInstanceState);
 	}
 	
 	@Override
@@ -302,7 +371,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 			textViewTouchableName = new TextView(this);
 			
 			textViewTouchCounter.setId(0);
-			textViewTouchCounter.setText("0");
+			textViewTouchCounter.setText(String.valueOf(mSparseIntArrayTouchCounts.get((int) mTouchables.get(0).getId())));
 			textViewTouchCounter.setTextSize(touchableHeight / TOUCHABLES_COUNT_RATIO);
 			textViewTouchCounter.setTypeface(textViewTouchCounter.getTypeface(), Typeface.BOLD);
 			textViewTouchCounter.setGravity(Gravity.TOP | Gravity.LEFT);
@@ -359,7 +428,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 					textViewTouchableName = new TextView(this);
 					
 					textViewTouchCounter.setId(0);
-					textViewTouchCounter.setText("0");
+					textViewTouchCounter.setText(String.valueOf(mSparseIntArrayTouchCounts.get((int) mTouchables.get(i).getId())));
 					textViewTouchCounter.setTextSize(touchableHeight / TOUCHABLES_COUNT_RATIO);
 					textViewTouchCounter.setTypeface(textViewTouchCounter.getTypeface(), Typeface.BOLD);
 					textViewTouchCounter.setGravity(Gravity.TOP | Gravity.LEFT);
@@ -413,7 +482,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 					textViewTouchableName = new TextView(this);
 					
 					textViewTouchCounter.setId(0);
-					textViewTouchCounter.setText("0");
+					textViewTouchCounter.setText(String.valueOf(mSparseIntArrayTouchCounts.get((int) mTouchables.get(i).getId())));
 					textViewTouchCounter.setTextSize(touchableHeight / TOUCHABLES_COUNT_RATIO);
 					textViewTouchCounter.setTypeface(textViewTouchCounter.getTypeface(), Typeface.BOLD);
 					textViewTouchCounter.setGravity(Gravity.TOP | Gravity.LEFT);
@@ -472,7 +541,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 					textViewTouchableName = new TextView(this);
 					
 					textViewTouchCounter.setId(0);
-					textViewTouchCounter.setText("0");
+					textViewTouchCounter.setText(String.valueOf(mSparseIntArrayTouchCounts.get((int) mTouchables.get(i).getId())));
 					textViewTouchCounter.setTextSize(touchableHeight / TOUCHABLES_COUNT_RATIO);
 					textViewTouchCounter.setTypeface(textViewTouchCounter.getTypeface(), Typeface.BOLD);
 					textViewTouchCounter.setGravity(Gravity.TOP | Gravity.LEFT);
@@ -528,7 +597,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 					textViewTouchableName = new TextView(this);
 					
 					textViewTouchCounter.setId(0);
-					textViewTouchCounter.setText("0");
+					textViewTouchCounter.setText(String.valueOf(mSparseIntArrayTouchCounts.get((int) mTouchables.get(i).getId())));
 					textViewTouchCounter.setTextSize(touchableHeight / TOUCHABLES_COUNT_RATIO);
 					textViewTouchCounter.setTypeface(textViewTouchCounter.getTypeface(), Typeface.BOLD);
 					textViewTouchCounter.setGravity(Gravity.TOP | Gravity.LEFT);
@@ -599,7 +668,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 					textViewTouchableName = new TextView(this);
 					
 					textViewTouchCounter.setId(0);
-					textViewTouchCounter.setText("0");
+					textViewTouchCounter.setText(String.valueOf(mSparseIntArrayTouchCounts.get((int) mTouchables.get(indexTouchable).getId())));
 					textViewTouchCounter.setTextSize(touchableHeight / TOUCHABLES_COUNT_RATIO);
 					textViewTouchCounter.setTypeface(textViewTouchCounter.getTypeface(), Typeface.BOLD);
 					textViewTouchCounter.setGravity(Gravity.TOP | Gravity.LEFT);
@@ -676,7 +745,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 						textViewTouchableName = new TextView(this);
 						
 						textViewTouchCounter.setId(0);
-						textViewTouchCounter.setText("0");
+						textViewTouchCounter.setText(String.valueOf(mSparseIntArrayTouchCounts.get((int) mTouchables.get(indexTouchable).getId())));
 						textViewTouchCounter.setTextSize(touchableHeight / TOUCHABLES_COUNT_RATIO);
 						textViewTouchCounter.setTypeface(textViewTouchCounter.getTypeface(), Typeface.BOLD);
 						textViewTouchCounter.setGravity(Gravity.TOP | Gravity.LEFT);
@@ -749,7 +818,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 						textViewTouchableName = new TextView(this);
 						
 						textViewTouchCounter.setId(0);
-						textViewTouchCounter.setText("0");
+						textViewTouchCounter.setText(String.valueOf(mSparseIntArrayTouchCounts.get((int) mTouchables.get(indexTouchable).getId())));
 						textViewTouchCounter.setTextSize(touchableHeight / TOUCHABLES_COUNT_RATIO);
 						textViewTouchCounter.setTypeface(textViewTouchCounter.getTypeface(), Typeface.BOLD);
 						textViewTouchCounter.setGravity(Gravity.TOP | Gravity.LEFT);
@@ -834,7 +903,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 						textViewTouchableName = new TextView(this);
 						
 						textViewTouchCounter.setId(0);
-						textViewTouchCounter.setText("0");
+						textViewTouchCounter.setText(String.valueOf(mSparseIntArrayTouchCounts.get((int) mTouchables.get(indexTouchable).getId())));
 						textViewTouchCounter.setTextSize(touchableHeight / TOUCHABLES_COUNT_RATIO);
 						textViewTouchCounter.setTypeface(textViewTouchCounter.getTypeface(), Typeface.BOLD);
 						textViewTouchCounter.setGravity(Gravity.TOP | Gravity.LEFT);
@@ -911,7 +980,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 						textViewTouchableName = new TextView(this);
 						
 						textViewTouchCounter.setId(0);
-						textViewTouchCounter.setText("0");
+						textViewTouchCounter.setText(String.valueOf(mSparseIntArrayTouchCounts.get((int) mTouchables.get(indexTouchable).getId())));
 						textViewTouchCounter.setTextSize(touchableHeight / TOUCHABLES_COUNT_RATIO);
 						textViewTouchCounter.setTypeface(textViewTouchCounter.getTypeface(), Typeface.BOLD);
 						textViewTouchCounter.setGravity(Gravity.TOP | Gravity.LEFT);
@@ -995,7 +1064,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 						textViewTouchableName = new TextView(this);
 						
 						textViewTouchCounter.setId(0);
-						textViewTouchCounter.setText("0");
+						textViewTouchCounter.setText(String.valueOf(mSparseIntArrayTouchCounts.get((int) mTouchables.get(indexTouchable).getId())));
 						textViewTouchCounter.setTextSize(touchableHeight / TOUCHABLES_COUNT_RATIO);
 						textViewTouchCounter.setTypeface(textViewTouchCounter.getTypeface(), Typeface.BOLD);
 						textViewTouchCounter.setGravity(Gravity.TOP | Gravity.LEFT);
@@ -1077,7 +1146,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 						textViewTouchableName = new TextView(this);
 						
 						textViewTouchCounter.setId(0);
-						textViewTouchCounter.setText("0");
+						textViewTouchCounter.setText(String.valueOf(mSparseIntArrayTouchCounts.get((int) mTouchables.get(indexTouchable).getId())));
 						textViewTouchCounter.setTextSize(touchableHeight / TOUCHABLES_COUNT_RATIO);
 						textViewTouchCounter.setTypeface(textViewTouchCounter.getTypeface(), Typeface.BOLD);
 						textViewTouchCounter.setGravity(Gravity.TOP | Gravity.LEFT);
@@ -1164,7 +1233,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 						textViewTouchableName = new TextView(this);
 						
 						textViewTouchCounter.setId(0);
-						textViewTouchCounter.setText("0");
+						textViewTouchCounter.setText(String.valueOf(mSparseIntArrayTouchCounts.get((int) mTouchables.get(indexTouchable).getId())));
 						textViewTouchCounter.setTextSize(touchableHeight / TOUCHABLES_COUNT_RATIO);
 						textViewTouchCounter.setTypeface(textViewTouchCounter.getTypeface(), Typeface.BOLD);
 						textViewTouchCounter.setGravity(Gravity.TOP | Gravity.LEFT);
@@ -1243,7 +1312,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 						textViewTouchableName = new TextView(this);
 						
 						textViewTouchCounter.setId(0);
-						textViewTouchCounter.setText("0");
+						textViewTouchCounter.setText(String.valueOf(mSparseIntArrayTouchCounts.get((int) mTouchables.get(indexTouchable).getId())));
 						textViewTouchCounter.setTextSize(touchableHeight / TOUCHABLES_COUNT_RATIO);
 						textViewTouchCounter.setTypeface(textViewTouchCounter.getTypeface(), Typeface.BOLD);
 						textViewTouchCounter.setGravity(Gravity.TOP | Gravity.LEFT);
@@ -1291,8 +1360,11 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 				showDialogSave();
 			} else {
 				if(mEvents.size() < 1) {
-					mStartTime = SystemClock.elapsedRealtime();
-					mCurrentTime = mPreviousTime = 0;
+					if(mStartTime == 0) {
+						mStartTime = SystemClock.elapsedRealtime();
+						mCurrentTime = mPreviousTime = 0;						
+					}
+
 					// When start button is clicked, fire timer event with 1ms delay, no matter of MEASURE_MILLISECONDS value
 					mHandlerTimer.postDelayed(mRunnableTimerThread, 1);
 					//mHandlerTimer.sendEmptyMessageDelayed(MSG_TIMER_TICK, 1);
