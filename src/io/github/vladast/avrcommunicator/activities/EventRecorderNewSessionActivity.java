@@ -12,6 +12,7 @@ import io.github.vladast.avrcommunicator.AvrRecorderConstants;
 import io.github.vladast.avrcommunicator.EventRecorderApplication;
 import io.github.vladast.avrcommunicator.R;
 import io.github.vladast.avrcommunicator.R.layout;
+import io.github.vladast.avrcommunicator.db.EventRecorderDatabaseHandler;
 import io.github.vladast.avrcommunicator.db.dao.DeviceDAO;
 import io.github.vladast.avrcommunicator.db.dao.EventDAO;
 import io.github.vladast.avrcommunicator.db.dao.EventRecorderDAO;
@@ -1516,7 +1517,12 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		   else {
 			   mHandlerLayout.removeCallbacks(mRunnableLayoutThread);
 			   displayTouchables();
-			   changeColorOnTouchables(mColorTouchableDisabled);
+			   if(!(mTimerStarted || mCurrentSession.getId() != EventRecorderDatabaseHandler.TABLE_INVALID_ID))
+				   changeColorOnTouchables(mColorTouchableDisabled);
+			   else if (mTimerStarted) {
+				   mHandlerTimer.postDelayed(mRunnableTimerThread, 1);			
+			   }
+			   
 		   }
 	   }
 	};
