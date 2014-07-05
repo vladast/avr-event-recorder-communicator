@@ -6,9 +6,8 @@ package io.github.vladast.avrcommunicator.activities;
 import android.app.Activity;
 
 /**
- * @author vladimir.stankovic
- *
  * Activity that is presented when no sessions are present in the database.
+ * @author vladimir.stankovic
  */
 public class EventRecorderNoSessionsActivity extends Activity {
 

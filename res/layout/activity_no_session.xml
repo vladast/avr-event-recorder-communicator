@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?><RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <!-- Download recording from compatible device -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/relativeLayoutDownload"
+        android:background="#ffda00ba" >
+
+        <ImageButton
+            android:id="@+id/imageButtonDownload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:src="@drawable/ic_launcher" />
+
+        <TextView
+            android:id="@+id/textViewDownload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/imageButtonDownload"
+            android:layout_centerVertical="true"
+            android:text="@string/no_session_button_download" />
+        
+    </RelativeLayout>    
+    
+    <!-- Import recording(s) -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/relativeLayoutImport"
+        android:layout_above="@id/relativeLayoutDownload" >
+
+        <ImageButton
+            android:id="@+id/imageButtonImport"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/ic_launcher" />
+
+        <TextView
+            android:id="@+id/textViewImport"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/imageButtonImport"
+            android:layout_centerVertical="true"
+            android:text="@string/no_session_button_import" />
+        
+    </RelativeLayout>
+    
+    <!-- Create new recording -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/relativeLayoutNew"
+        android:layout_above="@id/relativeLayoutImport" >
+
+        <ImageButton
+            android:id="@+id/imageButtonNew"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:src="@drawable/ic_launcher" />
+
+        <TextView
+            android:id="@+id/textViewNew"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/imageButtonNew"
+            android:layout_centerVertical="true"
+            android:text="@string/no_session_button_new" />
+        
+    </RelativeLayout>
+
+    <!-- Information message display -->
+    <RelativeLayout
+        android:id="@+id/relativeLayoutIntro"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_above="@+id/relativeLayoutNew" >
+
+        <ImageButton
+            android:id="@+id/imageButtonHelp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:src="@drawable/ic_launcher" />
+
+        <TextView
+            android:id="@+id/textViewIntro"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/no_session_intro" />
+
+    </RelativeLayout>
+    
+</RelativeLayout>

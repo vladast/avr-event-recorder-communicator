@@ -80,4 +80,10 @@
     <string name="notification_device_detected_session_description">Read from device at</string>
     <string name="notification_device_detected_content_text_fragment">recorded events.</string> <!-- Example: "15 recorded events." -->
     
+    <!-- No Session -->
+    <string name="no_session_intro">There are not session data....</string>
+    <string name="no_session_button_new">Record new session</string>
+    <string name="no_session_button_import">Import recorded events</string>
+    <string name="no_session_button_download">Download recorded events from compatible device</string>
+    
 </resources>
