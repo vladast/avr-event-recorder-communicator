@@ -38,6 +38,9 @@ public class EventRecorderSessionListFragment extends ListFragment {
 	 * activated item position. Only used on tablets.
 	 */
 	private static final String STATE_ACTIVATED_POSITION = "activated_position";
+	
+	/** Flag used to indicate whether two panes are being used */
+	private static boolean mTwoPane = false;
 
 	/**
 	 * The fragment's current callback object, which is notified of list item
@@ -55,6 +58,7 @@ public class EventRecorderSessionListFragment extends ListFragment {
 	 */
 	private int mActivatedPosition = ListView.INVALID_POSITION;
 	
+	/** List of stored sessions */
 	private List<EventRecorderDAO> mSessionsList;
 
 	/**
@@ -100,7 +104,9 @@ public class EventRecorderSessionListFragment extends ListFragment {
 	@Override
 	public void onResume() {
 		super.onResume();
-		mCallbacks.onItemSelected((SessionDAO)mSessionsList.get(mSessionsList.size() - 1));
+		if(mTwoPane) {
+			mCallbacks.onItemSelected((SessionDAO)mSessionsList.get(mSessionsList.size() - 1));
+		}
 	}
 
     @Override
@@ -197,5 +203,9 @@ public class EventRecorderSessionListFragment extends ListFragment {
 			}
 		}
 		getListView().invalidateViews();
+	}
+
+	public static void setTwoPane(boolean twoPane) {
+		mTwoPane = twoPane;
 	}
 }
