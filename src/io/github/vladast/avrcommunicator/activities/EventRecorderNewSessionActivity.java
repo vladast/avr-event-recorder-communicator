@@ -220,6 +220,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				Log.d(TAG, "Session discard canceled");
+				mPreDiscardDialog.SetCaller(DiscardNewSessionAlertDialog.DIALOG_DISCARD);
 			}
 		});
 		

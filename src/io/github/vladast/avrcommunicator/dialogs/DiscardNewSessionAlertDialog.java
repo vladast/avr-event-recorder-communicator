@@ -59,6 +59,15 @@ public class DiscardNewSessionAlertDialog extends AlertDialog.Builder {
 		return mCaller;
 	}
 	
+	/**
+	 * Setter for the caller identifier.
+	 * <b>NOTE:</b> Used to change behavior of the display.
+	 * @param caller Caller identifier.
+	 */
+	public void SetCaller(int caller) {
+		mCaller = caller;
+	}
+	
 	/** 
 	 * Getter for dialog's context.
 	 * @return Context of the dialog.
