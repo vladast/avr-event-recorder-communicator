@@ -58,6 +58,9 @@ import android.util.Xml;
 public class EventRecorderApplication extends Application implements OnSharedPreferenceChangeListener, OnAvrRecorderEventListener {
 	private final String TAG = EventRecorderApplication.class.getSimpleName();
 	
+	private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
+
+	
 	/**
 	 * Single instance of <code>EventRecorderApplication</code> object.
 	 */
@@ -84,6 +87,33 @@ public class EventRecorderApplication extends Application implements OnSharedPre
 	 * Sleep prevention flag defined via <code>EventRecorderSettingsActivity</code> instance.
 	 */
 	private boolean mPreventSleep;
+	
+	/** Intent used to request permissions for detected USB device. */
+	private PendingIntent mUsbPermissionIntent;
+	
+	/** Broadcast receiver used to grant permissions for USB device. */
+	private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+
+	    public void onReceive(Context context, Intent intent) {
+	        String action = intent.getAction();
+	        if (ACTION_USB_PERMISSION.equals(action)) {
+	            synchronized (this) {
+	                UsbDevice usbDevice = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+
+	                if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+	                    if(usbDevice != null){
+	                    	Log.d(TAG, "permission granted for device " + usbDevice);
+	                    	mCommunicator.useThisUsbDevice(usbDevice);
+	                   }
+	                } 
+	                else {
+	                    Log.d(TAG, "permission denied for device " + usbDevice);
+	                    mCommunicator.startDeviceDetection();
+	                }
+	            }
+	        }
+	    }
+	};	
 	
 	/**
 	 * Getter for device monitoring flag.
@@ -164,12 +194,16 @@ public class EventRecorderApplication extends Application implements OnSharedPre
 		Log.d(TAG, "Method onCreate called.");
 		eventRecorderApplication = this;
 		
-		initCommunicator();
-		
 		PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
 		
 		mEventRecorderDatabaseHandler = new EventRecorderDatabaseHandler(this);
 		mEventRecorderDatabaseHandler.getWritableDatabase().close(); // Just to ensure that database is created --> check if necessary!
+		
+		mUsbPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
+		IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+		registerReceiver(mUsbReceiver, filter);
+		
+		initCommunicator();		
 	}
 	
 	@Override
@@ -182,7 +216,8 @@ public class EventRecorderApplication extends Application implements OnSharedPre
 	
 	private void initCommunicator() {
 		Log.d(TAG, "Creating Communicator instance...");
-		mCommunicator = new Communicator((UsbManager)getSystemService(Context.USB_SERVICE));
+		mCommunicator = new Communicator((UsbManager)getSystemService(Context.USB_SERVICE), mUsbPermissionIntent);
+		mCommunicator.registerListener(this);
 		
 		
 		if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(EventRecorderSettingsActivity.KEY_PREF_MONITOR_DEVICES, true) == true) {
@@ -292,6 +327,8 @@ public class EventRecorderApplication extends Application implements OnSharedPre
 		 * 		mTimestamp: event timestamp (number of seconds after the reading started)
 		 */
 		
+		mCommunicator.stopDeviceDetection();
+		
 		/** Check if detected device is in the database already.*/
 		// TODO Create appropriate method within database handler
 		DeviceDAO device = null;
@@ -325,7 +362,7 @@ public class EventRecorderApplication extends Application implements OnSharedPre
 		ArrayList<Byte> eventTypes = new ArrayList<Byte>();
 		session.setName((String) DateFormat.format("MM-dd-yyyy", calendar));
 		session.setDescription(String.format("%s %s", 
-				getResources().getStringArray(R.string.notification_device_detected_session_description), 
+				getResources().getString(R.string.notification_device_detected_session_description), 
 				DateFormat.format("HH:mm:ss", calendar)));
 		session.setNumberOfEvents(mCommunicator.getDevice().getEventReadings().size());
 		// Determine number of different event types (aka number of touchables)
@@ -403,7 +440,6 @@ public class EventRecorderApplication extends Application implements OnSharedPre
 
 	@Override
 	public void OnDebugMessage(String message) {
-		// TODO Auto-generated method stub
-		
+		Log.d(TAG, message);
 	}
 }

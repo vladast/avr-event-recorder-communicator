@@ -3,6 +3,7 @@ package io.github.vladast.avrcommunicator;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import android.app.PendingIntent;
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
@@ -10,6 +11,7 @@ import android.hardware.usb.UsbManager;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 /**
  * 
@@ -31,6 +33,8 @@ public class Communicator {
 	
 	/** Instance of <code>UsbManager</code> class, being an Android's USB connection manager */
 	private UsbManager mUsbManager;
+	/** Pending intent for USB permissions request. */
+	private PendingIntent mUsbPendingIntent;
 	/** Instance of <code>UsbDeviceConnection</code> class, representing the actual connection between Android and AVR devices */
 	private UsbDeviceConnection mUsbDeviceConnection;
 	/** Instance of <code>EventRecorderListeners</code> for utilization of events received from device. */
@@ -57,9 +61,10 @@ public class Communicator {
 	 * <code>Communicator</code> class constructor
 	 * @param usbManager <code>UsbManager</code> class instance received from upper layer when connection with AVR device is established.
 	 */
-	public Communicator(UsbManager usbManager) {
+	public Communicator(UsbManager usbManager, PendingIntent usbPermissionIntent) {
 		System.out.println("Communicator c-tor...");
 		mUsbManager = usbManager;
+		mUsbPendingIntent = usbPermissionIntent;
 		mRecordsRead = false;
 		mAvrRecorderDevice = null;
 		mEventRecorderListeners = new EventRecorderListeners();
@@ -72,8 +77,8 @@ public class Communicator {
 		            	if(!mRecordsRead)
 		            	{
 		            		mEventRecorderListeners.OnDeviceSearching();
-		            		checkDeviceStatus(); // [20140614] Returned usage of depricated method
-		            		mAvrRecorderMonitorHandler.sendEmptyMessageDelayed(MSG_CHECK_DEVICE_STATUS, 1000 * mMonitoringInterval);
+		            		if(checkDeviceStatus() == 0)
+		            			mAvrRecorderMonitorHandler.sendEmptyMessageDelayed(MSG_CHECK_DEVICE_STATUS, 1000 * mMonitoringInterval);
 		            	}
 		            	break;
 	                case MSG_DEVICE_DETECTED:
@@ -135,13 +140,28 @@ public class Communicator {
 		mAvrRecorderMonitorHandler.sendMessage(msg);
 	}
 	
+	/**
+	 * Getter for USB permissions request pending intent.
+	 * @return Returns intent used for handling permissions requests.
+	 */
+	private PendingIntent getUsbPendingIntent() {
+		return mUsbPendingIntent;
+	}
+	
 	/** 
 	 * Checks whether AVR device has been attached or not.
 	 * <b>NOTE:</b> Deprecated from v0.0.1 - attached USB device is being detected from main activity.
 	 */
-	@Deprecated
-	protected void checkDeviceStatus() {
-    	
+	protected int checkDeviceStatus() {
+    	int numberOfDetectedUsbDevices = mUsbManager.getDeviceList().size();
+		mEventRecorderListeners.OnDebugMessage("Number of detected USB devices: " + numberOfDetectedUsbDevices);
+		for (final UsbDevice usbDevice : mUsbManager.getDeviceList().values()) {
+			mAvrRecorderMonitorHandler.removeMessages(MSG_CHECK_DEVICE_STATUS);
+			mUsbManager.requestPermission(usbDevice, getUsbPendingIntent());
+		}
+		
+		return numberOfDetectedUsbDevices;
+		/*
     	new AsyncTask<Void, Void, UsbDevice>() {
 
 			@Override
@@ -149,10 +169,13 @@ public class Communicator {
 				mEventRecorderListeners.OnDebugMessage("Number of detected USB devices: " + mUsbManager.getDeviceList().size());
 				for (final UsbDevice usbDevice : mUsbManager.getDeviceList().values()) {
 					// TODO Instead of checking PID/VID pair, try to read device code - if present, then device is compatible.
-					if(usbDevice.getVendorId() == AvrRecorderConstants.AVR_REC_VID &&
-							usbDevice.getProductId() == AvrRecorderConstants.AVR_REC_PID)
+					//if(usbDevice.getVendorId() == AvrRecorderConstants.AVR_REC_VID &&
+					//		usbDevice.getProductId() == AvrRecorderConstants.AVR_REC_PID)
+					if(usbDevice.getProductId() == 1000 && usbDevice.getVendorId() == 5824)
 					{
-						return usbDevice;
+						mAvrRecorderMonitorHandler.removeMessages(MSG_CHECK_DEVICE_STATUS);
+						mUsbManager.requestPermission(usbDevice, getUsbPendingIntent());
+						//return usbDevice;
 					}
 				}
 				
@@ -170,6 +193,7 @@ public class Communicator {
 			}
 			
     	}.execute((Void)null);
+    	*/
 	}
 	
 	/** 
@@ -204,19 +228,23 @@ public class Communicator {
 		mAvrRecorderDevice = new AvrRecorderDevice(usbDevice);
 		
 		mUsbDeviceConnection = mUsbManager.openDevice(usbDevice);
-		
-		for(int i = 0; i < usbDevice.getInterfaceCount(); ++i) {
-			if(mUsbDeviceConnection.claimInterface(usbDevice.getInterface(i), true)) {
-				readDeviceInfo(); // Read status header and status codes
-				readDeviceRecords(); // Read records from device	
+		if(mUsbDeviceConnection != null) {
+			for(int i = 0; i < usbDevice.getInterfaceCount(); ++i) {
+				if(mUsbDeviceConnection.claimInterface(usbDevice.getInterface(i), true)) {
+					readDeviceInfo(); // Read status header and status codes
+					readDeviceRecords(); // Read records from device	
+				}
 			}
+			
+			mRecordsRead = true;
+			
+			if(mAvrRecorderDevice.getEventReadings().size() > 0) {
+				mEventRecorderListeners.OnRecordsRead(mAvrRecorderDevice.getEventReadings());
+			}
+		} else {
+			Log.d(TAG, String.format("Havent been able to open device with PID/VID = %04x/%04x", usbDevice.getProductId(), usbDevice.getVendorId()));
 		}
 		
-		mRecordsRead = true;
-		
-		if(mAvrRecorderDevice.getEventReadings().size() > 0) {
-			mEventRecorderListeners.OnRecordsRead(mAvrRecorderDevice.getEventReadings());
-		}
 	}
 	
 	/**
