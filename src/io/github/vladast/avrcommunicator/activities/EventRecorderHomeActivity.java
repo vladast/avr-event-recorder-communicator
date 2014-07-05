@@ -95,6 +95,8 @@ public class EventRecorderHomeActivity extends Activity implements OnAvrRecorder
 				startActivity(new Intent(v.getContext(), EventRecorderNewSessionActivity.class));
 			}
 		});
+		
+		((EventRecorderApplication)getApplicationContext()).registerCommunicatorListener(this);
 	}
 
 	@Override
