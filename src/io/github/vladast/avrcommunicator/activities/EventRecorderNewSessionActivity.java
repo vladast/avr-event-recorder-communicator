@@ -1011,7 +1011,7 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		}
 		case 7:
 		{
-			if(isPortraitOrientation == false) {
+			if(isPortraitOrientation) {
 				/**
 				 * Portrait:
 				 * 	Number of rows:		4
