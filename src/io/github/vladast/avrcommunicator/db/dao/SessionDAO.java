@@ -11,6 +11,27 @@ import java.util.Date;
  */
 public class SessionDAO extends EventRecorderDAO {
 
+	/** Name of the root element representing session */
+	public static final String XML_ROOT							= "session";
+	/** Element name for session id */
+	public static final String XML_FIELD_ID						= "id";
+	/** Element name for device id */
+	public static final String XML_FIELD_ID_DEVICE				= "idDevice";
+	/** Element name for session index read from device */
+	public static final String XML_FIELD_INDEX_DEV_SESSION		= "indexDeviceSession";
+	/** Element name for session name */
+	public static final String XML_FIELD_NAME					= "name";
+	/** Element name for session description */
+	public static final String XML_FIELD_DESCRIPTION			= "description";
+	/** Element name for number of events */
+	public static final String XML_FIELD_NUMBER_OF_EVENTS		= "numberOfEvents";
+	/** Element name for number of different event types */
+	public static final String XML_FIELD_NUMBER_OF_EVENT_TYPES	= "numberOfEventTypes";
+	/** Element name for time of recording */
+	public static final String XML_FIELD_TIMESTAMP_RECORDED		= "timestampRecorded";
+	/** Element name for time of the upload */
+	public static final String XML_FIELD_TIMESTAMP_UPLOADED		= "timestampUploaded";
+	
 	/**
 	 * @param onDatabaseRequestListener
 	 */

@@ -10,6 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Date;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -249,35 +250,25 @@ public class EventRecorderStream implements ContentHandler, XMLReader {
 		mContentHandler.startDocument();
 		
 		if(mEventRecorderDAO.getClass() == SessionDAO.class) {
-			mContentHandler.startElement("", "session", "session", new AttributesImpl());
+			mContentHandler.startElement("", SessionDAO.XML_ROOT, SessionDAO.XML_ROOT, new AttributesImpl());
+			/* Session ID */
+			insertElement(SessionDAO.XML_FIELD_ID, ((SessionDAO)mEventRecorderDAO).getId());
+	        /* Device ID */
+			insertElement(SessionDAO.XML_FIELD_ID_DEVICE, ((SessionDAO)mEventRecorderDAO).getIdDevice());
 			/* Name */
-	        mContentHandler.startElement("", "name", "name", new AttributesImpl());
-	        mContentHandler.characters(((SessionDAO)mEventRecorderDAO).getName().toCharArray(), 0, ((SessionDAO)mEventRecorderDAO).getName().length());
-	        mContentHandler.endElement("", "name", "name");
+	        insertElement(SessionDAO.XML_FIELD_NAME, ((SessionDAO)mEventRecorderDAO).getName());
 			/* Description */
-	        mContentHandler.startElement("", "description", "description", new AttributesImpl());
-	        mContentHandler.characters(((SessionDAO)mEventRecorderDAO).getDescription().toCharArray(), 0, ((SessionDAO)mEventRecorderDAO).getDescription().length());
-	        mContentHandler.endElement("", "description", "description");
+	        insertElement(SessionDAO.XML_FIELD_DESCRIPTION, ((SessionDAO)mEventRecorderDAO).getDescription());
 			/* Number of events */
-	        mContentHandler.startElement("", "numberOfEvents", "numberOfEvents", new AttributesImpl());
-	        mContentHandler.characters(String.valueOf(((SessionDAO)mEventRecorderDAO).getNumberOfEvents()).toCharArray(), 0, String.valueOf(((SessionDAO)mEventRecorderDAO).getNumberOfEvents()).length());
-	        mContentHandler.endElement("", "numberOfEvents", "numberOfEvents");
+	        insertElement(SessionDAO.XML_FIELD_NUMBER_OF_EVENTS, ((SessionDAO)mEventRecorderDAO).getNumberOfEvents());
 			/* Number of event types */
-	        mContentHandler.startElement("", "numberOfEventTypes", "numberOfEventTypes", new AttributesImpl());
-	        mContentHandler.characters(String.valueOf(((SessionDAO)mEventRecorderDAO).getNumberOfEventTypes()).toCharArray(), 0, String.valueOf(((SessionDAO)mEventRecorderDAO).getNumberOfEventTypes()).length());
-	        mContentHandler.endElement("", "numberOfEventTypes", "numberOfEventTypes");
+	        insertElement(SessionDAO.XML_FIELD_NUMBER_OF_EVENT_TYPES, ((SessionDAO)mEventRecorderDAO).getNumberOfEventTypes());
 			/* Session index */
-	        mContentHandler.startElement("", "indexDeviceSession", "indexDeviceSession", new AttributesImpl());
-	        mContentHandler.characters(String.valueOf(((SessionDAO)mEventRecorderDAO).getIndexDeviceSession()).toCharArray(), 0, String.valueOf(((SessionDAO)mEventRecorderDAO).getIndexDeviceSession()).length());
-	        mContentHandler.endElement("", "indexDeviceSession", "indexDeviceSession");
+	        insertElement(SessionDAO.XML_FIELD_INDEX_DEV_SESSION, ((SessionDAO)mEventRecorderDAO).getIndexDeviceSession());
 			/* Timestamp recorded */
-	        mContentHandler.startElement("", "timestampRecorded", "timestampRecorded", new AttributesImpl());
-	        mContentHandler.characters(((SessionDAO)mEventRecorderDAO).getTimestampRecorded().toString().toCharArray(), 0, ((SessionDAO)mEventRecorderDAO).getTimestampRecorded().toString().length());
-	        mContentHandler.endElement("", "timestampRecorded", "timestampRecorded");
+	        insertElement(SessionDAO.XML_FIELD_TIMESTAMP_RECORDED, ((SessionDAO)mEventRecorderDAO).getTimestampRecorded());
 	        /* Timestamp uploaded */
-	        mContentHandler.startElement("", "timestampUploaded", "timestampUploaded", new AttributesImpl());
-	        mContentHandler.characters(((SessionDAO)mEventRecorderDAO).getTimestampUploaded().toString().toCharArray(), 0, ((SessionDAO)mEventRecorderDAO).getTimestampUploaded().toString().length());
-	        mContentHandler.endElement("", "timestampUploaded", "timestampUploaded");
+	        insertElement(SessionDAO.XML_FIELD_TIMESTAMP_UPLOADED, ((SessionDAO)mEventRecorderDAO).getTimestampUploaded());
 	        
 	        mContentHandler.endElement("", "session", "session");	
 		}
@@ -291,4 +282,9 @@ public class EventRecorderStream implements ContentHandler, XMLReader {
 		
 	}
 	
+	private void insertElement(String name, Object value) throws SAXException {
+        mContentHandler.startElement("", name, name, new AttributesImpl());
+        mContentHandler.characters(String.valueOf(value).toCharArray(), 0, String.valueOf(value).length());
+        mContentHandler.endElement("", name, name);
+	}
 }
