@@ -1445,6 +1445,10 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 			@Override
 			public void onClick(View v) {
 				Log.d(TAG, "Save clicked!");
+				
+				mEvents.clear();
+				mCurrentSession = new SessionDAO(null);		
+				
 				Intent intentHome = new Intent(v.getContext(), EventRecorderHomeActivity.class);
 				startActivity(intentHome);
 				dialogSave.dismiss();
