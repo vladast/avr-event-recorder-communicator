@@ -5,7 +5,7 @@
         android:key="preference_general">
             
 	    <ListPreference 
-	        android:defaultValue="3"
+	        android:defaultValue="3 entries"
 	        android:entries="@array/pref_list_event_number_values"
 	        android:entryValues="@array/pref_list_event_number_values"
 	        android:key="event_number"
@@ -20,7 +20,7 @@
 			android:title="@string/pref_title_monitor_devices" />
 		
 	    <ListPreference 
-	        android:defaultValue="Overview"
+	        android:defaultValue="1 second"
 	        android:entries="@array/pref_list_monitor_interval_values"
 	        android:entryValues="@array/pref_list_monitor_interval_values"
 	        android:key="monitor_interval"
@@ -29,7 +29,7 @@
 	        android:title="@string/pref_title_monitor_interval" />	
 		
 	    <ListPreference 
-	        android:defaultValue="1"
+	        android:defaultValue="Overview"
 	        android:entries="@array/pref_list_starting_screen_values"
 	        android:entryValues="@array/pref_list_starting_screen_values"
 	        android:key="starting_screen"

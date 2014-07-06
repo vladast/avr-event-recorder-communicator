@@ -138,7 +138,7 @@ public class EventRecorderSettingsActivity extends PreferenceActivity {
 				preference.setSummary(index >= 0 ? listPreference.getEntryValues()[index] : null);
 			} else {
 				// For all other preferences, set the summary to the value's
-				// simple string representation.
+				// simple string representation.F
 				preference.setSummary(stringValue);
 			}
 			return true;
@@ -181,9 +181,9 @@ public class EventRecorderSettingsActivity extends PreferenceActivity {
 			// to their values. When their values change, their summaries are
 			// updated to reflect the new value, per the Android Design
 			// guidelines.
-			bindPreferenceSummaryToValue(findPreference(EventRecorderSettingsActivity.KEY_PREF_EVENT_NUMBER));
-			bindPreferenceSummaryToValue(findPreference(EventRecorderSettingsActivity.KEY_PREF_MONITOR_INTERVAL));
-			bindPreferenceSummaryToValue(findPreference(EventRecorderSettingsActivity.KEY_PREF_STARTING_SCREEN));
+			bindPreferenceSummaryToValue(findPreference(KEY_PREF_EVENT_NUMBER));
+			bindPreferenceSummaryToValue(findPreference(KEY_PREF_MONITOR_INTERVAL));
+			bindPreferenceSummaryToValue(findPreference(KEY_PREF_STARTING_SCREEN));
 		}
 	}
 
@@ -203,6 +203,9 @@ public class EventRecorderSettingsActivity extends PreferenceActivity {
 			// updated to reflect the new value, per the Android Design
 			// guidelines.
 			// TODO: Bind touchable preferences
+			bindPreferenceSummaryToValue(findPreference(KEY_PREF_EVENT_NUMBER));
+			bindPreferenceSummaryToValue(findPreference(KEY_PREF_MONITOR_INTERVAL));
+			bindPreferenceSummaryToValue(findPreference(KEY_PREF_STARTING_SCREEN));
 			//bindPreferenceSummaryToValue(findPreference("event_number"));
 			//bindPreferenceSummaryToValue(findPreference("monitor_devices"));
 			//bindPreferenceSummaryToValue(findPreference("monitor_interval"));

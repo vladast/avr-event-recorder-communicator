@@ -326,7 +326,8 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		 * 	3. Display number option - for pre-defined pattern names, user only selects number of touchables that are going to be displayed
 		 */
 		
-		int numberOfTouchables = PreferenceManager.getDefaultSharedPreferences(this).getInt(EventRecorderSettingsActivity.KEY_PREF_EVENT_NUMBER, 3); 
+		int numberOfTouchables = Integer.parseInt(
+				PreferenceManager.getDefaultSharedPreferences(this).getString(EventRecorderSettingsActivity.KEY_PREF_EVENT_NUMBER, "3").split(" ")[0]); 
 		Log.d(TAG, String.format("Creating %d touchable elements...", numberOfTouchables));
 		
 		boolean isPortraitOrientation = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
@@ -1401,7 +1402,9 @@ public class EventRecorderNewSessionActivity extends Activity implements OnClick
 		}
 		mCurrentSession.setIndexDeviceSession(0);
 		mCurrentSession.setNumberOfEvents(mEvents.size());
-		mCurrentSession.setNumberOfEventTypes(PreferenceManager.getDefaultSharedPreferences(this).getInt(EventRecorderSettingsActivity.KEY_PREF_EVENT_NUMBER, 3));
+		int numberOfTouchables = Integer.parseInt(
+				PreferenceManager.getDefaultSharedPreferences(this).getString(EventRecorderSettingsActivity.KEY_PREF_EVENT_NUMBER, "3").split(" ")[0]);
+		mCurrentSession.setNumberOfEventTypes(numberOfTouchables);
 		mCurrentSession.setTimestampRecorded(mTimestampRecording);
 		mCurrentSession.setTimestampUploaded(mTimestampRecording);
 		

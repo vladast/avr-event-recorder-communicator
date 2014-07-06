@@ -11,6 +11,9 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View.OnClickListener;
 import android.view.View;
 import android.widget.TextView;
@@ -39,7 +42,6 @@ public class EventRecorderHomeActivity extends Activity implements OnAvrRecorder
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.activity_home);
-		
 		updateHomeScreenData();
 		
 		mOnViewSessionsListener = new OnClickListener() {
@@ -93,6 +95,8 @@ public class EventRecorderHomeActivity extends Activity implements OnAvrRecorder
 		});
 		
 		((EventRecorderApplication)getApplicationContext()).registerCommunicatorListener(this);
+		
+		getActionBar().setHomeButtonEnabled(true);
 	}
 
 	@Override
@@ -105,6 +109,30 @@ public class EventRecorderHomeActivity extends Activity implements OnAvrRecorder
 		super.onResume();
 		
 		updateHomeScreenData();
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater menuInflater = getMenuInflater();
+		menuInflater.inflate(R.menu.action_home, menu);
+		return true;
+	} 
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem menuItem) {
+	    switch (menuItem.getItemId()) {
+	    case R.id.action_settings:
+	    	startActivity(new Intent(this, EventRecorderSettingsActivity.class));
+	    	break;
+	    case R.id.action_help:
+	    	break;
+	    case R.id.action_new_session:
+	    	startActivity(new Intent(this, EventRecorderNewSessionActivity.class));
+	    default:
+	    	break;
+	    }
+
+	    return true;
 	}
 	
 	/**
